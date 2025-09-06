@@ -126,4 +126,4 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/supabase-env.js 
-#supabase-env.js
+supabase-env.js
