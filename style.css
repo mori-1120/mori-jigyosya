@@ -962,7 +962,7 @@ th[data-sort-key].active-sort {
     position: sticky;
     top: 0;
     background-color: #d1cfcfd8; /* 背景色を固定エリアの背景色と合わせる */
-    z-index: 20; /* 他の要素より手前に表示 */
+    z-index: 10; /* ドロップダウンより下に変更（20→10） */
     padding-left: 20px; /* 左側に余白を追加 */
     padding-bottom: -20px; /* 下部に少しスペース */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.24); /* シャドウを追加 */

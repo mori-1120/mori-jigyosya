@@ -58,7 +58,7 @@
     border-top: none;
     border-radius: 0 0 4px 4px;
     background-color: #fff;
-    z-index: 2000; /* テーブルヘッダーより上に表示（元1000→2000に変更） */
+    z-index: 9999; /* sticky-header-areaより確実に上に表示 */
     max-height: 200px; /* Scrollable if many options */
     overflow-y: auto;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
