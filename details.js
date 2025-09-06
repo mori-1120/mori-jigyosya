@@ -1605,8 +1605,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // スクロールモードボタンをアコーディオン作成後に追加
         setTimeout(() => {
-            addDetailsTableModeToggle(toggleDetailsScrollMode);
-        }, 100);
+            if (typeof toggleDetailsScrollMode !== 'undefined') {
+                addDetailsTableModeToggle(toggleDetailsScrollMode);
+            }
+        }, 500); // 少し長めの遅延で確実に関数が定義されるまで待機
     }
 
     // --- Initialization ---
@@ -1826,9 +1828,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             applyStoredDetailsTableMode();
             adjustDetailsTableLayout();
         }, 1000);
-        
-        // 切り替えボタンを管理メニューに追加
-        addDetailsTableModeToggle(toggleDetailsScrollMode);
     }
     
     // 詳細画面ボタンテキストを更新する関数

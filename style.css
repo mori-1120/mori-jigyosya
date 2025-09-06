@@ -246,7 +246,7 @@ tr:hover {
     overflow-x: auto; /* Enable horizontal scrolling */
     width: 100%;
     position: relative; /* z-indexを適用するために必要 */
-    z-index: 25; /* アコーディオンより上に設定 */
+    z-index: 5; /* タイトルより下に設定（25→5） */
     background-color: white; /* 背景色を確実に設定 */
 }
 
@@ -322,13 +322,13 @@ tr:hover {
     table-layout: auto; /* 自動列幅調整に変更 */
     font-size: clamp(11px, 1.4vw, 13px); /* レスポンシブフォントサイズ */
     position: relative; /* z-indexを適用するために必要 */
-    z-index: 26; /* ラッパーより上に設定 */
+    z-index: 6; /* ラッパーより上、タイトルより下に設定（26→6） */
     background-color: white; /* 背景色を確実に設定 */
 }
 
 #notes-table {
     position: relative; /* z-indexを適用するために必要 */
-    z-index: 26; /* タスクテーブルと同じ高さに */
+    z-index: 6; /* タスクテーブルと同じ高さに（26→6） */
     background-color: white; /* 背景色を確実に設定 */
 }
 
@@ -1839,13 +1839,13 @@ button:active {
     background-color: white; /* 背景色を確実に設定 */
 }
 
-/* 詳細画面のテーブルが確実に最前面に表示されるように */
+/* 詳細画面のテーブルセルのz-index調整 */
 .details-table th,
 .details-table td,
 #notes-table th,
 #notes-table td {
     position: relative;
-    z-index: 27; /* セル単位でも最前面に */
+    z-index: 7; /* セル単位でタイトルより下に（27→7） */
     background-color: inherit;
 }
 
