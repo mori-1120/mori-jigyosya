@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Only initialize app if authenticated
         if (!isAuthenticated) {
             console.log('[Main] User not authenticated, showing auth modal');
-            authModal.style.display = 'block';
+            authModal.style.display = 'flex';
             hideStatus();
             return;
         }
