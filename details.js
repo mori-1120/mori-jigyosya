@@ -1602,6 +1602,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         accordionContainer.appendChild(accordionContent);
         
         document.body.appendChild(accordionContainer);
+        
+        // スクロールモードボタンをアコーディオン作成後に追加
+        setTimeout(() => {
+            addDetailsTableModeToggle(toggleDetailsScrollMode);
+        }, 100);
     }
 
     // --- Initialization ---
