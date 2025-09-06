@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>顧客進捗管理 - メイン画面（Supabase版）</title>
+    
+    <!-- Preload resources for better performance -->
+    <link rel="preload" href="style.css" as="style">
+    <link rel="preload" href="custom-dropdown.css" as="style">
+    <link rel="modulepreload" href="supabase-client.js" crossorigin>
+    <link rel="modulepreload" href="index.js" crossorigin>
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="custom-dropdown.css">
+    <link rel="stylesheet" href="toast.css">
+    <link rel="stylesheet" href="table-resize.css">
+</head>
+<body>
+    <!-- ユーザー情報表示エリア（非表示、管理メニューに統合） -->
+    <div id="user-info" style="display:none;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <img id="user-avatar" src="" alt="" style="width: 32px; height: 32px; border-radius: 50%; display: none;">
+            <div>
+                <div id="user-name" style="font-weight: bold; font-size: 14px; color: #333;"></div>
+                <div id="user-email" style="font-size: 12px; color: #666;"></div>
+            </div>
+            <button id="signout-button" style="background:#dc3545; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold;">
+                ログアウト
+            </button>
+        </div>
+    </div>
+
+    <!-- その他アプリ用アコーディオンメニュー -->
+    <div id="other-apps-accordion" class="accordion-container" style="position: absolute; right: 300px; top: 25px; z-index: 1000;">
+        <button class="accordion-header">
+            <span>🔗 その他アプリ</span>
+            <span class="accordion-icon">▼</span>
+        </button>
+        <div class="accordion-content" style="display: none;">
+            <div class="accordion-buttons-container">
+                <button id="url-settings-button" class="accordion-button">URL設定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 管理者用アコーディオンメニュー -->
+    <div id="management-accordion" class="accordion-container" style="position: absolute; right: 20px; top: 25px; z-index: 1000;">
+        <button class="accordion-header">
+            <span>🎛️ 管理メニュー</span>
+            <span class="accordion-icon">▼</span>
+        </button>
+        <div class="accordion-content" style="display: none;">
+            <div class="accordion-buttons-container">
+                <button id="manage-staff-button" class="accordion-button">担当者管理</button>
+                <button id="add-client-button" class="accordion-button">顧問先追加</button>
+                <hr>
+                <button id="basic-settings-button" class="accordion-button">基本設定</button>
+                <button id="reset-column-widths-button" class="accordion-button">📏 列幅リセット</button>
+                <hr>
+                <!-- ユーザー情報セクション -->
+                <div class="user-info-section">
+                    <div class="user-info-display">
+                        <img id="user-avatar-menu" src="" alt="" class="user-avatar-menu">
+                        <div class="user-details">
+                            <div id="user-name-menu" class="user-name-menu"></div>
+                            <div id="user-email-menu" class="user-email-menu"></div>
+                        </div>
+                    </div>
+                    <div class="logout-button-container">
+                        <button id="signout-button-menu" class="logout-button-small">ログアウト</button>
+                    </div>
+                </div>
+                <input type="file" id="csv-file-input" style="display: none;" accept=".csv">
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>顧客進捗管理 - メイン画面（Supabase版）</h1>
+        <!-- Legacy status display - now replaced with toast notifications -->
+        <div id="connection-status" style="display: none !important;">
+            <span id="status-text"></span>
+        </div>
+
+        <div class="controls">
+            <input type="text" id="search-input" placeholder="事業所名または担当者名で検索">
+
+            <div class="custom-select-wrapper">
+                <div class="custom-select-trigger">すべての担当者</div>
+                <div class="custom-options"></div>
+                <select id="staff-filter" class="custom-select-target" style="display: none;">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+            </div>
+
+            <div class="custom-select-wrapper">
+                <div class="custom-select-trigger">すべての決算月</div>
+                <div class="custom-options"></div>
+                <select id="month-filter" class="custom-select-target" style="display: none;">
+                    <!-- Options will be populated by JavaScript -->
+                </select>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="clients-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>事業所名</th>
+                        <th>決算月</th>
+                        <th>未入力期間</th>
+                        <th>月次進捗</th>
+                        <th>最終更新</th>
+                        <th>担当者</th>
+                        <th>経理方式</th>
+                        <th>進捗ステータス</th>
+                        <th>編集</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- クライアントデータがここに動的に挿入されます -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- モバイル用カードコンテナ -->
+        <div id="mobile-cards-container" class="mobile-cards-container">
+            <!-- モバイル用カードがここに動的に挿入されます -->
+        </div>
+    </div>
+
+    <!-- 担当者編集モーダル -->
+    <div id="staff-edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>担当者管理</h2>
+            <div id="staff-list-container">
+                <!-- 担当者項目がここに動的に追加される -->
+            </div>
+            <div class="add-staff-section" style="display: flex; gap: 10px;">
+                <input type="text" id="new-staff-name" placeholder="新しい担当者名" style="flex: 1;">
+                <input type="email" id="new-staff-email" placeholder="メールアドレス" style="flex: 1;">
+                <select id="new-staff-role" style="flex: 0.5;">
+                    <option value="staff">担当者</option>
+                    <option value="admin">管理者</option>
+                </select>
+                <button id="add-staff-button">追加</button>
+            </div>
+            <div class="modal-buttons">
+                <button id="save-staff-button" class="save-button">保存</button>
+                <button id="cancel-staff-button" class="cancel-button">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Default Tasks Modal -->
+    <div id="default-tasks-modal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <span class="close-button">&times;</span>
+            <h2>項目の初期値の設定</h2>
+            <div class="default-tasks-container">
+                <div class="task-column">
+                    <h3>記帳代行</h3>
+                    <div id="tasks-kityo" class="task-list-container"></div>
+                    <div class="add-task-section">
+                        <input type="text" id="new-task-kityo" placeholder="新しい項目を追加">
+                        <button data-target="kityo">追加</button>
+                    </div>
+                </div>
+                <div class="task-column">
+                    <h3>自計</h3>
+                    <div id="tasks-jikei" class="task-list-container"></div>
+                    <div class="add-task-section">
+                        <input type="text" id="new-task-jikei" placeholder="新しい項目を追加">
+                        <button data-target="jikei">追加</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button id="save-default-tasks-button">保存</button>
+                <button id="cancel-default-tasks-button">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Basic Settings Modal -->
+    <div id="basic-settings-modal" class="modal">
+        <div class="modal-content settings-modal-content">
+            <span class="close-button">&times;</span>
+            <h2>基本設定</h2>
+            
+            <div class="settings-container">
+                <!-- 個別設定 -->
+                <div class="settings-column">
+                    <div class="settings-section">
+                        <h3>📋 個別設定</h3>
+                        <div class="setting-item">
+                            <label for="font-family-select">全体のフォント:</label>
+                            <select id="font-family-select"></select>
+                        </div>
+                        <div class="setting-item">
+                            <label for="hide-inactive-clients">関与終了した顧問先を隠す:</label>
+                            <input type="checkbox" id="hide-inactive-clients">
+                        </div>
+                        <div class="setting-item">
+                            <label for="enable-confetti-effect">達成時エフェクトを表示する:</label>
+                            <input type="checkbox" id="enable-confetti-effect">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 共通設定 -->
+                <div class="settings-column">
+                    <div class="settings-section">
+                        <h3>⚙️ 共通設定</h3>
+                        <div class="setting-item threshold-setting-simple">
+                            <label for="yellow-threshold">警告表示:</label>
+                            <select id="yellow-threshold"></select>
+                            <span>ヶ月</span>
+                            <input type="color" id="yellow-color">
+                        </div>
+                        <div class="setting-item threshold-setting-simple">
+                            <label for="red-threshold">危険表示:</label>
+                            <select id="red-threshold"></select>
+                            <span>ヶ月</span>
+                            <input type="color" id="red-color">
+                        </div>
+                        <div class="setting-item button-setting">
+                            <button id="default-tasks-settings-button-modal" class="settings-button">📝 項目の初期値設定</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 管理者設定 -->
+                <div class="settings-column admin-settings">
+                    <div class="settings-section">
+                        <h3>🔐 管理者設定</h3>
+                        <div class="admin-notice">
+                            <small>※ 管理者のみ操作可能</small>
+                        </div>
+                        <div class="setting-item button-setting">
+                            <button id="export-csv-button-modal" class="settings-button admin-only">📊 CSVエクスポート</button>
+                        </div>
+                        <div class="setting-item button-setting">
+                            <button id="import-csv-button-modal" class="settings-button admin-only">📁 CSVインポート</button>
+                        </div>
+                        <div class="setting-item button-setting">
+                            <button id="backup-settings-button-modal" class="settings-button admin-only">💾 バックアップ設定</button>
+                        </div>
+                        <div class="setting-item button-setting">
+                            <button id="reset-database-button-modal" class="settings-button admin-only danger-button">⚠️ データベース初期化</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button id="save-basic-settings-button" class="save-button">保存</button>
+                <button id="cancel-basic-settings-button" class="cancel-button">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- URL Settings Modal -->
+    <div id="url-settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>URL設定</h2>
+            <p>「その他アプリ」メニューに表示するカスタムリンクを設定します。</p>
+            
+            <div id="url-list-container" class="list-container">
+                <!-- URLアイテムがここに動的に追加されます -->
+            </div>
+
+            <div class="new-item-form">
+                <input type="text" id="new-url-name" placeholder="リンク名">
+                <input type="url" id="new-url-link" placeholder="https://example.com">
+                <button id="add-url-button" class="add-button">追加</button>
+            </div>
+
+            <div class="modal-actions">
+                <button id="save-url-settings-button" class="save-button">保存</button>
+                <button id="cancel-url-settings-button" class="cancel-button">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backup Management Modal -->
+    <div id="backup-management-modal" class="modal">
+        <div class="modal-content backup-modal-content">
+            <span class="close-button">&times;</span>
+            <h2>📦 バックアップ管理</h2>
+            
+            <div class="backup-container">
+                <!-- 自動バックアップ設定 -->
+                <div class="backup-section">
+                    <h3>🔄 自動バックアップ設定</h3>
+                    <div class="backup-setting-item">
+                        <label for="auto-backup-enabled">
+                            <input type="checkbox" id="auto-backup-enabled">
+                            自動バックアップを有効にする
+                        </label>
+                    </div>
+                    <div class="backup-setting-item">
+                        <label for="backup-frequency">実行頻度:</label>
+                        <select id="backup-frequency">
+                            <option value="daily">毎日</option>
+                            <option value="weekly">毎週</option>
+                            <option value="monthly">毎月</option>
+                        </select>
+                        <label for="backup-time">実行時刻:</label>
+                        <select id="backup-time">
+                            <option value="00:00">00:00</option>
+                            <option value="01:00">01:00</option>
+                            <option value="02:00">02:00</option>
+                            <option value="03:00" selected>03:00</option>
+                            <option value="04:00">04:00</option>
+                            <option value="05:00">05:00</option>
+                        </select>
+                    </div>
+                    <div class="backup-setting-item">
+                        <label for="backup-method">保存方式:</label>
+                        <select id="backup-method">
+                            <option value="weekly-rotation">週次ローテーション（推奨）</option>
+                            <option value="simple">シンプル上書き</option>
+                        </select>
+                    </div>
+                    <div class="backup-setting-item">
+                        <label for="backup-path">保存先:</label>
+                        <button id="select-backup-folder-button" class="backup-folder-button">
+                            📂 バックアップフォルダを選択
+                        </button>
+                        <div id="selected-path-display" class="selected-path">
+                            <small>未選択（ダウンロードフォルダを使用）</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 手動バックアップ -->
+                <div class="backup-section">
+                    <h3>💾 手動バックアップ</h3>
+                    <div class="backup-setting-item">
+                        <button id="manual-backup-button" class="backup-action-button">
+                            今すぐバックアップを実行
+                        </button>
+                        <small>現在のデータを即座にダウンロードします</small>
+                    </div>
+                </div>
+
+                <!-- データ復元 -->
+                <div class="backup-section">
+                    <h3>📥 データ復元</h3>
+                    <div class="backup-setting-item">
+                        <label for="restore-skip-delete">
+                            <input type="checkbox" id="restore-skip-delete">
+                            削除処理をスキップ（upsertのみ）
+                        </label>
+                        <small>Supabase制限回避用。既存データに上書きのみ行います</small>
+                    </div>
+                    <div class="backup-setting-item">
+                        <button id="restore-backup-button" class="backup-action-button restore-button">
+                            バックアップファイルから復元
+                        </button>
+                        <small>⚠️ 現在のデータは全て置き換えられます</small>
+                        <input type="file" id="restore-file-input" accept=".json" style="display: none;">
+                    </div>
+                </div>
+
+                <!-- バックアップ履歴 -->
+                <div class="backup-section">
+                    <h3>📋 バックアップ履歴</h3>
+                    <div class="backup-history">
+                        <div id="backup-history-list">
+                            <div class="history-item">
+                                <span class="history-date">最終バックアップ: </span>
+                                <span id="last-backup-date">未実行</span>
+                            </div>
+                            <div class="history-item">
+                                <span class="history-date">次回予定: </span>
+                                <span id="next-backup-date">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button id="save-backup-settings-button" class="save-button">設定を保存</button>
+                <button id="cancel-backup-settings-button" class="cancel-button">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+    <!-- 認証モーダル -->
+    <div id="auth-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; backdrop-filter: blur(5px);">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:3rem; border-radius:12px; text-align:center; min-width:400px; box-shadow:0 10px 25px rgba(0,0,0,0.3);">
+            <div style="font-size: 48px; margin-bottom: 20px;">🔐</div>
+            <h2 style="margin-bottom: 10px; color: #333;">事業者管理システム</h2>
+            <p style="color: #666; margin-bottom: 30px; line-height: 1.5;">
+                このアプリを使用するには<br>
+                Googleアカウントでログインが必要です
+            </p>
+            <button id="signin-button" style="background: linear-gradient(45deg, #4285f4, #34a853); color:white; border:none; padding:15px 30px; border-radius:8px; cursor:pointer; font-size:16px; font-weight:bold; box-shadow:0 4px 15px rgba(66,133,244,0.3); transition:transform 0.2s;">
+                <span style="margin-right: 10px;">🚀</span>
+                Googleでログイン
+            </button>
+            <div id="auth-status" style="margin-top: 20px; padding: 10px; border-radius: 4px; display: none;">
+                <span id="auth-status-text"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legacy loading indicator - now replaced with toast notifications -->
+    <div id="loading-indicator" style="display: none !important;">
+        <div style="text-align: center;">
+            <div class="loading-spinner" style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px;"></div>
+            <div>Supabaseからデータを読み込み中...</div>
+        </div>
+    </div>
+
+    <style>
+        body {
+            background: linear-gradient(to bottom, #f0f8ff, #ffffff);
+            background-attachment: fixed;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #connection-status {
+            font-weight: bold;
+        }
+        
+        #connection-status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        #connection-status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        #connection-status.warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .task-item, .staff-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+        
+        .task-item input, .staff-item input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .delete-task-button, .delete-staff-button {
+            padding: 6px 12px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .delete-task-button:hover, .delete-staff-button:hover {
+            background-color: #c82333;
+        }
+
+        .task-column {
+            flex: 1;
+            padding: 0 20px;
+        }
+
+        .task-list-container {
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .add-task-section {
+            display: flex;
+            gap: 10px;
+        }
+
+        .add-task-section input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .add-task-section button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .add-task-section button:hover {
+            background-color: #0056b3;
+        }
+
+        .default-tasks-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .blur-background {
+            filter: blur(8px);
+            pointer-events: none;
+            user-select: none;
+            transition: filter 0.2s ease-in-out;
+        }
+
+        /* バックアップ管理モーダルスタイル */
+        .backup-modal-content {
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .backup-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .backup-section {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #fafafa;
+        }
+
+        .backup-section h3 {
+            margin: 0 0 15px 0;
+            color: #333;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 8px;
+        }
+
+        .backup-setting-item {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .backup-setting-item label {
+            font-weight: 500;
+            min-width: 80px;
+        }
+
+        .backup-setting-item input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .backup-setting-item select {
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .backup-action-button {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .backup-action-button:hover {
+            background: linear-gradient(135deg, #45a049, #3d8b40);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .backup-action-button.restore-button {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+        }
+
+        .backup-action-button.restore-button:hover {
+            background: linear-gradient(135deg, #f57c00, #ef6c00);
+        }
+
+        .backup-setting-item small {
+            color: #666;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .backup-history {
+            background-color: white;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .history-date {
+            font-weight: 500;
+        }
+
+        .backup-folder-button {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .backup-folder-button:hover {
+            background: linear-gradient(135deg, #0056b3, #004085);
+            transform: translateY(-1px);
+        }
+
+        .selected-path {
+            margin-top: 5px;
+            padding: 5px 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 3px solid #007bff;
+        }
+
+        .selected-path small {
+            color: #666;
+            font-size: 12px;
+        }
+
+        /* モバイル対応 */
+        @media screen and (max-width: 480px) {
+            .backup-modal-content {
+                max-width: 95%;
+                margin: 10px;
+            }
+            
+            .backup-setting-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .backup-action-button {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <script src="custom-dropdown.js"></script>
+    <script src="toast.js"></script>
+    <script src="table-resize.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    
+    <script type="module" src="index.js"></script>
+
+    <!-- Access Denied Modal -->
+    <div id="access-denied-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; backdrop-filter: blur(5px);">
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:3rem; border-radius:12px; text-align:center; min-width:400px; box-shadow:0 10px 25px rgba(0,0,0,0.3);">
+            <div style="font-size: 48px; margin-bottom: 20px;">🚫</div>
+            <h2 style="margin-bottom: 10px; color: #333;">アクセスが許可されていません</h2>
+            <p style="color: #666; margin-bottom: 30px; line-height: 1.5;">
+                このアプリケーションを使用する権限がありません。<br>
+                アクセスが必要な場合は、管理者に連絡してください。
+            </p>
+            <button id="access-denied-ok-button" style="background: #6c757d; color:white; border:none; padding:15px 30px; border-radius:8px; cursor:pointer; font-size:16px; font-weight:bold; transition: background-color 0.2s;">
+                ログイン画面に戻る
+            </button>
+        </div>
+    </div>
+</body>
+</html>

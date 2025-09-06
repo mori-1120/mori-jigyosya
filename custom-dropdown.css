@@ -1,0 +1,86 @@
+/* custom-dropdown.css */
+
+.custom-select-wrapper {
+    position: relative;
+    display: inline-block;
+    width: auto; /* Adjust as needed */
+    min-width: 150px; /* Ensure a minimum width */
+}
+
+.custom-select-trigger {
+    position: relative; /* For positioning the arrow */
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Horizontally center the text */
+    padding: 8px 30px 8px 12px; /* Adjust padding for arrow */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #333;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.custom-select-trigger:hover {
+    border-color: #007bff;
+}
+
+.custom-select-trigger.active { /* Use active class for styling when open */
+}
+
+/* Arrow icon for custom-select-trigger */
+.custom-select-trigger::after {
+    content: '';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #333;
+    transition: transform 0.2s ease;
+}
+
+.custom-select-trigger.active::after {
+    transform: translateY(-50%) rotate(180deg); /* Rotate arrow when open */
+}
+
+
+.custom-options {
+    position: absolute;
+    top: 100%; /* Position below the trigger */
+    left: 0;
+    right: 0;
+    border: 1px solid #ccc;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    background-color: #fff;
+    z-index: 1000; /* Ensure it's above sticky headers and other content */
+    max-height: 200px; /* Scrollable if many options */
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: none; /* Hidden by default */
+}
+
+.custom-options.active { /* Changed from .open to .active */
+    display: block;
+}
+
+.custom-option {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-align: center; /* Center the text inside options */
+}
+
+.custom-option:hover {
+    background-color: #f0f0f0;
+}
+
+.custom-option.selected {
+    background-color: #e0e0e0;
+    font-weight: bold;
+}

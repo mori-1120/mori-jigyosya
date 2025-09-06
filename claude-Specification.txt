@@ -1,0 +1,523 @@
+● 事業者管理アプリ - 最新版仕様書
+
+  📋 プロジェクト概要
+
+  Supabase + Vercel サーバーレス完全移行版事業者管理アプリケーション
+
+- 本番URL: https://jigyosyakanri2.vercel.app/
+- リポジトリ: 
+
+  🏗️ 技術スタック
+
+  フロントエンド
+
+  - HTML/CSS/JavaScript (Vanilla)
+  - ホスティング: Vercel (サーバーレス)
+  - 認証: Google OAuth 2.0
+  - UI: カスタムドロップダウン、アコーディオンメニュー、モダントースト通知、テーブルリサイズ
+
+  バックエンド・データベース
+
+  - データベース: Supabase PostgreSQL
+  - 認証: Supabase Auth (Google OAuth連携)
+  - API: Supabase REST API
+  - リアルタイム: Supabaseリアルタイム機能
+
+  🗄️ データベース構造
+
+1. clients
+
+Column
+Type
+Constraints / Default
+Keys
+id
+integer
+NOT NULL, DEFAULT nextval
+PK
+name
+varchar
+NOT NULL
+fiscal_month
+integer
+CHECK (1–12)
+staff_id
+integer
+FK → staffs.id
+accounting_method
+varchar
+DEFAULT '記帳代行'
+status
+varchar
+DEFAULT 'active'
+custom_tasks_by_year
+jsonb
+DEFAULT '{}'
+finalized_years
+jsonb
+DEFAULT '[]'
+created_at
+timestamp
+DEFAULT now()
+updated_at
+timestamp
+DEFAULT now()
+
+2. default_tasks
+
+Column
+Type
+Constraints / Default
+Keys
+id
+integer
+NOT NULL, DEFAULT nextval
+PK
+task_name
+varchar
+accounting_method
+varchar
+tasks
+jsonb
+display_order
+integer
+DEFAULT 0
+is_active
+boolean
+DEFAULT true
+created_at
+timestamp
+DEFAULT now()
+updated_at
+timestamp
+DEFAULT now()
+
+3. editing_sessions
+
+Column
+Type
+Constraints / Default
+Keys
+id
+integer
+NOT NULL, DEFAULT nextval
+PK
+client_id
+integer
+FK → clients.id
+user_id
+varchar
+NOT NULL
+started_at
+timestamp
+DEFAULT now()
+last_activity
+timestamp
+DEFAULT now()
+
+4. monthly_tasks
+
+Column
+Type
+Constraints / Default
+Keys
+id
+integer
+NOT NULL, DEFAULT nextval
+PK
+client_id
+integer
+FK → clients.id
+month
+varchar
+NOT NULL
+tasks
+jsonb
+DEFAULT '{}'
+status
+varchar
+DEFAULT 'pending'
+url
+text
+memo
+text
+created_at
+timestamp
+DEFAULT now()
+updated_at
+timestamp
+DEFAULT now()
+task_memos
+jsonb
+DEFAULT '{}'
+completed
+boolean
+NOT NULL, DEFAULT false
+
+5. settings
+
+Column
+Type
+Constraints / Default
+Keys
+key
+varchar
+NOT NULL
+PK
+value
+jsonb
+NOT NULL
+created_at
+timestamp
+DEFAULT now()
+updated_at
+timestamp
+DEFAULT now()
+
+6. staffs
+
+Column
+Type
+Constraints / Default
+Keys
+id
+integer
+NOT NULL, DEFAULT nextval
+PK
+name
+varchar
+NOT NULL
+email
+varchar
+role
+varchar
+DEFAULT 'staff'
+created_at
+timestamp
+DEFAULT now()
+updated_at
+timestamp
+DEFAULT now()
+
+7. app_links ✨ NEW
+
+Column
+Type
+Constraints / Default
+Keys
+id
+integer
+NOT NULL, DEFAULT nextval
+PK
+name
+varchar
+NOT NULL
+url
+text
+NOT NULL
+display_order
+integer
+DEFAULT 0
+created_at
+timestamp
+DEFAULT now()
+
+🔑 Relationships (Foreign Keys)
+clients.staff_id → staffs.id
+editing_sessions.client_id → clients.id
+monthly_tasks.client_id → clients.id
+
+
+  🔐 認証・セキュリティ
+
+  Google OAuth認証
+
+  - 認証プロバイダー: Google OAuth 2.0
+- 承認済みオリジン: https://jigyousya-final.vercel.app
+  - セッション管理: Supabase Auth自動管理
+  - ログイン頻度: 1日1回認証（自動セッション管理）
+
+  Row Level Security (RLS) ✅ 実装完了
+  - データアクセス制御: Supabase RLS
+  - 認証必須: 未ログイン時はデータアクセス不可
+  - Anon Key: 公開（フロントエンド用、RLSで保護）
+
+  🎯 主要機能
+
+  1. クライアント管理
+
+  - 一覧表示: 担当者別フィルター、検索機能
+  - CRUD操作: 追加、編集、削除、再有効化
+  - 関与終了機能: 業務終了クライアントのステータス管理
+    ├── グレーアウト表示: 設定により非表示/グレー表示切替
+    ├── 復活機能: 関与終了状態からの復帰
+    └── 管理者権限削除: 物理削除は管理者のみ実行可能
+  - カスタムタスク設定: クライアント独自の項目設定
+  - 年度確定機能: 特定年度のタスク項目ロック
+
+  2. 月次進捗管理
+
+  - 進捗入力: チェックボックス形式
+  - ステータス表示: `completed`フラグに基づき、最後に完了した年月を表示
+  - 自動完了機能: 詳細画面でタスクを100%にして保存すると、自動で`completed`フラグが更新され、10種類の達成時エフェクトからランダムに1つが再生される
+  - URL・メモ: 各月次記録に付加情報
+
+  3. タスク項目管理
+
+  - デフォルトタスク: 全クライアント共通の初期項目
+  - カスタムタスク: クライアント別独自項目
+  - 年度継承: 新年度アクセス時の前年度項目継承
+  - タスク伝播: 項目変更時の未確定年度への反映
+
+  4. 年度確定システム
+
+  - 確定機能: 特定年度のタスク項目をロック
+  - 編集制限: 確定済み年度は編集不可
+  - 継承制御: 確定済み項目の新年度継承
+
+  5. データ管理
+
+  - **バックアップシステム**: JSON形式・週次ローテーション・File System Access API対応
+  - **安全な復元機能**: 外部キー制約・データ整合性完全保証
+  - CSVエクスポート: UTF-8 BOM付きExcel対応
+  - CSVインポート: 複数エンコーディング対応
+  - データベース初期化: 完全リセット機能
+
+  6. 編集制御
+
+  - 悲観ロック: 編集競合防止
+  - 強制解除: 編集セッション強制終了
+  - 自動タイムアウト: 一定時間後の自動解除
+
+  7. UI/UX改善機能
+
+  - モダントースト通知システム
+  - テーブル列幅調整システム
+
+  8. その他アプリ連携機能 ✨ NEW
+
+  - リンク管理: モーダル画面でのURLリンク管理（名称・URL）
+  - CRUD操作: 追加・削除・保存に対応
+  - 表示順変更: ドラッグ＆ドロップによる並べ替え
+  - 動的ボタン生成: メイン画面のアコーディオン内に、登録したリンクをボタンとして動的生成
+  - 外部リンク遷移: ボタンクリックで設定したURLを新しいタブで開く
+
+  🖥️ ユーザーインターフェース
+
+  メイン画面
+
+  - 検索バー: 事業所名・担当者名での絞り込み
+  - フィルター: 担当者別、月別、ステータス別
+  - 一覧表示: デスクトップはテーブル形式、モバイルはカード形式で自動切替
+  - **固定テーブルヘッダー**: スクロール時でも常時表示・項目確認が容易 ✅
+  - アコーディオンメニュー: 「管理メニュー」と「その他アプリ」の2種類を配置
+  - テーブル列幅調整: ドラッグ&ドロップで列幅をカスタマイズ
+  - トースト通知: 右下からの優雅な通知システム
+  - レスポンシブ対応: 480px以下でモバイル専用UI に自動変換
+
+  管理メニュー
+
+  - 🎛️ 管理メニュー
+    ├── 担当者管理
+    ├── 顧問先追加
+    ├── 基本設定
+    ├── 項目の初期値の設定
+    ├── **📦 バックアップ設定** ✅（新規）
+    ├── 📊 CSVエクスポート
+    ├── 📁 CSVインポート
+    ├── 📏 列幅リセット
+    └── ⚠️ データベース初期化
+  - 🔗 その他アプリ
+    ├── URL設定
+    └── (動的に生成されるURLリンクボタン)
+
+  詳細画面アコーディオン
+
+  - 📋 データ管理メニュー
+    ├── この年度の項目を確定
+    ├── 項目を翌期以降に再反映
+    ├── 削除された項目を自動削除
+    ├── データ整合性チェック ✅
+    └── 項目の変更
+
+  詳細・編集画面
+
+  - 月次進捗表: 12ヶ月分の進捗管理
+  - カスタムタスク設定: ドラッグ&ドロップ対応
+  - 年度確定ボタン: 動的表示制御
+  - 編集ロック表示: 編集中ユーザーの表示
+  - ステータス管理UI
+  - モバイル最適化: 横画面推奨表示、固定要素無効化、タッチフレンドリーUI
+
+  🔧 設定・カスタマイズ
+
+  環境設定
+
+  // Supabase設定（自動検出）
+  const SUPABASE_URL = 'https://lqwjmlkkdddjnnxnlyfz.supabase.co'
+  const SUPABASE_ANON_KEY = '[自動設定]'
+
+  カスタマイズ可能項目
+
+  - デフォルトタスク項目: 基本設定から変更可能
+  - 担当者リスト: 動的追加・編集
+  - 年度設定: 会計年度に応じた自動調整
+  - UI色調: CSS変数での一括変更
+  - 外部リンク: 「その他アプリ」メニューから自由に設定可能
+
+  📈 パフォーマンス
+
+  - CDN配信: Vercel Edge Network, jsDelivr (SortableJS)
+
+  (その他変更なし)
+
+  📝 最新の進捗（2025年9月6日更新）
+
+#### ✨ 今回セッションで完成した機能・改善点
+
+1. **固定テーブルヘッダー機能** ✅
+   - スティッキーヘッダー実装：スクロール時でもテーブルヘッダーが常時表示
+   - z-index調整：ドロップダウンメニューとの重複問題を解決
+   - ユーザビリティ向上：大量データでの項目確認が容易に
+
+2. **バックアップ・復元システムの完全実装** ✅
+   - **週次ローテーション**: Monday-Sunday フォルダでの自動保存
+   - **File System Access API対応**: 任意フォルダへの直接保存
+   - **安全な復元処理**: 外部キー制約・担当者保持の完全対応
+   - **データ整合性保証**: settings テーブル等特殊スキーマ対応
+   - **エラー耐性**: Supabase制限（RLS、DELETE制約）への自動フォールバック
+   - **詳細ログ**: 復元プロセスの透明化・デバッグ対応
+
+3. **UI/UX改善** ✅
+   - バックアップ管理モーダル：設定・実行・復元を統合
+   - 削除スキップモード：Supabase制限回避の安全オプション
+   - プログレス表示：バッチ処理の詳細進捗
+
+4. **技術的品質向上** ✅
+   - **テーブルスキーマ対応**: settings(key基準) vs その他(id基準)の統一処理
+   - **バッチ処理最適化**: 50-100件単位での効率的データ処理
+   - **レート制限対策**: API負荷軽減の待機時間制御
+   - **コード整理**: CSV機能削除によるシンプル化・メンテナンス性向上
+
+#### 🔧 技術的解決済み問題
+- ❌→✅ **settingsテーブルIDエラー**: `column settings.id does not exist` 完全解決
+- ❌→✅ **外部キー制約違反**: clients.staff_id の整合性維持機能
+- ❌→✅ **大量削除制限**: `DELETE requires a WHERE clause` 回避処理
+- ❌→✅ **RLS制限**: Row Level Security による403エラー対応
+- ❌→✅ **データ復元失敗**: 0件復元問題の根本解決
+
+#### 過去の実装済み機能（継続）
+
+5. **月次進捗ロジックの改善** ✅（継続）
+   - DBの`monthly_tasks`テーブルに`completed`フラグを追加し、より正確な進捗管理を実現。
+   - メイン画面の進捗表示を`completed`フラグ基準の「最終完了年月」に変更。
+   - 詳細画面でタスクを100%にして保存すると`completed`フラグが自動更新されるロジックを実装。
+
+6. **その他アプリ連携機能** ✅（継続）
+   - 外部リンクを自由に登録・管理できる「URL設定」機能を追加。
+   - ドラッグ＆ドロップによる表示順の並べ替えに対応。
+   - 登録したリンクはメイン画面の「その他アプリ」メニュー内にボタンとして自動で表示される。
+
+7. **UI改善** ✅（継続）
+   - メイン画面・詳細画面の全てのアコーディオンメニュー内のボタンテキストを中央揃えに統一。
+   - 「その他アプリ」メニュー内で、「URL設定」ボタンと、ユーザーが追加したURLボタンが視覚的に区別しやすいように、区切り線と専用のボタンスタイルを追加。
+   - **URL参照ボタンの視覚的向上**: 黄色のグラデーション背景・白文字・影効果によるモダンデザインに変更。
+
+8. **データ整合性チェック機能** ✅（継続）
+   - フロントエンドとSupabaseデータベースの整合性を確認・修復する機能を実装。
+   - 詳細画面のアコーディオンメニュー内「データ整合性チェック」ボタンから実行可能。
+   - 不整合検出時の詳細レポート表示と自動修復機能。
+   - **自動修復機能完全実装**: progress_inconsistency・obsolete_tasksの自動検出・修復対応。
+
+9. **モバイル完全対応** ✅（継続）
+   - レスポンシブデザイン実装：メイン画面をカード形式レイアウトに自動変換。
+   - タッチフレンドリーUI：44px以上のタップ対象、適切な間隔設定。
+   - 詳細画面の横画面推奨：CSS rotation prompt による直感的な回転誘導。
+   - モバイル専用最適化：固定要素の無効化、スクロール体験改善。
+
+10. **画面方向管理の最適化** ✅（継続）
+    - Screen Orientation API の複雑なロック機能を削除し、デバイス互換性を向上。
+    - CSS ベースの横画面推奨メッセージによる安定したUX提供。
+    - デバイス制限による API エラー（NotSupportedError）を完全解消。
+
+11. **基本設定モーダル機能の大幅改善** ✅（継続）
+    - **3列レイアウト**: 個別設定・共通設定・管理設定の論理的分類
+    - **ローカルストレージ対応**: 個人設定（フォント・非表示設定・エフェクト）をlocalStorageで管理
+    - **管理者権限制御**: 管理設定は管理者のみアクセス可能、視覚的フィードバック付き
+    - **機能統合**: 散在していた管理機能を設定モーダル内に集約
+
+12. **達成時エフェクト機能の大幅拡張** ✅（継続）
+    - **10種類のランダムエフェクト実装**: Canvas Confetti + カスタムエフェクトの豪華な組み合わせ
+    - **Canvas Confetti統合**: 本格的なパーティクルエフェクトライブラリを導入
+    - **多様なエフェクト**: 基本紙吹雪・星・カスタムシェイプ・絵文字・神々しい光・Good指・くす玉+ハト・音符ダンス・サーカス風船・トロフィー授与
+    - **設定参照問題修正**: details.jsでの設定参照を統一し、正しく有効/無効制御
+    - **アニメーション専門エージェント**: パフォーマンス最適化・アクセシビリティ対応の専門的レビュー実施
+
+13. **テーブルソート機能の完全修復・モダン化** ✅（継続）
+    - **機能修復**: 「ドラッグして幅を調整」テキストによるソートキー認識問題を解決
+    - **モダンアイコンデザイン**: 絵文字からSVGベースの美しいソートアイコンに刷新
+    - **インタラクティブエフェクト**: ホバー時のスケール・色変更・背景色変化を実装
+    - **視覚的フィードバック**: アクティブソート状態の明確な表示とスムーズなアニメーション
+
+#### 技術的改善点
+- **バックアップアーキテクチャ**: JSON形式統一・週次ローテーション・File System Access API
+- **データ整合性システム**: テーブル別スキーマ対応・外部キー制約処理・upsert最適化
+- **エラー回復機能**: Supabase制限の自動検出・フォールバック処理・詳細ログ
+- **DBスキーマ拡張**: `app_links`テーブルを追加し、正規化されたデータ構造を維持。
+- **外部ライブラリ導入**: CDN経由で`SortableJS`（ドラッグ＆ドロップ）・`Canvas Confetti`（達成時エフェクト）を導入。
+- **モバイル対応アーキテクチャ**: Media Queries (@media screen and (max-width: 480px))による段階的拡張。
+- **デバイス互換性**: Screen Orientation API の制限に対応した堅牢なフォールバック実装。
+- **ストレージ戦略**: 個人設定はlocalStorage、共有設定はSupabaseの適切な分離。
+- **SVGアイコンシステム**: スケーラブルで高DPI対応のアイコンデザイン採用。
+- **動的文字列処理**: 正規表現を用いた柔軟なヘッダーテキスト解析機能。
+- **Claude Code エージェント活用**: アニメーション専門エージェント（`.claude/agents/animation-expert.md`）による品質向上。
+
+#### 📋 次回以降の実装予定（優先順位順）
+
+1. **🏗️ 管理ダッシュボード作成**【次回最優先】
+   - 全体進捗の可視化（完了率・未完了件数・月別統計）
+   - 担当者別パフォーマンス表示
+   - アラート機能（遅延案件・未対応クライアント）
+   - チャート・グラフによる視覚的分析
+
+2. **🔒 悲観ロック機能の修復**
+   - 編集競合防止システムの改善
+   - 強制解除機能の最適化
+   - タイムアウト処理の調整
+
+3. **🔔 通知システム実装**
+   - 期限接近アラート
+   - 完了通知
+   - システム更新通知
+
+4. **📊 詳細レポート機能**
+   - 月次・年次レポート生成
+   - PDF出力機能
+   - カスタマイズ可能なレポートテンプレート
+
+5. **🔍 高度検索機能**
+   - 複合条件検索
+   - 保存済み検索条件
+   - 検索履歴管理
+
+6. **⚡ パフォーマンス最適化**
+   - 大量データ処理の高速化
+   - キャッシュ戦略の改善
+   - 遅延読み込み（Lazy Loading）の実装
+
+#### 🎯 現在の完成度
+- **基本機能**: 100%完成 ✅
+- **バックアップ・復元**: 100%完成 ✅
+- **UI/UX**: 95%完成 ✅（スティッキーヘッダー対応完了）
+- **モバイル対応**: 100%完成 ✅
+- **データ管理**: 100%完成 ✅
+- **管理ダッシュボード**: 0%（未実装）⭐次回実装
+- **通知システム**: 0%（未実装）
+- **高度機能**: 70%完成（基本実装済み、拡張機能は今後）
+
+(以下、変更なし)
+
+＃開発時の注意
+①commit分は短く英文で作成してください
+②開発はステップバイステップで進めて下さい
+③良いアイデアがあったら教えてください
