@@ -607,11 +607,25 @@ document.addEventListener('DOMContentLoaded', () => {
         monthFilter.addEventListener('change', handleFilterChange);
 
         // Staff modal
-        document.getElementById('manage-staff-button').addEventListener('click', openStaffEditModal);
-        closeStaffModalButton.addEventListener('click', closeStaffModal);
-        addStaffButton.addEventListener('click', addStaffInputField);
-        saveStaffButton.addEventListener('click', saveStaffs);
-        cancelStaffButton.addEventListener('click', closeStaffModal);
+        const manageStaffBtn = document.getElementById('manage-staff-button');
+        if (manageStaffBtn) {
+            manageStaffBtn.addEventListener('click', openStaffEditModal);
+        } else {
+            console.warn('manage-staff-button not found');
+        }
+        
+        if (closeStaffModalButton) {
+            closeStaffModalButton.addEventListener('click', closeStaffModal);
+        }
+        if (addStaffButton) {
+            addStaffButton.addEventListener('click', addStaffInputField);
+        }
+        if (saveStaffButton) {
+            saveStaffButton.addEventListener('click', saveStaffs);
+        }
+        if (cancelStaffButton) {
+            cancelStaffButton.addEventListener('click', closeStaffModal);
+        }
 
         // Default Tasks modal
         // openDefaultTasksModalButton.addEventListener('click', openDefaultTasksModal); // 削除されたボタン
@@ -647,11 +661,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // URL設定ボタンのイベントリスナー
-        urlSettingsButton.addEventListener('click', openUrlSettingsModal);
-        closeUrlSettingsModalButton.addEventListener('click', closeUrlSettingsModal);
-        cancelUrlSettingsButton.addEventListener('click', closeUrlSettingsModal);
-        addUrlButton.addEventListener('click', addNewUrlItem);
-        saveUrlSettingsButton.addEventListener('click', saveUrlSettings);
+        if (urlSettingsButton) {
+            urlSettingsButton.addEventListener('click', openUrlSettingsModal);
+        } else {
+            console.warn('url-settings-button not found');
+        }
+        
+        if (closeUrlSettingsModalButton) {
+            closeUrlSettingsModalButton.addEventListener('click', closeUrlSettingsModal);
+        }
+        if (cancelUrlSettingsButton) {
+            cancelUrlSettingsButton.addEventListener('click', closeUrlSettingsModal);
+        }
+        if (addUrlButton) {
+            addUrlButton.addEventListener('click', addNewUrlItem);
+        }
+        if (saveUrlSettingsButton) {
+            saveUrlSettingsButton.addEventListener('click', saveUrlSettings);
+        }
 
         // Table header sorting
         console.log('Adding sort event listener to:', clientsTableHeadRow);
@@ -666,11 +693,16 @@ document.addEventListener('DOMContentLoaded', () => {
         clientsTableBody.addEventListener('click', handleClientClick);
 
         // Add client button
-        document.getElementById('add-client-button').addEventListener('click', () => {
-            // 新規作成画面でもスタッフデータをキャッシュ
-            sessionStorage.setItem('cached_staffs_data', JSON.stringify(staffs));
-            window.location.href = 'edit.html';
-        });
+        const addClientBtn = document.getElementById('add-client-button');
+        if (addClientBtn) {
+            addClientBtn.addEventListener('click', () => {
+                // 新規作成画面でもスタッフデータをキャッシュ
+                sessionStorage.setItem('cached_staffs_data', JSON.stringify(staffs));
+                window.location.href = 'edit.html';
+            });
+        } else {
+            console.warn('add-client-button not found');
+        }
 
         // Window click to close modal
         window.addEventListener('click', (e) => {
