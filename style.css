@@ -568,15 +568,26 @@ th[data-sort-key].active-sort {
 }
 
 .modal-content {
-    background-color: #fefefe;
-    margin: 5% auto; /* 15% from the top and centered */
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%; /* Could be more or less, depending on screen size */
-    max-width: 600px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    background-color: #ffffff; /* Brighter white */
+    margin: 5% auto;
+    padding: 30px; /* Increased padding */
+    border: none; /* Remove border */
+    width: 90%; /* Slightly wider */
+    max-width: 700px; /* Increased max-width */
+    border-radius: 12px; /* More rounded corners */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1); /* Softer, larger shadow */
     position: relative;
+}
+
+#staff-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Spacing between staff items */
+    padding: 15px;
+    border: 1px solid #e0e0e0; /* Subtle border */
+    border-radius: 8px;
+    background-color: #fdfdfd; /* Slightly off-white background */
+    margin-bottom: 20px;
 }
 
 .close-button {
