@@ -1091,6 +1091,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 '削除可能です';
 
             staffItem.innerHTML = `
+                <div class="staff-id-badge">
+                    <span style="opacity: 0.8;">#</span>${staff.id || 'NEW'}
+                </div>
                 <div class="staff-avatar">${getInitials(staff.name)}</div>
                 <div class="staff-info">
                     <input type="text" class="staff-name-input staff-name" value="${staff.name || ''}" placeholder="担当者名を入力">

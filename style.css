@@ -671,8 +671,9 @@ th[data-sort-key].active-sort {
 }
 
 .modern-staff-list {
-    min-height: 200px;
-    max-height: 400px;
+    min-height: 300px;
+    max-height: 500px;
+    height: auto;
     overflow-y: auto;
     padding: 0;
     background-color: #ffffff;
@@ -823,11 +824,11 @@ th[data-sort-key].active-sort {
     background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     border: 2px solid #e9ecef;
     border-radius: 12px;
-    padding: 20px;
-    margin: 15px;
+    padding: 15px;
+    margin: 10px;
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
@@ -839,18 +840,33 @@ th[data-sort-key].active-sort {
 }
 
 .staff-avatar {
-    width: 50px;
-    height: 50px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 600;
     flex-shrink: 0;
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.staff-id-badge {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(108, 117, 125, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 40px;
+    justify-content: center;
 }
 
 .staff-info {
@@ -861,14 +877,14 @@ th[data-sort-key].active-sort {
 }
 
 .staff-name-input {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
-    padding: 10px 15px;
+    padding: 8px 12px;
     border: 2px solid transparent;
-    border-radius: 8px;
+    border-radius: 6px;
     background: rgba(255, 255, 255, 0.8);
     transition: all 0.3s ease;
-    min-width: 200px;
+    min-width: 180px;
 }
 
 .staff-name-input:focus {
@@ -879,14 +895,14 @@ th[data-sort-key].active-sort {
 }
 
 .staff-email-input {
-    font-size: 14px;
+    font-size: 13px;
     color: #6c757d;
-    padding: 8px 15px;
+    padding: 6px 12px;
     border: 2px solid transparent;
-    border-radius: 6px;
+    border-radius: 5px;
     background: rgba(255, 255, 255, 0.6);
     transition: all 0.3s ease;
-    min-width: 250px;
+    min-width: 200px;
 }
 
 .staff-email-input:focus {
@@ -897,15 +913,15 @@ th[data-sort-key].active-sort {
 }
 
 .staff-role-select {
-    padding: 8px 12px;
+    padding: 6px 10px;
     border: 2px solid #e9ecef;
-    border-radius: 6px;
+    border-radius: 5px;
     background: white;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     transition: all 0.3s ease;
     cursor: pointer;
-    min-width: 120px;
+    min-width: 110px;
 }
 
 .staff-role-select:focus {
@@ -1063,15 +1079,23 @@ th[data-sort-key].active-sort {
     }
 
     .modern-staff-item {
-        margin: 10px;
-        padding: 15px;
+        margin: 8px;
+        padding: 12px;
         flex-direction: column;
         align-items: flex-start;
-        gap: 15px;
+        gap: 12px;
+    }
+
+    .staff-id-badge {
+        align-self: center;
+        margin-bottom: 5px;
     }
 
     .staff-avatar {
         align-self: center;
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
     }
 
     .staff-info {
@@ -1082,6 +1106,13 @@ th[data-sort-key].active-sort {
     .staff-name-input, .staff-email-input {
         min-width: auto;
         width: 100%;
+        padding: 8px 12px;
+    }
+
+    .staff-role-select {
+        min-width: auto;
+        width: 100%;
+        padding: 8px 12px;
     }
 
     .staff-meta {
@@ -1089,11 +1120,13 @@ th[data-sort-key].active-sort {
         align-items: center;
         justify-content: space-between;
         width: 100%;
-        margin-top: 10px;
+        margin-top: 8px;
     }
 
     .modern-delete-staff-button {
         flex-shrink: 0;
+        padding: 8px 12px;
+        font-size: 13px;
     }
 }
 
