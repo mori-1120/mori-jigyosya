@@ -1079,7 +1079,7 @@ button:active {
     align-items: center;
     gap: 8px;
     padding: 10px 14px;
-    background: linear-gradient(135deg, #ADD8E6, #6495ED);
+    background: linear-gradient(135deg, #0face0c0, #0d42a5c7);
     color: white;
     border: none;
     border-radius: 4px;
@@ -1090,7 +1090,7 @@ button:active {
 }
 
 .accordion-button:hover {
-    background: linear-gradient(135deg, #9ACEEB, #5485D2);
+    background: linear-gradient(135deg,#0face0c0, #0d42a5c7);
 }
 
 /* Default Tasks Modal Styles */
@@ -1795,16 +1795,16 @@ button:active {
 
 /* App Link Button Style */
 .app-link-button {
-    background: linear-gradient(135deg, #ffc107, #ffb300) !important;
-    border: 1px solid #ffc107 !important;
+    background: linear-gradient(135deg, #ffc107, #ffb300a2) !important;
+    border: 1px solid #ffc107ab !important;
     color: #ffffff !important;
     font-weight: bold !important;
     text-shadow: 0 1px 2px rgba(0,0,0,0.2) !important;
 }
 
 .app-link-button:hover {
-    background: linear-gradient(135deg, #ffca28, #ffa000) !important;
-    border-color: #ffca28 !important;
+    background: linear-gradient(135deg, #ffca28, #ffa20096) !important;
+    border-color: #ffc928a1 !important;
     color: #ffffff !important;
     transform: translateY(-1px) !important;
     box-shadow: 0 4px 8px rgba(255,193,7,0.3) !important;
