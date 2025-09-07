@@ -1,12 +1,65 @@
-index.js:616 manage-staff-button clicked! PointerEvent {isTrusted: true, pointerId: 1, width: 1, height: 1, pressure: 0, …}
-index.js:1080 Opening staff edit modal...
-index.js:1081 staffEditModal element: <div id=​"staff-edit-modal" class=​"modal" style=​"display:​ block;​">​…​</div>​scroll<div class=​"modal-content staff-modal-content">​…​</div>​<span class=​"close-button staff-close-button">​×​</span>​flex<div class=​"staff-modal-header">​…​</div>​<div class=​"staff-main-section">​…​</div>​<div class=​"staff-section-header">​…​</div>​flex<div id=​"staff-list-container" class=​"modern-staff-list">​…​</div>​scroll<div class=​"modern-staff-item" data-index=​"0" data-staff-id=​"1">​…​</div>​flex<div class=​"staff-id-badge">​…​</div>​flex<div class=​"staff-avatar">​吉​</div>​flex<div class=​"staff-info">​…​</div>​flex<input type=​"text" class=​"staff-name-input staff-name" value=​"吉冨 " placeholder=​"担当者名を入力">​<input type=​"email" class=​"staff-email-input staff-email" value=​"zeirishimori1120@gmail.com" placeholder=​"メールアドレスを入力">​<select class=​"staff-role-select staff-role">​…​</select>​</div>​<div class=​"staff-meta">​…​</div>​flex</div>​<div class=​"modern-staff-item" data-index=​"1" data-staff-id=​"8">​…​</div>​flex<div class=​"staff-id-badge">​…​</div>​flex<div class=​"staff-avatar">​平​</div>​flex<div class=​"staff-info">​…​</div>​flex<input type=​"text" class=​"staff-name-input staff-name" value=​"平井" placeholder=​"担当者名を入力">​<input type=​"email" class=​"staff-email-input staff-email" value=​"zeirishimori9878@gmail.com" placeholder=​"メールアドレスを入力">​<select class=​"staff-role-select staff-role">​…​</select>​</div>​<div class=​"staff-meta">​…​</div>​flex</div>​<div class=​"modern-staff-item" data-index=​"2" data-staff-id=​"37">​…​</div>​flex<div class=​"staff-id-badge">​…​</div>​flex<div class=​"staff-avatar">​T​</div>​flex<div class=​"staff-info">​…​</div>​flex<input type=​"text" class=​"staff-name-input staff-name" value=​"takao" placeholder=​"担当者名を入力">​<input type=​"email" class=​"staff-email-input staff-email" value=​"takaoyaji14@gmail.com" placeholder=​"メールアドレスを入力">​<select class=​"staff-role-select staff-role">​…​</select>​</div>​<div class=​"staff-meta">​…​</div>​flex</div>​<div class=​"modern-staff-item" data-index=​"3" data-staff-id=​"38">​…​</div>​flex<div class=​"staff-id-badge">​…​</div>​flex<div class=​"staff-avatar">​富​</div>​flex<div class=​"staff-info">​…​</div>​flex<input type=​"text" class=​"staff-name-input staff-name" value=​"富村" placeholder=​"担当者名を入力">​<input type=​"email" class=​"staff-email-input staff-email" value=​"zeirishimori9874@gmail.com" placeholder=​"メールアドレスを入力">​<select class=​"staff-role-select staff-role">​…​</select>​</div>​<div class=​"staff-meta">​…​</div>​flex</div>​<div class=​"modern-staff-item" data-index=​"4" data-staff-id=​"43">​…​</div>​flex<div class=​"staff-id-badge">​…​</div>​flex<div class=​"staff-avatar">​重​</div>​flex<div class=​"staff-info">​…​</div>​flex<input type=​"text" class=​"staff-name-input staff-name" value=​"重冨" placeholder=​"担当者名を入力">​<input type=​"email" class=​"staff-email-input staff-email" value=​"zeirishimori9873@gmail.com" placeholder=​"メールアドレスを入力">​<select class=​"staff-role-select staff-role">​…​</select>​</div>​<div class=​"staff-meta">​…​</div>​flex</div>​<div class=​"modern-staff-item" data-index=​"5" data-staff-id=​"48">​…​</div>​flex<div class=​"staff-id-badge">​…​</div>​flex<div class=​"staff-avatar">​Y​</div>​flex<div class=​"staff-info">​…​</div>​flex<input type=​"text" class=​"staff-name-input staff-name" value=​"yoshitomi" placeholder=​"担当者名を入力">​<input type=​"email" class=​"staff-email-input staff-email" value=​"takayoshi01161983@gmail.com" placeholder=​"メールアドレスを入力">​<select class=​"staff-role-select staff-role">​…​</select>​</div>​<div class=​"staff-meta">​…​</div>​flex</div>​</div>​</div>​<div class=​"staff-add-section">​…​</div>​<div class=​"staff-modal-actions">​…​</div>​flex</div>​</div>​
-index.js:1091 Modal display set to block
-index.js:1092 Modal computed style: CSSStyleDeclaration {0: 'accent-color', 1: 'align-content', 2: 'align-items', 3: 'align-self', 4: 'alignment-baseline', 5: 'anchor-name', 6: 'anchor-scope', 7: 'animation-composition', 8: 'animation-delay', 9: 'animation-direction', 10: 'animation-duration', 11: 'animation-fill-mode', 12: 'animation-iteration-count', 13: 'animation-name', 14: 'animation-play-state', 15: 'animation-range-end', 16: 'animation-range-start', 17: 'animation-timeline', 18: 'animation-timing-function', 19: 'app-region', 20: 'appearance', 21: 'backdrop-filter', 22: 'backface-visibility', 23: 'background-attachment', 24: 'background-blend-mode', 25: 'background-clip', 26: 'background-color', 27: 'background-image', 28: 'background-origin', 29: 'background-position', 30: 'background-repeat', 31: 'background-size', 32: 'baseline-shift', 33: 'baseline-source', 34: 'block-size', 35: 'border-block-end-color', 36: 'border-block-end-style', 37: 'border-block-end-width', 38: 'border-block-start-color', 39: 'border-block-start-style', 40: 'border-block-start-width', 41: 'border-bottom-color', 42: 'border-bottom-left-radius', 43: 'border-bottom-right-radius', 44: 'border-bottom-style', 45: 'border-bottom-width', 46: 'border-collapse', 47: 'border-end-end-radius', 48: 'border-end-start-radius', 49: 'border-image-outset', 50: 'border-image-repeat', 51: 'border-image-slice', 52: 'border-image-source', 53: 'border-image-width', 54: 'border-inline-end-color', 55: 'border-inline-end-style', 56: 'border-inline-end-width', 57: 'border-inline-start-color', 58: 'border-inline-start-style', 59: 'border-inline-start-width', 60: 'border-left-color', 61: 'border-left-style', 62: 'border-left-width', 63: 'border-right-color', 64: 'border-right-style', 65: 'border-right-width', 66: 'border-start-end-radius', 67: 'border-start-start-radius', 68: 'border-top-color', 69: 'border-top-left-radius', 70: 'border-top-right-radius', 71: 'border-top-style', 72: 'border-top-width', 73: 'bottom', 74: 'box-decoration-break', 75: 'box-shadow', 76: 'box-sizing', 77: 'break-after', 78: 'break-before', 79: 'break-inside', 80: 'buffered-rendering', 81: 'caption-side', 82: 'caret-color', 83: 'clear', 84: 'clip', 85: 'clip-path', 86: 'clip-rule', 87: 'color', 88: 'color-interpolation', 89: 'color-interpolation-filters', 90: 'color-rendering', 91: 'column-count', 92: 'column-gap', 93: 'column-rule-color', 94: 'column-rule-style', 95: 'column-rule-width', 96: 'column-span', 97: 'column-width', 98: 'contain-intrinsic-block-size', 99: 'contain-intrinsic-height', …}
-index.js:1411 Loading personal settings: {}
-index.js:1427 Final personal settings: {fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif', hideInactiveClients: false, enableConfettiEffect: false}
-index.js:678 url-settings-button clicked! PointerEvent {isTrusted: true, pointerId: 1, width: 1, height: 1, pressure: 0, …}
-index.js:2155 Opening URL settings modal...
-index.js:2156 urlSettingsModal element: <div id=​"url-settings-modal" class=​"modal" style=​"display:​ block;​">​…​</div>​<div class=​"modal-content">​…​</div>​<span class=​"close-button">​×​</span>​<h2>​URL設定​</h2>​<p>​「その他アプリ」メニューに表示するカスタムリンクを設定します。​</p>​<div id=​"url-list-container" class=​"list-container">​…​</div>​flex<div class=​"url-item" data-id=​"3">​…​</div>​flex<span class=​"drag-handle">​☰​</span>​<input type=​"text" class=​"url-name-input" value=​"★記帳依頼" placeholder=​"リンク名">​<input type=​"url" class=​"url-link-input" value=​"https:​/​/​docs.google.com/​spreadsheets/​d/​1VqSRXbqpsSICdGlCZQ-OKf_3W4WOKJHxopIo5Mpzh5c/​edit?gid=174844163#gid=174844163" placeholder=​"https:​/​/​example.com">​<button class=​"delete-button">​削除​</button>​</div>​<div class=​"url-item" data-id=​"4">​…​</div>​flex<span class=​"drag-handle">​☰​</span>​<input type=​"text" class=​"url-name-input" value=​"😊Stock" placeholder=​"リンク名">​<input type=​"url" class=​"url-link-input" value=​"https:​/​/​www.stock-app.jp/​teams/​c60616/​dashboard/​429274/​stocks/​19936837/​edit" placeholder=​"https:​/​/​example.com">​<button class=​"delete-button">​削除​</button>​</div>​</div>​<div class=​"new-item-form">​…​</div>​flex<div class=​"modal-actions">​…​</div>​flex</div>​</div>​
-index.js:2164 URL modal display set to block
-index.js:2165 URL modal computed style: CSSStyleDeclaration {0: 'accent-color', 1: 'align-content', 2: 'align-items', 3: 'align-self', 4: 'alignment-baseline', 5: 'anchor-name', 6: 'anchor-scope', 7: 'animation-composition', 8: 'animation-delay', 9: 'animation-direction', 10: 'animation-duration', 11: 'animation-fill-mode', 12: 'animation-iteration-count', 13: 'animation-name', 14: 'animation-play-state', 15: 'animation-range-end', 16: 'animation-range-start', 17: 'animation-timeline', 18: 'animation-timing-function', 19: 'app-region', 20: 'appearance', 21: 'backdrop-filter', 22: 'backface-visibility', 23: 'background-attachment', 24: 'background-blend-mode', 25: 'background-clip', 26: 'background-color', 27: 'background-image', 28: 'background-origin', 29: 'background-position', 30: 'background-repeat', 31: 'background-size', 32: 'baseline-shift', 33: 'baseline-source', 34: 'block-size', 35: 'border-block-end-color', 36: 'border-block-end-style', 37: 'border-block-end-width', 38: 'border-block-start-color', 39: 'border-block-start-style', 40: 'border-block-start-width', 41: 'border-bottom-color', 42: 'border-bottom-left-radius', 43: 'border-bottom-right-radius', 44: 'border-bottom-style', 45: 'border-bottom-width', 46: 'border-collapse', 47: 'border-end-end-radius', 48: 'border-end-start-radius', 49: 'border-image-outset', 50: 'border-image-repeat', 51: 'border-image-slice', 52: 'border-image-source', 53: 'border-image-width', 54: 'border-inline-end-color', 55: 'border-inline-end-style', 56: 'border-inline-end-width', 57: 'border-inline-start-color', 58: 'border-inline-start-style', 59: 'border-inline-start-width', 60: 'border-left-color', 61: 'border-left-style', 62: 'border-left-width', 63: 'border-right-color', 64: 'border-right-style', 65: 'border-right-width', 66: 'border-start-end-radius', 67: 'border-start-start-radius', 68: 'border-top-color', 69: 'border-top-left-radius', 70: 'border-top-right-radius', 71: 'border-top-style', 72: 'border-top-width', 73: 'bottom', 74: 'box-decoration-break', 75: 'box-shadow', 76: 'box-sizing', 77: 'break-after', 78: 'break-before', 79: 'break-inside', 80: 'buffered-rendering', 81: 'caption-side', 82: 'caret-color', 83: 'clear', 84: 'clip', 85: 'clip-path', 86: 'clip-rule', 87: 'color', 88: 'color-interpolation', 89: 'color-interpolation-filters', 90: 'color-rendering', 91: 'column-count', 92: 'column-gap', 93: 'column-rule-color', 94: 'column-rule-style', 95: 'column-rule-width', 96: 'column-span', 97: 'column-width', 98: 'contain-intrinsic-block-size', 99: 'contain-intrinsic-height', …}
+## 📈 高度分析機能付き・進捗管理ダッシュボード実装指示書
+この指示書は2つのフェーズで構成されます。
+フェーズ1: 現在の進捗管理ダッシュボードの機能強化
+フェーズ2: 新機能として担当者別パフォーマンスダッシュボードを開発
+### フェーズ1: 進捗管理ダッシュボードの機能強化
+1. 目的
+複数条件での絞り込み、並べ替え、動的な集計機能を追加し、管理者がミクロとマクロの両方の視点から、迅速かつ正確な意思決定を下せるようにする。
+2. 画面レイアウトと主要機能
+① フィルター ＆ アクションエリア
+期間選択: [開始年月] と [終了年月] のドロップダウン。
+担当者選択: [全員] [田中] [鈴木]...
+決算月選択: [全決算月] [3月] [5月] [9月]... のマルチセレクトまたはドロップダウン。
+アクション: 「📈 この条件で集計」ボタンを配置。
+② 動的サマリーダッシュボード
+「集計」ボタンを押すと表示されるエリア。担当者フィルターと連動し、[全員] を選べば全体の集計、[田中] を選べば田中さんの担当クライアントのみの集計が自動で表示されます。
+📈 全体進捗率: 期間内の全タスクに対する完了率（例: 85%）。
+📊 ステータス別構成: 円グラフで「完了」「進行中」「遅延・停滞」の割合を表示。
+⚠️ 要注意クライアント: 進捗が特に遅れているクライアントを自動でリストアップ。
+③ 進捗マトリクス表
+表示内容: 基本的なデザイン（分数＋カラーコード）は維持。
+並び替え機能 (ソート):
+各列のヘッダー（「事業者名」や各年月）にソートアイコン (▲▼) を追加。
+以下の条件で並び替えが可能になります。
+事業者名: あいうえお順。
+期間内平均進捗率: 期間全体の進捗率が高い/低い順。
+各年月の進捗: 指定した月の進捗率が高い/低い順。
+### フェーズ2: 担当者別パフォーマンスダッシュボード（新機能）
+1. 目的
+担当者ごとの業務状況やパフォーマンスを客観的な指標で可視化し、評価、負荷分散、人員育成の判断材料とするための新しいページを作成する。
+2. 画面レイアウトと主要機能
+① フィルターエリア
+集計期間: [今期] [前四半期] [2025年] など、パフォーマンスを評価したい期間を選択。
+② パフォーマンス一覧表
+行: 各担当者名
+列: パフォーマンスを測るための各種指標
+
+担当者名
+担当クライアント数
+期間内平均完了率
+完了月数
+遅延発生月数
+田中 圭
+15
+92.5 %
+145
+3
+鈴木 実
+12
+88.1 %
+110
+8
+佐藤 翼
+18
+95.2 %
+178
+1
+
+各指標の定義:
+担当クライアント数: 現在担当している事業者数。
+期間内平均完了率: (期間内の全完了タスク数 / 期間内の全タスク数) * 100。
+完了月数: 担当クライアントの月次タスクが100%完了した月の延べ数。
+遅延発生月数: 期間内に「遅延」ステータスになった月の延べ数。
+インタラクション:
+担当者名をクリックすると、フェーズ1の進捗管理ダッシュボードに遷移し、その担当者で絞り込まれた状態で表示される。
+この2フェーズ構成により、まずは現場の進捗管理を高度化し、次に組織全体のマネジメントを強化するという、段階的で効果的な開発が可能になります。
