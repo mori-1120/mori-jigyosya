@@ -46,8 +46,8 @@ h1, h2 {
 }
 
 .container {
-    background-color: #fff;
-    padding: 20px;
+    background-color: #dee2e666;
+    padding: 10px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* シャドウを追加 */
     margin-bottom: 20px;
@@ -86,8 +86,8 @@ h1, h2 {
     color: #333;
     font-weight: bold;
     padding: 12px 15px;
-    border: 1px solid #ddd;
-    border-bottom: 2px solid #ddd;
+    border: 1px solid #967e7e7a;
+    border-bottom: 4px solid #b7b2b2a3;
     text-align: center;
     vertical-align: middle;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -142,7 +142,7 @@ h1, h2 {
 }
 .controls input[type="text"],
 .controls select {
-    padding: 8px;
+    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 1rem;
@@ -191,7 +191,7 @@ table {
 
 th, td {
     padding: 12px 15px;
-    border: 1px solid #ddd;
+    border: 1px solid #967e7e7a;
     text-align: center;
     vertical-align: middle;
 }
@@ -202,7 +202,7 @@ th {
     color: #333;
     font-weight: bold;
     padding: 12px 15px;
-    border: 1px solid #ddd;
+    border: 1px solid #967e7e7a;
     text-align: center;
     vertical-align: middle;
 }
@@ -1284,7 +1284,7 @@ th[data-sort-key].active-sort {
 
 #edit-tasks-button, #finalize-year-button, #save-changes-button {
     padding: 10px 20px; /* パディングを調整してボタンを大きくする */
-    font-size: 1rem; /* フォントサイズを調整 */
+    font-size: 20px; /* フォントサイズを調整 */
     border: 1px solid #ccc; /* この行を追加 */
     border-radius: 5px;
     cursor: pointer;
@@ -1602,7 +1602,7 @@ button:active {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: bold;
     color: #333;
     transition: background-color 0.2s;
@@ -1635,7 +1635,7 @@ button:active {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 20px;
     transition: background-color 0.2s;
     justify-content: center; /* テキストとアイコンを中央揃え */
 }
@@ -3091,7 +3091,7 @@ button:active {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 25px;
+    margin-bottom: 0px;
     padding-bottom: 15px;
     border-bottom: 2px solid #e3f2fd;
 }
@@ -3192,7 +3192,7 @@ button:active {
 
 /* Form Actions */
 .form-actions {
-    padding: 30px;
+    padding: 10px;
     text-align: center;
     background: linear-gradient(135deg, #f8fdff 0%, #ffffff 100%);
 }
@@ -3235,8 +3235,8 @@ button:active {
 .danger-zone {
     border-top: 3px solid #ffeb3b !important;
     background: linear-gradient(135deg, #fff8e1 0%, #ffffff 100%) !important;
-    padding: 30px !important;
-    margin-top: 0 !important;
+    padding: 7px !important;
+    margin-top: -20 !important;
 }
 
 .danger-header {
