@@ -132,24 +132,64 @@
 
     <!-- 担当者編集モーダル -->
     <div id="staff-edit-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>担当者管理</h2>
-            <div id="staff-list-container">
-                <!-- 担当者項目がここに動的に追加される -->
+        <div class="modal-content staff-modal-content">
+            <span class="close-button staff-close-button">&times;</span>
+            <div class="staff-modal-header">
+                <div class="staff-header-icon">👥</div>
+                <h2>担当者管理</h2>
+                <p class="staff-header-description">チームメンバーの追加・編集・削除を行えます</p>
             </div>
-            <div class="add-staff-section" style="display: flex; gap: 10px;">
-                <input type="text" id="new-staff-name" placeholder="新しい担当者名" style="flex: 1;">
-                <input type="email" id="new-staff-email" placeholder="メールアドレス" style="flex: 1;">
-                <select id="new-staff-role" style="flex: 0.5;">
-                    <option value="staff">担当者</option>
-                    <option value="admin">管理者</option>
-                </select>
-                <button id="add-staff-button">追加</button>
+            
+            <div class="staff-main-section">
+                <div class="staff-section-header">
+                    <h3>📋 現在の担当者</h3>
+                    <div class="staff-count-badge">
+                        <span id="staff-count-display">0名</span>
+                    </div>
+                </div>
+                <div id="staff-list-container" class="modern-staff-list">
+                    <!-- 担当者項目がここに動的に追加される -->
+                </div>
             </div>
-            <div class="modal-buttons">
-                <button id="save-staff-button" class="save-button">保存</button>
-                <button id="cancel-staff-button" class="cancel-button">キャンセル</button>
+
+            <div class="staff-add-section">
+                <div class="staff-section-header">
+                    <h3>➕ 新しい担当者を追加</h3>
+                </div>
+                <div class="modern-add-staff-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="new-staff-name">担当者名</label>
+                            <input type="text" id="new-staff-name" placeholder="例: 田中太郎" class="modern-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="new-staff-email">メールアドレス</label>
+                            <input type="email" id="new-staff-email" placeholder="例: tanaka@example.com" class="modern-input">
+                        </div>
+                        <div class="form-group role-group">
+                            <label for="new-staff-role">権限</label>
+                            <select id="new-staff-role" class="modern-select">
+                                <option value="staff">👤 担当者</option>
+                                <option value="admin">🔐 管理者</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button id="add-staff-button" class="modern-add-button">
+                        <span class="button-icon">➕</span>
+                        担当者を追加
+                    </button>
+                </div>
+            </div>
+
+            <div class="staff-modal-actions">
+                <button id="save-staff-button" class="modern-save-button">
+                    <span class="button-icon">💾</span>
+                    変更を保存
+                </button>
+                <button id="cancel-staff-button" class="modern-cancel-button">
+                    <span class="button-icon">❌</span>
+                    キャンセル
+                </button>
             </div>
         </div>
     </div>

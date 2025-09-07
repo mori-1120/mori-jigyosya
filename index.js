@@ -1035,6 +1035,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderStaffList() {
         staffListContainer.innerHTML = '';
         
+        // スタッフ数カウンターを更新
+        const staffCountDisplay = document.getElementById('staff-count-display');
+        if (staffCountDisplay) {
+            staffCountDisplay.textContent = `${currentEditingStaffs.length}名`;
+        }
+        
         const staffClientCounts = {};
         const staffAssignedClients = {};
         
@@ -1049,29 +1055,60 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
+        if (currentEditingStaffs.length === 0) {
+            // 空の状態のプレースホルダーを表示
+            staffListContainer.innerHTML = `
+                <div class="empty-staff-placeholder">
+                    <div class="placeholder-icon">👤</div>
+                    <p>まだ担当者が登録されていません</p>
+                    <p>下のフォームから新しい担当者を追加してください</p>
+                </div>
+            `;
+            return;
+        }
+        
         currentEditingStaffs.forEach((staff, index) => {
             const staffItem = document.createElement('div');
-            staffItem.className = 'staff-item';
+            staffItem.className = 'modern-staff-item';
             staffItem.dataset.index = index;
             staffItem.dataset.staffId = staff.id || '';
 
             const clientCount = staff.id !== null ? (staffClientCounts[staff.id] || 0) : 0;
             const assignedClients = staff.id !== null ? (staffAssignedClients[staff.id] || []) : [];
             
-            const clientInfo = clientCount > 0 ? 
-                `<span class="client-count" title="担当クライアント: ${assignedClients.map(c => c.name).join(', ')}" style="color: #666; font-size: 0.9em; margin: 0 8px;">(${clientCount}件)</span>` : '';
+            // アバターのイニシャル生成
+            const getInitials = (name) => {
+                if (!name) return '?';
+                return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || name[0].toUpperCase();
+            };
             
-            const deleteButtonDisabled = clientCount > 0 ? 'disabled title="担当クライアントがいるため削除できません"' : '';
+            const roleIcon = staff.role === 'admin' ? '🔐' : '👤';
+            const roleText = staff.role === 'admin' ? '管理者' : '担当者';
+            
+            const deleteButtonDisabled = clientCount > 0;
+            const tooltipText = clientCount > 0 ? 
+                `担当クライアント: ${assignedClients.map(c => c.name).join(', ')}` : 
+                '削除可能です';
 
             staffItem.innerHTML = `
-                <input type="text" class="staff-name" value="${staff.name || ''}" placeholder="担当者名" style="flex: 1;">
-                <input type="email" class="staff-email" value="${staff.email || ''}" placeholder="メールアドレス" style="flex: 1;">
-                <select class="staff-role" style="flex: 0.7;">
-                    <option value="staff" ${staff.role === 'staff' ? 'selected' : ''}>担当者</option>
-                    <option value="admin" ${staff.role === 'admin' ? 'selected' : ''}>管理者</option>
-                </select>
-                ${clientInfo}
-                <button type="button" class="delete-staff-button" ${deleteButtonDisabled}>削除</button>
+                <div class="staff-avatar">${getInitials(staff.name)}</div>
+                <div class="staff-info">
+                    <input type="text" class="staff-name-input staff-name" value="${staff.name || ''}" placeholder="担当者名を入力">
+                    <input type="email" class="staff-email-input staff-email" value="${staff.email || ''}" placeholder="メールアドレスを入力">
+                    <select class="staff-role-select staff-role">
+                        <option value="staff" ${staff.role === 'staff' ? 'selected' : ''}>${roleIcon} 担当者</option>
+                        <option value="admin" ${staff.role === 'admin' ? 'selected' : ''}>🔐 管理者</option>
+                    </select>
+                </div>
+                <div class="staff-meta">
+                    ${clientCount > 0 ? `<div class="staff-clients-badge">${clientCount}件担当</div>` : ''}
+                    <div class="staff-tooltip" data-tooltip="${tooltipText}">
+                        <button type="button" class="modern-delete-staff-button delete-staff-button" ${deleteButtonDisabled ? 'disabled' : ''}>
+                            <span class="button-icon">🗑️</span>
+                            削除
+                        </button>
+                    </div>
+                </div>
             `;
             staffListContainer.appendChild(staffItem);
         });
