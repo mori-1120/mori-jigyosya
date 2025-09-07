@@ -648,6 +648,14 @@ document.addEventListener('DOMContentLoaded', () => {
         saveBasicSettingsButton.addEventListener('click', saveBasicSettings);
         cancelBasicSettingsButton.addEventListener('click', closeBasicSettingsModal);
 
+        // Analytics button
+        const analyticsButton = document.getElementById('analytics-button');
+        if (analyticsButton) {
+            analyticsButton.addEventListener('click', () => {
+                window.location.href = 'analytics.html';
+            });
+        }
+
         // Accordion (Management)
         accordionHeader.addEventListener('click', toggleAccordion);
 

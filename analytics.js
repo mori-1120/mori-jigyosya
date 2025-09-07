@@ -1,0 +1,366 @@
+// 分析機能メインスクリプト
+import { SupabaseAPI } from './supabase-client.js';
+import { showToast } from './toast.js';
+
+class AnalyticsPage {
+    constructor() {
+        this.clients = [];
+        this.staffs = [];
+        this.monthlyTasks = [];
+        this.currentFilters = {
+            startPeriod: '',
+            endPeriod: '',
+            staffId: '',
+            fiscalMonth: ''
+        };
+    }
+
+    async initialize() {
+        console.log('Analytics page initializing...');
+        
+        try {
+            // 認証状態確認
+            const user = await SupabaseAPI.getCurrentUser();
+            if (!user) {
+                showToast('認証が必要です', 'error');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // 基本データ読み込み
+            await this.loadInitialData();
+            
+            // UI初期化
+            this.setupEventListeners();
+            this.populateFilters();
+            
+            console.log('Analytics page initialized successfully');
+            showToast('分析機能を読み込みました', 'success');
+            
+        } catch (error) {
+            console.error('Analytics initialization failed:', error);
+            showToast('分析機能の初期化に失敗しました', 'error');
+        }
+    }
+
+    async loadInitialData() {
+        console.log('Loading initial data...');
+        
+        // 並列でデータを取得
+        const [clientsResult, staffsResult, tasksResult] = await Promise.all([
+            SupabaseAPI.getClients(),
+            SupabaseAPI.getStaffs(),
+            SupabaseAPI.getMonthlyTasks()
+        ]);
+
+        this.clients = clientsResult || [];
+        this.staffs = staffsResult || [];
+        this.monthlyTasks = tasksResult || [];
+        
+        console.log(`Loaded: ${this.clients.length} clients, ${this.staffs.length} staffs, ${this.monthlyTasks.length} tasks`);
+    }
+
+    populateFilters() {
+        // 期間選択のオプション生成（過去2年分）
+        this.populatePeriodOptions();
+        
+        // 担当者選択のオプション生成
+        this.populateStaffOptions();
+        
+        // デフォルト値設定
+        this.setDefaultPeriod();
+    }
+
+    populatePeriodOptions() {
+        const startSelect = document.getElementById('start-period');
+        const endSelect = document.getElementById('end-period');
+        
+        // 現在の年月から過去2年分のオプションを生成
+        const currentDate = new Date();
+        const options = [];
+        
+        for (let i = 24; i >= 0; i--) {
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const value = `${year}-${month.toString().padStart(2, '0')}`;
+            const text = `${year}年${month}月`;
+            options.push({ value, text });
+        }
+        
+        // オプション追加
+        options.forEach(option => {
+            const startOption = new Option(option.text, option.value);
+            const endOption = new Option(option.text, option.value);
+            startSelect.add(startOption);
+            endSelect.add(endOption);
+        });
+    }
+
+    populateStaffOptions() {
+        const staffSelect = document.getElementById('staff-filter');
+        
+        this.staffs.forEach(staff => {
+            const option = new Option(staff.name, staff.id);
+            staffSelect.add(option);
+        });
+    }
+
+    setDefaultPeriod() {
+        const currentDate = new Date();
+        const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 11, 1); // 12ヶ月前
+        const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1); // 今月
+        
+        const startValue = `${startDate.getFullYear()}-${(startDate.getMonth() + 1).toString().padStart(2, '0')}`;
+        const endValue = `${endDate.getFullYear()}-${(endDate.getMonth() + 1).toString().padStart(2, '0')}`;
+        
+        document.getElementById('start-period').value = startValue;
+        document.getElementById('end-period').value = endValue;
+    }
+
+    setupEventListeners() {
+        // 戻るボタン
+        document.getElementById('back-to-main').addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+
+        // 集計ボタン
+        document.getElementById('aggregate-button').addEventListener('click', async () => {
+            await this.performAnalysis();
+        });
+
+        // ソート機能
+        document.querySelectorAll('[data-sort]').forEach(header => {
+            header.addEventListener('click', (e) => {
+                this.sortTable(e.target.dataset.sort);
+            });
+        });
+    }
+
+    async performAnalysis() {
+        showToast('集計中...', 'info');
+        
+        try {
+            // フィルター値取得
+            this.currentFilters = {
+                startPeriod: document.getElementById('start-period').value,
+                endPeriod: document.getElementById('end-period').value,
+                staffId: document.getElementById('staff-filter').value,
+                fiscalMonth: document.getElementById('fiscal-month-filter').value
+            };
+
+            // バリデーション
+            if (!this.currentFilters.startPeriod || !this.currentFilters.endPeriod) {
+                showToast('期間を選択してください', 'error');
+                return;
+            }
+
+            if (this.currentFilters.startPeriod > this.currentFilters.endPeriod) {
+                showToast('開始年月は終了年月より前に設定してください', 'error');
+                return;
+            }
+
+            // 分析実行
+            const analysisData = await this.calculateAnalytics();
+            
+            // 結果表示
+            this.displaySummary(analysisData.summary);
+            this.displayProgressMatrix(analysisData.matrix);
+            
+            // サマリーダッシュボード表示
+            document.getElementById('summary-dashboard').style.display = 'block';
+            
+            showToast('集計が完了しました', 'success');
+            
+        } catch (error) {
+            console.error('Analysis failed:', error);
+            showToast('集計に失敗しました', 'error');
+        }
+    }
+
+    async calculateAnalytics() {
+        console.log('Calculating analytics with filters:', this.currentFilters);
+        
+        // フィルター適用済みクライアント取得
+        const filteredClients = this.getFilteredClients();
+        console.log(`Filtered clients: ${filteredClients.length}`);
+        
+        // 期間内の月次タスクデータ取得
+        const periodTasks = this.getPeriodTasks(filteredClients);
+        
+        // サマリー計算
+        const summary = this.calculateSummary(filteredClients, periodTasks);
+        
+        // マトリクス計算
+        const matrix = this.calculateMatrix(filteredClients, periodTasks);
+        
+        return { summary, matrix };
+    }
+
+    getFilteredClients() {
+        return this.clients.filter(client => {
+            // 担当者フィルター
+            if (this.currentFilters.staffId && client.staff_id != this.currentFilters.staffId) {
+                return false;
+            }
+            
+            // 決算月フィルター
+            if (this.currentFilters.fiscalMonth && client.fiscal_month != this.currentFilters.fiscalMonth) {
+                return false;
+            }
+            
+            return true;
+        });
+    }
+
+    getPeriodTasks(clients) {
+        const clientIds = clients.map(c => c.id);
+        const startDate = new Date(this.currentFilters.startPeriod + '-01');
+        const endDate = new Date(this.currentFilters.endPeriod + '-01');
+        
+        return this.monthlyTasks.filter(task => {
+            if (!clientIds.includes(task.client_id)) return false;
+            
+            const taskDate = new Date(task.month + '-01');
+            return taskDate >= startDate && taskDate <= endDate;
+        });
+    }
+
+    calculateSummary(clients, tasks) {
+        const totalTasks = tasks.length;
+        const completedTasks = tasks.filter(task => task.status === '完了').length;
+        const progressRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        
+        // 要注意クライアント（進捗率50%未満）
+        const attentionClients = [];
+        clients.forEach(client => {
+            const clientTasks = tasks.filter(t => t.client_id === client.id);
+            const clientCompleted = clientTasks.filter(t => t.status === '完了').length;
+            const clientProgressRate = clientTasks.length > 0 ? (clientCompleted / clientTasks.length) * 100 : 0;
+            
+            if (clientProgressRate < 50 && clientTasks.length > 0) {
+                attentionClients.push({
+                    name: client.name,
+                    progressRate: Math.round(clientProgressRate)
+                });
+            }
+        });
+        
+        return {
+            progressRate,
+            completedTasks,
+            totalTasks,
+            attentionClients
+        };
+    }
+
+    calculateMatrix(clients, tasks) {
+        return clients.map(client => {
+            const clientTasks = tasks.filter(t => t.client_id === client.id);
+            const completedTasks = clientTasks.filter(t => t.status === '完了').length;
+            const progressRate = clientTasks.length > 0 ? Math.round((completedTasks / clientTasks.length) * 100) : 0;
+            
+            // 担当者名取得
+            const staff = this.staffs.find(s => s.id === client.staff_id);
+            
+            // 月別進捗データ
+            const monthlyProgress = this.getMonthlyProgressForClient(client.id, tasks);
+            
+            return {
+                clientId: client.id,
+                clientName: client.name,
+                staffName: staff ? staff.name : '未設定',
+                fiscalMonth: client.fiscal_month,
+                progressRate,
+                completedTasks,
+                totalTasks: clientTasks.length,
+                monthlyProgress
+            };
+        });
+    }
+
+    getMonthlyProgressForClient(clientId, allTasks) {
+        const clientTasks = allTasks.filter(t => t.client_id === clientId);
+        const monthlyData = {};
+        
+        // 期間内の各月について集計
+        const startDate = new Date(this.currentFilters.startPeriod + '-01');
+        const endDate = new Date(this.currentFilters.endPeriod + '-01');
+        
+        for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
+            const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+            const monthTasks = clientTasks.filter(t => t.month === monthKey);
+            const completed = monthTasks.filter(t => t.status === '完了').length;
+            
+            monthlyData[monthKey] = {
+                completed,
+                total: monthTasks.length,
+                rate: monthTasks.length > 0 ? Math.round((completed / monthTasks.length) * 100) : 0
+            };
+        }
+        
+        return monthlyData;
+    }
+
+    displaySummary(summary) {
+        document.getElementById('overall-progress').textContent = `${summary.progressRate}%`;
+        document.getElementById('completed-tasks').textContent = `${summary.completedTasks} / ${summary.totalTasks}`;
+        document.getElementById('attention-clients').textContent = `${summary.attentionClients.length}件`;
+        
+        // 要注意クライアントリスト
+        const attentionList = document.getElementById('attention-clients-list');
+        const attentionContainer = document.getElementById('attention-list');
+        
+        if (summary.attentionClients.length > 0) {
+            attentionList.innerHTML = summary.attentionClients
+                .map(client => `<li>${client.name} (進捗率: ${client.progressRate}%)</li>`)
+                .join('');
+            attentionContainer.style.display = 'block';
+        } else {
+            attentionContainer.style.display = 'none';
+        }
+    }
+
+    displayProgressMatrix(matrix) {
+        const tbody = document.querySelector('#analytics-table tbody');
+        tbody.innerHTML = '';
+        
+        matrix.forEach(row => {
+            const tr = document.createElement('tr');
+            
+            // 基本列
+            tr.innerHTML = `
+                <td style="border: 1px solid #dee2e6; padding: 8px;">${row.clientName}</td>
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
+                    <span style="font-weight: bold; color: ${this.getProgressColor(row.progressRate)};">
+                        ${row.progressRate}%
+                    </span>
+                </td>
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.staffName}</td>
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.fiscalMonth}月</td>
+            `;
+            
+            // 月別進捗列（今後の拡張用）
+            
+            tbody.appendChild(tr);
+        });
+    }
+
+    getProgressColor(rate) {
+        if (rate >= 80) return '#28a745'; // 緑
+        if (rate >= 50) return '#ffc107'; // 黄
+        return '#dc3545'; // 赤
+    }
+
+    sortTable(sortBy) {
+        console.log(`Sorting by: ${sortBy}`);
+        // ソート機能は後で実装
+        showToast('ソート機能は近日実装予定です', 'info');
+    }
+}
+
+// ページ読み込み時に初期化
+document.addEventListener('DOMContentLoaded', async () => {
+    const analytics = new AnalyticsPage();
+    await analytics.initialize();
+});
