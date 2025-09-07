@@ -1077,12 +1077,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Staff Management ---
     function openStaffEditModal() {
         try {
+            console.log('Opening staff edit modal...');
+            console.log('staffEditModal element:', staffEditModal);
+            
             // キャッシュされたstaffsデータを使用（DB問い合わせ不要）
             originalStaffsState = JSON.parse(JSON.stringify(staffs));
             currentEditingStaffs = JSON.parse(JSON.stringify(staffs));
             
             renderStaffList();
-            staffEditModal.style.display = 'block';
+            
+            if (staffEditModal) {
+                staffEditModal.style.display = 'block';
+                console.log('Modal display set to block');
+                console.log('Modal computed style:', window.getComputedStyle(staffEditModal));
+            } else {
+                console.error('staffEditModal element not found!');
+            }
         } catch (error) {
             console.error('Error opening staff modal:', error);
             alert('担当者データの表示に失敗しました: ' + error.message);
@@ -2142,10 +2152,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- URL Settings Modal Functions ---
     function openUrlSettingsModal() {
+        console.log('Opening URL settings modal...');
+        console.log('urlSettingsModal element:', urlSettingsModal);
+        
         originalAppLinksState = JSON.parse(JSON.stringify(appLinks));
         currentEditingAppLinks = JSON.parse(JSON.stringify(appLinks));
         renderUrlListForEdit();
-        urlSettingsModal.style.display = 'block';
+        
+        if (urlSettingsModal) {
+            urlSettingsModal.style.display = 'block';
+            console.log('URL modal display set to block');
+            console.log('URL modal computed style:', window.getComputedStyle(urlSettingsModal));
+        } else {
+            console.error('urlSettingsModal element not found!');
+        }
     }
 
     function closeUrlSettingsModal() {

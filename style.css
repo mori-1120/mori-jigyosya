@@ -557,7 +557,7 @@ th[data-sort-key].active-sort {
 .modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
-    z-index: 100; /* Sit on top */
+    z-index: 10000; /* Much higher z-index to ensure visibility */
     left: 0;
     top: -90;
     width: 100%; /* Full width */
