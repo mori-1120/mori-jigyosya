@@ -12,7 +12,7 @@
     display: flex;
     align-items: center;
     justify-content: center; /* Horizontally center the text */
-    padding: 8px 30px 8px 12px; /* Adjust padding for arrow */
+    padding: 17px 30px 8px 12px; /* Adjust padding for arrow */
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: #fff;
