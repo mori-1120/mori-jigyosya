@@ -11,9 +11,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const accountingMethodSelect = document.getElementById('accounting-method');
     const saveButton = document.getElementById('save-button');
     
-    // Status and loading elements
-    const connectionStatus = document.getElementById('connection-status');
-    const statusText = document.getElementById('status-text');
+    // Status and loading elements (updated for modern structure)
+    const clientStatusCard = document.getElementById('client-status-card');
     const loadingIndicator = document.getElementById('loading-indicator');
     
     // 削除関連の要素
@@ -41,13 +40,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Utility Functions ---
     function showStatus(message, type = 'info') {
-        connectionStatus.className = type;
-        connectionStatus.style.display = 'block';
-        statusText.textContent = message;
+        // Modern toast notification will handle status messages
+        console.log(`Status (${type}): ${message}`);
     }
 
     function hideStatus() {
-        connectionStatus.style.display = 'none';
+        // No longer needed with modern design
+        console.log('Hide status called');
     }
 
     function showLoading() {
@@ -172,12 +171,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // Update display name and status
-        clientNameDisplay.textContent = client.name || '';
+        // Update display name and status in the status card
+        if (clientNameDisplay) {
+            clientNameDisplay.textContent = client.name || '';
+        }
+        
+        // Show the status card for existing clients
+        if (clientStatusCard) {
+            clientStatusCard.style.display = 'block';
+        }
         
         // Show/hide inactive status and apply gray-out effect
         if (client.status === 'deleted' || client.status === 'inactive') {
-            inactiveStatusBadge.style.display = 'inline';
+            if (inactiveStatusBadge) {
+                inactiveStatusBadge.style.display = 'inline-flex';
+            }
             if (reactivateButton) reactivateButton.style.display = 'inline-block';
             if (inactiveButton) inactiveButton.style.display = 'none';
             
@@ -213,7 +221,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 saveButton.style.opacity = '0.5';
             }
         } else {
-            inactiveStatusBadge.style.display = 'none';
+            if (inactiveStatusBadge) {
+                inactiveStatusBadge.style.display = 'none';
+            }
             if (reactivateButton) reactivateButton.style.display = 'none';
             if (inactiveButton) inactiveButton.style.display = 'inline-block';
             
@@ -245,8 +255,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Mode Initialization ---
     function initializeNewMode() {
-        pageTitle.textContent = '顧客情報新規作成（Supabase版）';
-        clientNameDisplay.textContent = '新規顧客';
+        pageTitle.textContent = '顧客情報新規作成';
+        
+        // Hide status card for new mode
+        if (clientStatusCard) {
+            clientStatusCard.style.display = 'none';
+        }
         
         // Hide danger zone for new mode
         if (dangerZone) {
