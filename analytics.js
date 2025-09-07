@@ -13,6 +13,9 @@ class AnalyticsPage {
             staffId: '',
             fiscalMonth: ''
         };
+        this.lastAnalysisData = null; // 最後の分析結果を保持
+        this.currentSort = null; // 現在のソート列
+        this.sortDirection = 'asc'; // ソート方向
     }
 
     async initialize() {
@@ -162,6 +165,9 @@ class AnalyticsPage {
 
             // 分析実行
             const analysisData = await this.calculateAnalytics();
+            
+            // 分析結果を保存
+            this.lastAnalysisData = analysisData;
             
             // 結果表示
             this.displaySummary(analysisData.summary);
@@ -322,6 +328,9 @@ class AnalyticsPage {
     }
 
     displayProgressMatrix(matrix) {
+        // テーブルヘッダーを更新（月別列を追加）
+        this.updateTableHeaders();
+        
         const tbody = document.querySelector('#analytics-table tbody');
         tbody.innerHTML = '';
         
@@ -340,10 +349,107 @@ class AnalyticsPage {
                 <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.fiscalMonth}月</td>
             `;
             
-            // 月別進捗列（今後の拡張用）
+            // 月別進捗列を追加
+            this.addMonthlyProgressCells(tr, row.monthlyProgress);
             
             tbody.appendChild(tr);
         });
+    }
+
+    updateTableHeaders() {
+        const thead = document.querySelector('#analytics-table thead tr');
+        
+        // 既存の月別列を削除（基本列のみ残す）
+        const monthColumns = thead.querySelectorAll('.month-column');
+        monthColumns.forEach(col => col.remove());
+        
+        // 期間内の月別列を追加
+        const startDate = new Date(this.currentFilters.startPeriod + '-01');
+        const endDate = new Date(this.currentFilters.endPeriod + '-01');
+        
+        for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
+            const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+            const year = d.getFullYear();
+            const month = d.getMonth() + 1;
+            
+            const th = document.createElement('th');
+            th.className = 'month-column';
+            th.style.cssText = 'border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer;';
+            th.setAttribute('data-sort', `month-${monthKey}`);
+            th.innerHTML = `${year}/${month}<br><span class="sort-icon">▲▼</span>`;
+            
+            // ソートイベントリスナー追加
+            th.addEventListener('click', () => {
+                this.sortTableByMonth(monthKey);
+            });
+            
+            thead.appendChild(th);
+        }
+    }
+
+    addMonthlyProgressCells(tr, monthlyProgress) {
+        const startDate = new Date(this.currentFilters.startPeriod + '-01');
+        const endDate = new Date(this.currentFilters.endPeriod + '-01');
+        
+        for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
+            const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+            const monthData = monthlyProgress[monthKey] || { completed: 0, total: 0, rate: 0 };
+            
+            const td = document.createElement('td');
+            td.style.cssText = 'border: 1px solid #dee2e6; padding: 8px; text-align: center;';
+            
+            if (monthData.total > 0) {
+                const progressColor = this.getProgressColor(monthData.rate);
+                td.innerHTML = `
+                    <div style="background: ${progressColor}; color: white; padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold;">
+                        ${monthData.completed}/${monthData.total}
+                    </div>
+                `;
+            } else {
+                td.innerHTML = '<span style="color: #999;">-</span>';
+            }
+            
+            tr.appendChild(td);
+        }
+    }
+
+    sortTableByMonth(monthKey) {
+        console.log(`Sorting by month: ${monthKey}`);
+        
+        if (!this.lastAnalysisData || !this.lastAnalysisData.matrix) {
+            showToast('先に集計を実行してください', 'info');
+            return;
+        }
+
+        const sortKey = `month-${monthKey}`;
+        
+        // ソート状態管理
+        if (this.currentSort === sortKey) {
+            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.currentSort = sortKey;
+            this.sortDirection = 'asc';
+        }
+
+        // ソート実行
+        let sortedMatrix = [...this.lastAnalysisData.matrix];
+        
+        sortedMatrix.sort((a, b) => {
+            const aData = a.monthlyProgress[monthKey] || { rate: -1 };
+            const bData = b.monthlyProgress[monthKey] || { rate: -1 };
+            
+            const result = aData.rate - bData.rate;
+            return this.sortDirection === 'asc' ? result : -result;
+        });
+
+        // ソートアイコン更新
+        this.updateSortIcons(sortKey);
+        
+        // 表示更新
+        this.displayProgressMatrix(sortedMatrix);
+        
+        const [year, month] = monthKey.split('-');
+        showToast(`${year}年${month}月の進捗率で${this.sortDirection === 'asc' ? '昇順' : '降順'}ソート`, 'success');
     }
 
     getProgressColor(rate) {
@@ -354,8 +460,72 @@ class AnalyticsPage {
 
     sortTable(sortBy) {
         console.log(`Sorting by: ${sortBy}`);
-        // ソート機能は後で実装
-        showToast('ソート機能は近日実装予定です', 'info');
+        
+        if (!this.lastAnalysisData || !this.lastAnalysisData.matrix) {
+            showToast('先に集計を実行してください', 'info');
+            return;
+        }
+
+        // 現在のソート状態を管理
+        if (this.currentSort === sortBy) {
+            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.currentSort = sortBy;
+            this.sortDirection = 'asc';
+        }
+
+        // ソート実行
+        let sortedMatrix = [...this.lastAnalysisData.matrix];
+        
+        sortedMatrix.sort((a, b) => {
+            let aValue, bValue;
+            
+            switch (sortBy) {
+                case 'name':
+                    aValue = a.clientName;
+                    bValue = b.clientName;
+                    break;
+                case 'progress':
+                    aValue = a.progressRate;
+                    bValue = b.progressRate;
+                    break;
+                default:
+                    return 0;
+            }
+            
+            // 文字列の場合
+            if (typeof aValue === 'string') {
+                const result = aValue.localeCompare(bValue, 'ja');
+                return this.sortDirection === 'asc' ? result : -result;
+            }
+            
+            // 数値の場合
+            const result = aValue - bValue;
+            return this.sortDirection === 'asc' ? result : -result;
+        });
+
+        // ソートアイコン更新
+        this.updateSortIcons(sortBy);
+        
+        // 表示更新
+        this.displayProgressMatrix(sortedMatrix);
+        
+        showToast(`${sortBy === 'name' ? '事業者名' : '進捗率'}で${this.sortDirection === 'asc' ? '昇順' : '降順'}ソート`, 'success');
+    }
+
+    updateSortIcons(activeSortBy) {
+        // 全てのソートアイコンをリセット
+        document.querySelectorAll('.sort-icon').forEach(icon => {
+            icon.textContent = '▲▼';
+            icon.style.color = '#999';
+        });
+
+        // アクティブなソートアイコンを更新
+        const activeHeader = document.querySelector(`[data-sort="${activeSortBy}"] .sort-icon`);
+        if (activeHeader) {
+            activeHeader.textContent = this.sortDirection === 'asc' ? '▲' : '▼';
+            activeHeader.style.color = '#007bff';
+        }
     }
 }
 
