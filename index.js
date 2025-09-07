@@ -2593,7 +2593,7 @@ document.addEventListener('DOMContentLoaded', () => {
             text-align: center;
             padding: 10px 15px !important;
             min-height: 40px !important;
-            background: linear-gradient(135deg, #2196F3, #1976D2) !important;
+            background: linear-gradient(135deg, #ADD8E6, #6495ED) !important;
             color: white !important;
             border: none !important;
             border-radius: 6px !important;
@@ -2622,17 +2622,23 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // 列幅リセットボタンの後に追加
-        const columnResetButton = accordionContent.querySelector('button[onclick*="resetColumnWidths"]');
-        if (columnResetButton) {
-            columnResetButton.parentNode.insertBefore(toggleButton, columnResetButton.nextSibling);
+        // ユーザー情報セクションの前に挿入
+        const userInfoSection = accordionContent.querySelector('.user-info-section');
+        if (userInfoSection) {
+            userInfoSection.parentNode.insertBefore(toggleButton, userInfoSection);
         } else {
-            // 代替：バックアップ設定ボタンの後に追加
-            const backupButton = accordionContent.querySelector('button[onclick*="backup"]');
-            if (backupButton) {
-                backupButton.parentNode.insertBefore(toggleButton, backupButton.nextSibling);
+            // Fallback if user-info-section is not found (shouldn't happen based on current HTML)
+            // Original fallback logic
+            const columnResetButton = accordionContent.querySelector('#reset-column-widths-button');
+            if (columnResetButton) {
+                columnResetButton.parentNode.insertBefore(toggleButton, columnResetButton.nextSibling);
             } else {
-                accordionContent.appendChild(toggleButton);
+                const backupButton = accordionContent.querySelector('button[onclick*="backup"]');
+                if (backupButton) {
+                    backupButton.parentNode.insertBefore(toggleButton, backupButton.nextSibling);
+                } else {
+                    accordionContent.appendChild(toggleButton);
+                }
             }
         }
     }
