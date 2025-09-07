@@ -2593,7 +2593,7 @@ document.addEventListener('DOMContentLoaded', () => {
             text-align: center;
             padding: 10px 15px !important;
             min-height: 40px !important;
-            background: linear-gradient(135deg, #ADD8E6, #6495ED) !important;
+            background: linear-gradient(135deg, #0face0c0, #0d42a5c7) !important;
             color: white !important;
             border: none !important;
             border-radius: 6px !important;
