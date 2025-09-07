@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function initializeEditMode() {
         try {
-            pageTitle.textContent = '顧客情報編集（Supabase版）';
+            pageTitle.textContent = '顧客情報編集';
             
             // キャッシュされたクライアントデータを優先使用
             const cachedClient = sessionStorage.getItem('cached_client_data');

@@ -615,7 +615,7 @@ th[data-sort-key].active-sort {
 .staff-modal-header {
     background: linear-gradient(135deg, #3990cab4 0%, #148cb1a6 100%);
     color: white;
-    padding: 30px;
+    padding: 0px;
     text-align: center;
     position: relative;
 }
@@ -641,7 +641,7 @@ th[data-sort-key].active-sort {
 }
 
 .staff-main-section, .staff-add-section {
-    padding: 25px 30px;
+    padding: 5px 90px;
 }
 
 .staff-section-header {
@@ -672,7 +672,7 @@ th[data-sort-key].active-sort {
 
 .modern-staff-list {
     min-height: 300px;
-    max-height: 500px;
+    max-height: 800px;
     height: auto;
     overflow-y: auto;
     padding: 0;
@@ -799,13 +799,13 @@ th[data-sort-key].active-sort {
 }
 
 .modern-cancel-button {
-    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-    color: white;
+    background: linear-gradient(135deg, #eeeeee 0%, #c2c3c5 100%);
+    color: rgb(15, 15, 15);
     box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
 }
 
 .modern-cancel-button:hover {
-    background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
+    background: linear-gradient(135deg, #a4a4a5 0%, #6d7072be 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
 }
@@ -816,7 +816,7 @@ th[data-sort-key].active-sort {
 }
 
 #staff-list-container {
-    padding: 0;
+    padding: 10;
 }
 
 /* Modern Staff Item Styles */
@@ -825,7 +825,7 @@ th[data-sort-key].active-sort {
     border: 2px solid #e9ecef;
     border-radius: 12px;
     padding: 15px;
-    margin: 10px;
+    margin: -10px;
     display: flex;
     align-items: center;
     gap: 15px;
@@ -879,7 +879,7 @@ th[data-sort-key].active-sort {
 .staff-name-input {
     font-size: 16px;
     font-weight: 600;
-    padding: 8px 12px;
+    padding: 5px 12px;
     border: 2px solid transparent;
     border-radius: 6px;
     background: rgba(255, 255, 255, 0.8);
@@ -3022,7 +3022,7 @@ button:active {
     background: linear-gradient(135deg, #ffffff 0%, #f8fdff 100%);
     border: 2px solid #e3f2fd;
     border-radius: 16px;
-    padding: 25px;
+    padding: 5px;
     margin-bottom: 30px;
     box-shadow: 0 4px 20px rgba(33, 150, 243, 0.1);
 }
@@ -3138,7 +3138,7 @@ button:active {
 .modern-input {
     width: 100%;
     padding: 16px 20px;
-    border: 2px solid #e3f2fd;
+    border: 2px solid #58646dd5;
     border-radius: 12px;
     font-size: 16px;
     font-weight: 500;
@@ -3168,12 +3168,12 @@ button:active {
 
 .modern-select-trigger {
     padding: 16px 20px !important;
-    border: 2px solid #e3f2fd !important;
+    border: 2px solid #58646dd5 !important;
     border-radius: 12px !important;
     font-size: 16px !important;
     font-weight: 500 !important;
     background: linear-gradient(135deg, #ffffff 0%, #fafffe 100%) !important;
-    color: #1565c0 !important;
+    color: #000000 !important;
     box-shadow: inset 0 1px 3px rgba(33, 150, 243, 0.1) !important;
     transition: all 0.3s ease !important;
 }
