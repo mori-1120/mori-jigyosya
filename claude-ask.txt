@@ -1,11 +1,14 @@
- A form field element should have an id or name attribute
-A form field element has neither an id nor a name attribute. This might prevent the browser from correctly autofilling the form.
-
-To fix this issue, add a unique id or name attribute to a form field. This is not strictly needed, but still recommended even if you have an autocomplete attribute on the same element.
-
+Chrome may soon delete state for intermediate websites in a recent navigation chain
+In a recent navigation chain, one or more websites without prior user interaction were visited. If these websites don't get such an interaction soon, Chrome will delete their state.
 
 
 Incorrect use of <label for=FORM_ELEMENT>
 The label's for attribute doesn't match any element id. This might prevent the browser from correctly autofilling the form and accessibility tools from working correctly.
 
 To fix this issue, make sure the label's for attribute references the correct id of a form field.
+
+
+A form field element should have an id or name attribute
+A form field element has neither an id nor a name attribute. This might prevent the browser from correctly autofilling the form.
+
+To fix this issue, add a unique id or name attribute to a form field. This is not strictly needed, but still recommended even if you have an autocomplete attribute on the same element.

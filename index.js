@@ -606,12 +606,21 @@ document.addEventListener('DOMContentLoaded', () => {
         staffFilter.addEventListener('change', handleFilterChange);
         monthFilter.addEventListener('change', handleFilterChange);
 
-        // Staff modal
+        // Staff modal - with debugging
+        console.log('Setting up staff modal event listeners...');
         const manageStaffBtn = document.getElementById('manage-staff-button');
+        console.log('manageStaffBtn found:', manageStaffBtn);
         if (manageStaffBtn) {
-            manageStaffBtn.addEventListener('click', openStaffEditModal);
+            console.log('Adding click listener to manage-staff-button');
+            manageStaffBtn.addEventListener('click', (e) => {
+                console.log('manage-staff-button clicked!', e);
+                e.preventDefault();
+                e.stopPropagation();
+                openStaffEditModal();
+            });
+            console.log('Event listener added successfully');
         } else {
-            console.warn('manage-staff-button not found');
+            console.error('manage-staff-button not found in DOM');
         }
         
         if (closeStaffModalButton) {
@@ -660,11 +669,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // URL設定ボタンのイベントリスナー
+        // URL設定ボタンのイベントリスナー - with debugging
+        console.log('Setting up URL settings button event listener...');
+        console.log('urlSettingsButton found:', urlSettingsButton);
         if (urlSettingsButton) {
-            urlSettingsButton.addEventListener('click', openUrlSettingsModal);
+            console.log('Adding click listener to url-settings-button');
+            urlSettingsButton.addEventListener('click', (e) => {
+                console.log('url-settings-button clicked!', e);
+                e.preventDefault();
+                e.stopPropagation();
+                openUrlSettingsModal();
+            });
+            console.log('URL settings event listener added successfully');
         } else {
-            console.warn('url-settings-button not found');
+            console.error('url-settings-button not found in DOM');
         }
         
         if (closeUrlSettingsModalButton) {
@@ -692,16 +710,23 @@ document.addEventListener('DOMContentLoaded', () => {
         // Client click handler
         clientsTableBody.addEventListener('click', handleClientClick);
 
-        // Add client button
+        // Add client button - with debugging
+        console.log('Setting up add client button event listener...');
         const addClientBtn = document.getElementById('add-client-button');
+        console.log('addClientBtn found:', addClientBtn);
         if (addClientBtn) {
-            addClientBtn.addEventListener('click', () => {
+            console.log('Adding click listener to add-client-button');
+            addClientBtn.addEventListener('click', (e) => {
+                console.log('add-client-button clicked!', e);
+                e.preventDefault();
+                e.stopPropagation();
                 // 新規作成画面でもスタッフデータをキャッシュ
                 sessionStorage.setItem('cached_staffs_data', JSON.stringify(staffs));
                 window.location.href = 'edit.html';
             });
+            console.log('Add client event listener added successfully');
         } else {
-            console.warn('add-client-button not found');
+            console.error('add-client-button not found in DOM');
         }
 
         // Window click to close modal
