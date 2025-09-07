@@ -2954,7 +2954,7 @@ button:active {
 
 /* Modern Header */
 .modern-header {
-    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    background: linear-gradient(135deg, #266b9caf 0%, #165991b9 100%);
     border-radius: 16px;
     padding: 30px;
     margin-bottom: 30px;
@@ -2979,14 +2979,14 @@ button:active {
 
 .header-text h1 {
     margin: 0 0 8px 0;
-    color: #1565c0;
+    color: #ffffff;
     font-size: 32px;
     font-weight: 700;
 }
 
 .header-description {
     margin: 0;
-    color: #1976d2;
+    color: #f8f8f8;
     font-size: 16px;
     font-weight: 400;
     opacity: 0.8;
@@ -2996,7 +2996,7 @@ button:active {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
+    background: linear-gradient(135deg, #13426993 0%, #013d72 100%);
     color: white;
     text-decoration: none;
     padding: 12px 20px;
@@ -3066,9 +3066,9 @@ button:active {
 
 /* Modern Form Container */
 .modern-form-container {
-    background: white;
+    background: rgb(255, 255, 255);
     border-radius: 20px;
-    box-shadow: 0 8px 32px rgba(33, 150, 243, 0.08);
+    box-shadow: 0 8px 32px rgba(223, 240, 255, 0.322);
     border: 1px solid rgba(33, 150, 243, 0.1);
     overflow: hidden;
 }
