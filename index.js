@@ -1191,11 +1191,26 @@ document.addEventListener('DOMContentLoaded', () => {
     staffListContainer = newStaffListContainer;
 
     staffListContainer.addEventListener('click', (e) => {
-        if (e.target.classList.contains('delete-staff-button')) {
-            const staffItem = e.target.closest('.staff-item');
+        // 削除ボタンまたはその子要素がクリックされた場合
+        const deleteButton = e.target.closest('.delete-staff-button');
+        if (deleteButton && !deleteButton.disabled) {
+            const staffItem = deleteButton.closest('.staff-item');
             const index = parseInt(staffItem.dataset.index);
-            currentEditingStaffs.splice(index, 1);
-            renderStaffList(); // Re-render the list
+            
+            // 担当クライアントがいる場合は削除できない
+            const staff = currentEditingStaffs[index];
+            const assignedClients = clients.filter(client => client.staff_id === staff.id);
+            
+            if (assignedClients.length > 0) {
+                alert(`${staff.name}さんは${assignedClients.length}件のクライアントを担当しているため削除できません。\n先にクライアントの担当者を変更してから削除してください。\n\n担当クライアント: ${assignedClients.map(c => c.name).join(', ')}`);
+                return;
+            }
+            
+            // 削除確認
+            if (confirm(`${staff.name}さんを削除しますか？`)) {
+                currentEditingStaffs.splice(index, 1);
+                renderStaffList(); // Re-render the list
+            }
         }
     });
 
