@@ -314,8 +314,8 @@ class PerformancePage {
         const tbody = document.getElementById('performance-table-body');
         tbody.innerHTML = '';
         
-        // デフォルトソート（平均完了率で降順）
-        const sortedData = [...performanceData].sort((a, b) => b.avgCompletionRate - a.avgCompletionRate);
+        // デフォルトソート（IDで昇順）
+        const sortedData = [...performanceData].sort((a, b) => a.staffId - b.staffId);
         
         sortedData.forEach(staff => {
             const tr = document.createElement('tr');
