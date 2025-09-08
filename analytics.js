@@ -237,18 +237,43 @@ class AnalyticsPage {
     }
 
     calculateSummary(clients, tasks) {
-        const totalTasks = tasks.length;
-        const completedTasks = tasks.filter(task => task.status === '完了').length;
+        let totalTasks = 0;
+        let completedTasks = 0;
+        
+        // 各月次レコードのtasksJSONを展開してタスク数を計算
+        tasks.forEach(monthlyTask => {
+            if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
+                const tasksList = Object.values(monthlyTask.tasks);
+                totalTasks += tasksList.length;
+                
+                // 完了タスク数を計算
+                const completedCount = tasksList.filter(task => task === true || task === '完了').length;
+                completedTasks += completedCount;
+            }
+        });
+        
         const progressRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
         
         // 要注意クライアント（進捗率50%未満）
         const attentionClients = [];
         clients.forEach(client => {
-            const clientTasks = tasks.filter(t => t.client_id === client.id);
-            const clientCompleted = clientTasks.filter(t => t.status === '完了').length;
-            const clientProgressRate = clientTasks.length > 0 ? (clientCompleted / clientTasks.length) * 100 : 0;
+            const clientMonthlyTasks = tasks.filter(t => t.client_id === client.id);
+            let clientTotal = 0;
+            let clientCompleted = 0;
             
-            if (clientProgressRate < 50 && clientTasks.length > 0) {
+            clientMonthlyTasks.forEach(monthlyTask => {
+                if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
+                    const tasksList = Object.values(monthlyTask.tasks);
+                    clientTotal += tasksList.length;
+                    
+                    const completedCount = tasksList.filter(task => task === true || task === '完了').length;
+                    clientCompleted += completedCount;
+                }
+            });
+            
+            const clientProgressRate = clientTotal > 0 ? (clientCompleted / clientTotal) * 100 : 0;
+            
+            if (clientProgressRate < 50 && clientTotal > 0) {
                 attentionClients.push({
                     name: client.name,
                     progressRate: Math.round(clientProgressRate)
@@ -266,9 +291,22 @@ class AnalyticsPage {
 
     calculateMatrix(clients, tasks) {
         return clients.map(client => {
-            const clientTasks = tasks.filter(t => t.client_id === client.id);
-            const completedTasks = clientTasks.filter(t => t.status === '完了').length;
-            const progressRate = clientTasks.length > 0 ? Math.round((completedTasks / clientTasks.length) * 100) : 0;
+            const clientMonthlyTasks = tasks.filter(t => t.client_id === client.id);
+            let totalTasks = 0;
+            let completedTasks = 0;
+            
+            // クライアントの全タスクを計算
+            clientMonthlyTasks.forEach(monthlyTask => {
+                if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
+                    const tasksList = Object.values(monthlyTask.tasks);
+                    totalTasks += tasksList.length;
+                    
+                    const completedCount = tasksList.filter(task => task === true || task === '完了').length;
+                    completedTasks += completedCount;
+                }
+            });
+            
+            const progressRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
             
             // 担当者名取得
             const staff = this.staffs.find(s => s.id === client.staff_id);
@@ -283,7 +321,7 @@ class AnalyticsPage {
                 fiscalMonth: client.fiscal_month,
                 progressRate,
                 completedTasks,
-                totalTasks: clientTasks.length,
+                totalTasks,
                 monthlyProgress
             };
         });
@@ -300,12 +338,25 @@ class AnalyticsPage {
         for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
             const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
             const monthTasks = clientTasks.filter(t => t.month === monthKey);
-            const completed = monthTasks.filter(t => t.status === '完了').length;
+            
+            let totalTasks = 0;
+            let completedTasks = 0;
+            
+            // 各月のタスクレコード内のJSONタスクを計算
+            monthTasks.forEach(monthlyTask => {
+                if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
+                    const tasksList = Object.values(monthlyTask.tasks);
+                    totalTasks += tasksList.length;
+                    
+                    const completedCount = tasksList.filter(task => task === true || task === '完了').length;
+                    completedTasks += completedCount;
+                }
+            });
             
             monthlyData[monthKey] = {
-                completed,
-                total: monthTasks.length,
-                rate: monthTasks.length > 0 ? Math.round((completed / monthTasks.length) * 100) : 0
+                completed: completedTasks,
+                total: totalTasks,
+                rate: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
             };
         }
         
