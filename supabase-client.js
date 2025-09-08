@@ -196,23 +196,31 @@ export class SupabaseAPI {
     }
     
     // 月次タスク関連
-    static async getMonthlyTasks(clientId, month) {
+    static async getMonthlyTasks(clientId = null, month = null) {
         try {
-            const { data, error } = await supabase
-                .from('monthly_tasks')
-                .select('*')
-                .eq('client_id', clientId)
-                .eq('month', month)
-                .maybeSingle();
-                
-            if (error) {
-                console.warn(`Monthly task not found for client ${clientId}, month ${month}:`, error);
-                return null;
+            let query = supabase.from('monthly_tasks').select('*');
+            
+            // パラメータが指定された場合のみフィルタリング
+            if (clientId !== null && month !== null) {
+                query = query.eq('client_id', clientId).eq('month', month);
+                const { data, error } = await query.maybeSingle();
+                if (error) {
+                    console.warn(`Monthly task not found for client ${clientId}, month ${month}:`, error);
+                    return null;
+                }
+                return data;
+            } else {
+                // 全件取得（analytics用）
+                const { data, error } = await query;
+                if (error) {
+                    console.error('Error fetching all monthly tasks:', error);
+                    return [];
+                }
+                return data || [];
             }
-            return data;
         } catch (err) {
-            console.error(`Error fetching monthly task for client ${clientId}, month ${month}:`, err);
-            return null;
+            console.error(`Error fetching monthly tasks:`, err);
+            return clientId !== null && month !== null ? null : [];
         }
     }
 
