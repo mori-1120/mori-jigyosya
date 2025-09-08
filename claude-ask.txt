@@ -1,52 +1,14 @@
-はい、承知いたしました。画像の内容を文字起こしします。
-
----
-### デプロイメント一覧
-
-* **FVrt3PCk**
-    * Preview
-    * **Ready** 9s (2m ago)
-    * `analytics-feature` - `55adeef` trigger: force redeploy for analytics...
-    * 2m ago by takao-yoshitomi
-
-* **D9uqLLcws**
-    * Production `Current`
-    * **Ready** 9s (33m ago)
-    * `main` - `47300dc` main-start2
-    * 33m ago
-
-* **7xmyiUALr**
-    * Production
-    * **Ready** 9s (42m ago)
-    * `main` - `982a343` fix: HTMLバリデーションエラー修正とnull...
-    * 42m ago
-
-* **Ahv1uu6Gx**
-    * Production
-    * **Ready** 9s (13h ago)
-    * `main` - `5f1376f` fix: 担当者管理の削除ボタンが反応しな...
-    * 13h ago
-
-* **Bdau4v8Tc**
-    * Production
-    * **Ready** 8s (13h ago)
-    * `main` - `9586df5` main-start
-    * 13h ago
-
-* **FcVKcsZvk**
-    * Preview
-    * **Ready** 8s (14h ago)
-    * `analytics-feature` - `2ebd704` feat: フェーズ2完成 - 担当者別フォーマ...
-    * 14h ago
-
----
-### `D9uqLLcws`のメニュー
-
-* Instant Rollback
-* Promote to Production ←
-* Redeploy
-* Inspect Deployment
-* View Source
-* Copy URL
-* Assign Domain
-* Visit
+config.js:10 Supabase config loaded: {url: 'https://ocfljsoxxgmnzqlquchx.supabase.co'}
+analytics.js:22 Analytics page initializing...
+analytics.js:50 Loading initial data...
+supabase-client.js:209 Monthly task not found for client undefined, month undefined: {code: '22P02', details: null, hint: null, message: 'invalid input syntax for type integer: "undefined"'}
+getMonthlyTasks @ supabase-client.js:209
+await in getMonthlyTasks
+loadInitialData @ analytics.js:56
+initialize @ analytics.js:34
+await in initialize
+(anonymous) @ analytics.js:539Understand this warning
+analytics.js:63 Loaded: 91 clients, 10 staffs, 0 tasks
+analytics.js:40 Analytics page initialized successfully
+analytics.js:192 Calculating analytics with filters: {startPeriod: '2024-10', endPeriod: '2025-09', staffId: '2', fiscalMonth: ''}
+analytics.js:196 Filtered clients: 
