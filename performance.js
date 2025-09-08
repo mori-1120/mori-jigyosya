@@ -229,10 +229,8 @@ class PerformancePage {
         // 完了月数の計算（月別で100%完了した月の数）
         const completedMonths = this.calculateCompletedMonths(staffClients, periodTasks, period);
         
-        // 遅延発生月数の計算（月次レコードの状態ベース）
-        const delayedMonths = periodTasks.filter(task => 
-            task.status === '遅延' || task.status === '停滞'
-        ).length;
+        // 遅延発生月数の計算（重複月を除外）
+        const delayedMonths = this.calculateDelayedMonths(periodTasks, period);
         
         // パフォーマンス評価
         const performanceLevel = this.getPerformanceLevel(avgCompletionRate);
@@ -282,6 +280,29 @@ class PerformancePage {
         return completedMonths;
     }
 
+    calculateDelayedMonths(periodTasks, period) {
+        const startDate = new Date(period.start + '-01');
+        const endDate = new Date(period.end + '-01');
+        let delayedMonths = 0;
+        
+        // 各月について、その月に遅延・停滞があるかチェック
+        for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
+            const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+            const monthTasks = periodTasks.filter(task => task.month === monthKey);
+            
+            // その月に遅延・停滞のタスクがあるかチェック
+            const hasDelayed = monthTasks.some(task => 
+                task.status === '遅延' || task.status === '停滞'
+            );
+            
+            if (hasDelayed) {
+                delayedMonths++;
+            }
+        }
+        
+        return delayedMonths;
+    }
+
     getPerformanceLevel(completionRate) {
         if (completionRate >= 95) return { level: '優秀', color: '#28a745', score: 4 };
         if (completionRate >= 85) return { level: '良好', color: '#17a2b8', score: 3 };
@@ -299,6 +320,9 @@ class PerformancePage {
         sortedData.forEach(staff => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
+                <td style="border: 1px solid #dee2e6; padding: 12px; text-align: center;">
+                    ${staff.staffId}
+                </td>
                 <td style="border: 1px solid #dee2e6; padding: 12px;">
                     <strong>${staff.staffName}</strong>
                 </td>

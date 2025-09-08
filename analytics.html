@@ -86,8 +86,11 @@
                             <div onclick="analytics.exportToCSV()" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;">
                                 📄 CSV形式
                             </div>
-                            <div onclick="analytics.exportToExcel()" style="padding: 10px 15px; cursor: pointer;">
+                            <div onclick="analytics.exportToExcel()" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;">
                                 📗 Excel形式
+                            </div>
+                            <div onclick="analytics.exportToPDF()" style="padding: 10px 15px; cursor: pointer;">
+                                📕 PDF形式
                             </div>
                         </div>
                     </div>
@@ -97,7 +100,7 @@
 
         <!-- 動的サマリーダッシュボード -->
         <div id="summary-dashboard" style="display: none; background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-            <h3 style="margin-top: 0;">📊 集計結果サマリー</h3>
+            <h3 style="margin-top: 0; text-align: center;">📊 集計結果サマリー</h3>
             
             <!-- 上段：サマリーカード + 円グラフ -->
             <div style="display: flex; gap: 20px; margin-bottom: 20px;">

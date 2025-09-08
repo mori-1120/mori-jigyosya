@@ -395,9 +395,7 @@ class AnalyticsPage {
         const attentionContainer = document.getElementById('attention-list');
         
         if (summary.attentionClients.length > 0) {
-            attentionList.innerHTML = summary.attentionClients
-                .map(client => `<li>${client.name} (${client.reason}: ${client.progressRate}%)</li>`)
-                .join('');
+            this.displayAttentionClients(summary.attentionClients);
             attentionContainer.style.display = 'block';
         } else {
             attentionContainer.style.display = 'none';
@@ -689,6 +687,22 @@ class AnalyticsPage {
         }
     }
 
+    exportToPDF() {
+        if (!this.lastAnalysisData) {
+            showToast('先に集計を実行してください', 'warning');
+            return;
+        }
+
+        try {
+            this.generatePDFReport();
+            showToast('PDF形式でエクスポートしました', 'success');
+            document.getElementById('export-menu').style.display = 'none';
+        } catch (error) {
+            console.error('PDF export failed:', error);
+            showToast('PDFエクスポートに失敗しました', 'error');
+        }
+    }
+
     generateCSVData() {
         const { summary, matrix } = this.lastAnalysisData;
         let csvContent = '\uFEFF'; // UTF-8 BOM for Excel compatibility
@@ -795,6 +809,193 @@ class AnalyticsPage {
         return `${year}${month}${day}_${hour}${minute}`;
     }
 
+    generatePDFReport() {
+        // PDF用のレポート内容を生成
+        const { summary, matrix } = this.lastAnalysisData;
+        
+        // 新しいウィンドウでPDF用のレポートページを開く
+        const printWindow = window.open('', '_blank');
+        
+        const printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>進捗分析結果レポート - ${this.getCurrentDateString()}</title>
+            <style>
+                @page { 
+                    size: A4; 
+                    margin: 20mm;
+                }
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+                body { 
+                    font-family: 'MS Gothic', monospace, sans-serif; 
+                    font-size: 12px; 
+                    line-height: 1.6;
+                    color: #333;
+                }
+                .header {
+                    text-align: center;
+                    margin-bottom: 30px;
+                    padding-bottom: 15px;
+                    border-bottom: 2px solid #007bff;
+                }
+                .header h1 {
+                    font-size: 24px;
+                    color: #007bff;
+                    margin-bottom: 10px;
+                }
+                .header .date {
+                    font-size: 14px;
+                    color: #666;
+                }
+                .summary-section {
+                    margin-bottom: 30px;
+                }
+                .summary-section h2 {
+                    font-size: 16px;
+                    color: #333;
+                    margin-bottom: 15px;
+                    padding-left: 10px;
+                    border-left: 4px solid #28a745;
+                }
+                .summary-grid {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 15px;
+                    margin-bottom: 20px;
+                }
+                .summary-card {
+                    border: 1px solid #dee2e6;
+                    border-radius: 4px;
+                    padding: 15px;
+                    text-align: center;
+                }
+                .summary-card .label {
+                    font-size: 11px;
+                    color: #666;
+                    margin-bottom: 5px;
+                }
+                .summary-card .value {
+                    font-size: 18px;
+                    font-weight: bold;
+                    color: #007bff;
+                }
+                .attention-clients {
+                    margin-top: 15px;
+                }
+                .attention-clients ul {
+                    list-style: none;
+                    background: #fff3cd;
+                    padding: 10px 15px;
+                    border-radius: 4px;
+                    border-left: 4px solid #ffc107;
+                }
+                .attention-clients li {
+                    padding: 2px 0;
+                    font-size: 11px;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 20px;
+                    font-size: 10px;
+                }
+                th, td {
+                    border: 1px solid #dee2e6;
+                    padding: 8px;
+                    text-align: center;
+                }
+                th {
+                    background-color: #f8f9fa;
+                    font-weight: bold;
+                }
+                .progress-high { color: #28a745; font-weight: bold; }
+                .progress-medium { color: #ffc107; font-weight: bold; }
+                .progress-low { color: #dc3545; font-weight: bold; }
+                .page-break { page-break-before: always; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>📊 進捗分析結果レポート</h1>
+                <div class="date">作成日時: ${new Date().toLocaleString('ja-JP')}</div>
+                <div class="date">集計期間: ${this.currentFilters.startPeriod} ～ ${this.currentFilters.endPeriod}</div>
+            </div>
+            
+            <div class="summary-section">
+                <h2>📈 集計結果サマリー</h2>
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <div class="label">全体進捗率</div>
+                        <div class="value">${summary.progressRate}%</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="label">完了タスク</div>
+                        <div class="value">${summary.completedTasks} / ${summary.totalTasks}</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="label">要注意クライアント</div>
+                        <div class="value">${summary.attentionClients.length}件</div>
+                    </div>
+                </div>
+                
+                ${summary.attentionClients.length > 0 ? `
+                <div class="attention-clients">
+                    <h3 style="margin-bottom: 10px;">⚠️ 要注意クライアント一覧</h3>
+                    <ul>
+                        ${summary.attentionClients.map(client => 
+                            `<li>${client.name} (${client.reason}: ${client.progressRate}%)</li>`
+                        ).join('')}
+                    </ul>
+                </div>` : ''}
+            </div>
+            
+            <div class="page-break"></div>
+            
+            <div class="summary-section">
+                <h2>📋 進捗マトリクス表</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>事業者名</th>
+                            <th>進捗率</th>
+                            <th>完了/総数</th>
+                            <th>担当者</th>
+                            <th>決算月</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${matrix.map(row => `
+                        <tr>
+                            <td style="text-align: left; font-weight: bold;">${row.clientName}</td>
+                            <td class="${row.progressRate >= 80 ? 'progress-high' : row.progressRate >= 50 ? 'progress-medium' : 'progress-low'}">${row.progressRate}%</td>
+                            <td>${row.completedTasks}/${row.totalTasks}</td>
+                            <td>${row.staffName}</td>
+                            <td>${row.fiscalMonth}月</td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </body>
+        </html>`;
+        
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        
+        // PDFとして印刷
+        printWindow.onload = function() {
+            printWindow.print();
+            printWindow.onafterprint = function() {
+                printWindow.close();
+            };
+        };
+    }
+
     calculateStatusComposition(tasks) {
         let completedTasks = 0;
         let inProgressTasks = 0;
@@ -803,13 +1004,16 @@ class AnalyticsPage {
         tasks.forEach(monthlyTask => {
             if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
                 const tasksList = Object.values(monthlyTask.tasks);
+                const isDelayedMonth = monthlyTask.status === '遅延' || monthlyTask.status === '停滞';
                 
                 tasksList.forEach(taskStatus => {
                     if (taskStatus === true || taskStatus === '完了') {
                         completedTasks++;
-                    } else if (monthlyTask.status === '遅延' || monthlyTask.status === '停滞') {
+                    } else if (isDelayedMonth) {
+                        // 月次が遅延・停滞の場合、未完了タスクは遅延扱い
                         delayedTasks++;
                     } else {
+                        // 通常の進行中タスク
                         inProgressTasks++;
                     }
                 });
@@ -910,6 +1114,56 @@ class AnalyticsPage {
                 document.getElementById('chart-legend').innerHTML += 
                     `<div style="margin-top: 8px; font-size: 11px; color: #666;">担当者: ${selectedStaff.name}</div>`;
             }
+        }
+    }
+
+    displayAttentionClients(attentionClients) {
+        const attentionList = document.getElementById('attention-clients-list');
+        const maxInitialDisplay = 10;
+        
+        // 初期表示（最大10件）
+        const initialClients = attentionClients.slice(0, maxInitialDisplay);
+        const remainingClients = attentionClients.slice(maxInitialDisplay);
+        
+        let listHTML = initialClients
+            .map(client => `<li>${client.name} (${client.reason}: ${client.progressRate}%)</li>`)
+            .join('');
+        
+        // 10件以上ある場合は「全て表示」ボタンを追加
+        if (remainingClients.length > 0) {
+            const allClientsHTML = attentionClients
+                .map(client => `<li>${client.name} (${client.reason}: ${client.progressRate}%)</li>`)
+                .join('');
+            
+            listHTML += `
+                <li style="margin-top: 10px; text-align: center;">
+                    <button onclick="analytics.showAllAttentionClients('${encodeURIComponent(allClientsHTML)}')" 
+                            style="background: #17a2b8; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                        残り${remainingClients.length}件を表示 (全${attentionClients.length}件)
+                    </button>
+                </li>`;
+        }
+        
+        attentionList.innerHTML = listHTML;
+    }
+
+    showAllAttentionClients(encodedHTML) {
+        const attentionList = document.getElementById('attention-clients-list');
+        const allClientsHTML = decodeURIComponent(encodedHTML);
+        
+        attentionList.innerHTML = allClientsHTML + `
+            <li style="margin-top: 10px; text-align: center;">
+                <button onclick="analytics.hideExtraAttentionClients()" 
+                        style="background: #6c757d; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                    最初の10件のみ表示
+                </button>
+            </li>`;
+    }
+
+    hideExtraAttentionClients() {
+        // 最新のデータで再表示
+        if (this.lastAnalysisData && this.lastAnalysisData.summary.attentionClients) {
+            this.displayAttentionClients(this.lastAnalysisData.summary.attentionClients);
         }
     }
 }
