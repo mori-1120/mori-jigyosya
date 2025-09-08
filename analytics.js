@@ -1004,16 +1004,26 @@ class AnalyticsPage {
         tasks.forEach(monthlyTask => {
             if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
                 const tasksList = Object.values(monthlyTask.tasks);
+                const completedCount = tasksList.filter(status => status === true || status === '完了').length;
+                const totalCount = tasksList.length;
+                
+                // ステータスの判定ロジック
                 const isDelayedMonth = monthlyTask.status === '遅延' || monthlyTask.status === '停滞';
+                const isNoProgress = completedCount === 0 && totalCount > 0; // 0/5のような場合
+                const isFullyCompleted = completedCount === totalCount && totalCount > 0;
                 
                 tasksList.forEach(taskStatus => {
-                    if (taskStatus === true || taskStatus === '完了') {
-                        completedTasks++;
-                    } else if (isDelayedMonth) {
-                        // 月次が遅延・停滞の場合、未完了タスクは遅延扱い
+                    if (isDelayedMonth || isNoProgress) {
+                        // 遅延・停滞月のタスク または 0/X進捗のタスクは遅延扱い
                         delayedTasks++;
+                    } else if (isFullyCompleted) {
+                        // 完全に完了した月のタスクは完了扱い
+                        completedTasks++;
+                    } else if (taskStatus === true || taskStatus === '完了') {
+                        // 部分完了月の完了タスク
+                        completedTasks++;
                     } else {
-                        // 通常の進行中タスク
+                        // 部分完了月の未完了タスク
                         inProgressTasks++;
                     }
                 });

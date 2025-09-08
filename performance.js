@@ -441,6 +441,9 @@ class PerformancePage {
         sortedData.forEach(staff => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
+                <td style="border: 1px solid #dee2e6; padding: 12px; text-align: center;">
+                    ${staff.staffId}
+                </td>
                 <td style="border: 1px solid #dee2e6; padding: 12px;">
                     <strong>${staff.staffName}</strong>
                 </td>
