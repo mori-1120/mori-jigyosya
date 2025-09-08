@@ -103,44 +103,47 @@
             <h3 style="margin-top: 0; text-align: center;">📊 集計結果サマリー</h3>
             
             <!-- 上段：サマリーカード + 円グラフ -->
-            <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-                <!-- サマリーカード群（左側） -->
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; flex: 2;">
-                    <!-- 全体進捗率 -->
-                    <div style="background: #e3f2fd; padding: 12px; border-radius: 6px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 80px;">
-                        <div style="font-size: 13px; color: #0277bd; margin-bottom: 5px;">📈 全体進捗率</div>
-                        <div id="overall-progress" style="font-size: 22px; font-weight: bold; color: #01579b;">--%</div>
+            <div style="display: flex; gap: 20px; margin-bottom: 15px;">
+                <!-- 左側エリア (2/3) -->
+                <div style="flex: 2; display: flex; flex-direction: column; gap: 15px;">
+                    <!-- サマリーカード群 -->
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+                        <!-- 全体進捗率 -->
+                        <div style="background: #e3f2fd; padding: 8px 12px; border-radius: 6px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 60px;">
+                            <div style="font-size: 12px; color: #0277bd; margin-bottom: 3px;">📈 全体進捗率</div>
+                            <div id="overall-progress" style="font-size: 20px; font-weight: bold; color: #01579b;">--%</div>
+                        </div>
+
+                        <!-- 完了タスク数 -->
+                        <div style="background: #e8f5e8; padding: 8px 12px; border-radius: 6px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 60px;">
+                            <div style="font-size: 12px; color: #2e7d32; margin-bottom: 3px;">✅ 完了タスク</div>
+                            <div id="completed-tasks" style="font-size: 20px; font-weight: bold; color: #1b5e20;">-- / --</div>
+                        </div>
+
+                        <!-- 要注意クライアント数 -->
+                        <div style="background: #ffeaa7; padding: 8px 12px; border-radius: 6px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 60px;">
+                            <div style="font-size: 12px; color: #b7750c; margin-bottom: 3px;">⚠️ 要注意</div>
+                            <div id="attention-clients" style="font-size: 20px; font-weight: bold; color: #8b4513;">--件</div>
+                        </div>
                     </div>
 
-                    <!-- 完了タスク数 -->
-                    <div style="background: #e8f5e8; padding: 12px; border-radius: 6px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 80px;">
-                        <div style="font-size: 13px; color: #2e7d32; margin-bottom: 5px;">✅ 完了タスク</div>
-                        <div id="completed-tasks" style="font-size: 22px; font-weight: bold; color: #1b5e20;">-- / --</div>
-                    </div>
-
-                    <!-- 要注意クライアント数 -->
-                    <div style="background: #ffeaa7; padding: 12px; border-radius: 6px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 80px;">
-                        <div style="font-size: 13px; color: #b7750c; margin-bottom: 5px;">⚠️ 要注意</div>
-                        <div id="attention-clients" style="font-size: 22px; font-weight: bold; color: #8b4513;">--件</div>
+                    <!-- 要注意クライアントリスト -->
+                    <div id="attention-list" style="display: none;">
+                        <h4 style="margin-bottom: 8px; font-size: 14px;">⚠️ 要注意クライアント一覧</h4>
+                        <ul id="attention-clients-list" style="background: #fff3cd; padding: 12px; border-radius: 4px; border-left: 4px solid #ffc107; margin: 0; max-height: 120px; overflow-y: auto;">
+                            <!-- JavaScript で動的生成 -->
+                        </ul>
                     </div>
                 </div>
 
-                <!-- ステータス別構成円グラフ（右側） -->
-                <div style="flex: 1; background: #f8f9fa; padding: 15px; border-radius: 6px; text-align: center;">
+                <!-- 右側エリア (1/3) - ステータス別構成円グラフ -->
+                <div style="flex: 1; background: #f8f9fa; padding: 15px; border-radius: 6px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
                     <div style="font-size: 14px; color: #495057; margin-bottom: 10px; font-weight: bold;">📊 ステータス別構成</div>
                     <canvas id="status-chart" width="200" height="200" style="max-width: 200px; max-height: 200px;"></canvas>
                     <div id="chart-legend" style="margin-top: 10px; font-size: 12px;">
                         <!-- JavaScript で動的生成 -->
                     </div>
                 </div>
-            </div>
-
-            <!-- 下段：要注意クライアントリスト -->
-            <div id="attention-list" style="display: none;">
-                <h4 style="margin-bottom: 10px;">⚠️ 要注意クライアント一覧</h4>
-                <ul id="attention-clients-list" style="background: #fff3cd; padding: 15px; border-radius: 4px; border-left: 4px solid #ffc107; margin: 0;">
-                    <!-- JavaScript で動的生成 -->
-                </ul>
             </div>
         </div>
 
