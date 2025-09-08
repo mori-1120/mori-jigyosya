@@ -1195,6 +1195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const deleteButton = e.target.closest('.delete-staff-button');
         if (deleteButton && !deleteButton.disabled) {
             const staffItem = deleteButton.closest('.staff-item');
+            if (!staffItem) return; // nullチェックを追加
             const index = parseInt(staffItem.dataset.index);
             
             // 担当クライアントがいる場合は削除できない
