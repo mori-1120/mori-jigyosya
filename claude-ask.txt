@@ -1,6 +1,2 @@
-Supabase config loaded: {url: 'https://ocfljsoxxgmnzqlquchx.supabase.co'}url: "https://ocfljsoxxgmnzqlquchx.supabase.co"[[Prototype]]: Object
-performance.js:16 Performance page initializing...
-performance.js:44 Loading initial data...
-performance.js:57 Loaded: 91 clients, 10 staffs, 456 tasks
-performance.js:34 Performance page initialized successfully
-performance.js:184 Calculating performance metrics for period: 
+ ステータス別構成: 円グラフで「完了」「進行中」「遅延・停滞」の割合を表示。
+円グラフの内容としては全員での抽出であれば全員、担当者を選択しているのであれば、その担当者の割合を表示する

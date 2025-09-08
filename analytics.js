@@ -290,11 +290,15 @@ class AnalyticsPage {
             }
         });
         
+        // ステータス別構成を計算
+        const statusComposition = this.calculateStatusComposition(tasks);
+        
         return {
             progressRate,
             completedTasks,
             totalTasks,
-            attentionClients
+            attentionClients,
+            statusComposition
         };
     }
 
@@ -389,6 +393,9 @@ class AnalyticsPage {
         } else {
             attentionContainer.style.display = 'none';
         }
+
+        // ステータス別構成円グラフを描画
+        this.drawStatusChart(summary.statusComposition);
     }
 
     displayProgressMatrix(matrix) {
@@ -767,6 +774,124 @@ class AnalyticsPage {
         const hour = now.getHours().toString().padStart(2, '0');
         const minute = now.getMinutes().toString().padStart(2, '0');
         return `${year}${month}${day}_${hour}${minute}`;
+    }
+
+    calculateStatusComposition(tasks) {
+        let completedTasks = 0;
+        let inProgressTasks = 0;
+        let delayedTasks = 0;
+        
+        tasks.forEach(monthlyTask => {
+            if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
+                const tasksList = Object.values(monthlyTask.tasks);
+                
+                tasksList.forEach(taskStatus => {
+                    if (taskStatus === true || taskStatus === '完了') {
+                        completedTasks++;
+                    } else if (monthlyTask.status === '遅延' || monthlyTask.status === '停滞') {
+                        delayedTasks++;
+                    } else {
+                        inProgressTasks++;
+                    }
+                });
+            }
+        });
+        
+        const total = completedTasks + inProgressTasks + delayedTasks;
+        
+        return {
+            completed: completedTasks,
+            inProgress: inProgressTasks,
+            delayed: delayedTasks,
+            total,
+            completedPercentage: total > 0 ? Math.round((completedTasks / total) * 100) : 0,
+            inProgressPercentage: total > 0 ? Math.round((inProgressTasks / total) * 100) : 0,
+            delayedPercentage: total > 0 ? Math.round((delayedTasks / total) * 100) : 0
+        };
+    }
+
+    drawStatusChart(statusData) {
+        const canvas = document.getElementById('status-chart');
+        const ctx = canvas.getContext('2d');
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = Math.min(centerX, centerY) - 20;
+
+        // キャンバスをクリア
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (statusData.total === 0) {
+            // データがない場合の表示
+            ctx.fillStyle = '#e0e0e0';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.fillStyle = '#999';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('データなし', centerX, centerY);
+            
+            document.getElementById('chart-legend').innerHTML = '<div style="color: #999;">データがありません</div>';
+            return;
+        }
+
+        // 色設定
+        const colors = {
+            completed: '#28a745',    // 緑
+            inProgress: '#ffc107',   // 黄
+            delayed: '#dc3545'       // 赤
+        };
+
+        // 角度計算
+        const data = [
+            { label: '完了', count: statusData.completed, percentage: statusData.completedPercentage, color: colors.completed },
+            { label: '進行中', count: statusData.inProgress, percentage: statusData.inProgressPercentage, color: colors.inProgress },
+            { label: '遅延・停滞', count: statusData.delayed, percentage: statusData.delayedPercentage, color: colors.delayed }
+        ];
+
+        let currentAngle = -Math.PI / 2; // 12時の位置から開始
+
+        // 円グラフ描画
+        data.forEach(segment => {
+            if (segment.count > 0) {
+                const sliceAngle = (segment.count / statusData.total) * 2 * Math.PI;
+                
+                ctx.fillStyle = segment.color;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fill();
+
+                // 境界線
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                currentAngle += sliceAngle;
+            }
+        });
+
+        // 凡例作成
+        const legend = data.map(segment => 
+            `<div style="display: inline-block; margin: 0 5px;">
+                <span style="display: inline-block; width: 12px; height: 12px; background: ${segment.color}; margin-right: 4px; border-radius: 2px;"></span>
+                ${segment.label}: ${segment.count} (${segment.percentage}%)
+            </div>`
+        ).join('');
+
+        document.getElementById('chart-legend').innerHTML = legend;
+
+        // 担当者フィルター情報を追加
+        const staffFilter = this.currentFilters.staffId;
+        if (staffFilter && staffFilter !== '') {
+            const selectedStaff = this.staffs.find(s => s.id == staffFilter);
+            if (selectedStaff) {
+                document.getElementById('chart-legend').innerHTML += 
+                    `<div style="margin-top: 8px; font-size: 11px; color: #666;">担当者: ${selectedStaff.name}</div>`;
+            }
+        }
     }
 }
 
