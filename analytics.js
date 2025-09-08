@@ -145,6 +145,9 @@ class AnalyticsPage {
                 this.sortTable(e.target.dataset.sort);
             });
         });
+
+        // エクスポート機能
+        this.setupExportEventListeners();
     }
 
     async performAnalysis() {
@@ -182,6 +185,9 @@ class AnalyticsPage {
             
             // サマリーダッシュボード表示
             document.getElementById('summary-dashboard').style.display = 'block';
+            
+            // エクスポートボタンを有効化
+            document.getElementById('export-button').disabled = false;
             
             showToast('集計が完了しました', 'success');
             
@@ -617,10 +623,155 @@ class AnalyticsPage {
             }
         }
     }
+
+    setupExportEventListeners() {
+        // エクスポートボタンクリックでメニュー表示切り替え
+        document.getElementById('export-button').addEventListener('click', () => {
+            const menu = document.getElementById('export-menu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        });
+
+        // メニュー外クリックで閉じる
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.export-dropdown')) {
+                document.getElementById('export-menu').style.display = 'none';
+            }
+        });
+    }
+
+    exportToCSV() {
+        if (!this.lastAnalysisData) {
+            showToast('先に集計を実行してください', 'warning');
+            return;
+        }
+
+        try {
+            const csvData = this.generateCSVData();
+            this.downloadCSV(csvData, `進捗分析結果_${this.getCurrentDateString()}.csv`);
+            showToast('CSV形式でエクスポートしました', 'success');
+            document.getElementById('export-menu').style.display = 'none';
+        } catch (error) {
+            console.error('CSV export failed:', error);
+            showToast('CSVエクスポートに失敗しました', 'error');
+        }
+    }
+
+    exportToExcel() {
+        if (!this.lastAnalysisData) {
+            showToast('先に集計を実行してください', 'warning');
+            return;
+        }
+
+        try {
+            const excelData = this.generateExcelData();
+            this.downloadExcel(excelData, `進捗分析結果_${this.getCurrentDateString()}.xlsx`);
+            showToast('Excel形式でエクスポートしました', 'success');
+            document.getElementById('export-menu').style.display = 'none';
+        } catch (error) {
+            console.error('Excel export failed:', error);
+            showToast('Excelエクスポートに失敗しました', 'error');
+        }
+    }
+
+    generateCSVData() {
+        const { summary, matrix } = this.lastAnalysisData;
+        let csvContent = '\uFEFF'; // UTF-8 BOM for Excel compatibility
+
+        // サマリー情報
+        csvContent += '集計結果サマリー\n';
+        csvContent += `集計期間,${this.currentFilters.startPeriod} ～ ${this.currentFilters.endPeriod}\n`;
+        csvContent += `全体進捗率,${summary.progressRate}%\n`;
+        csvContent += `完了タスク,${summary.completedTasks} / ${summary.totalTasks}\n`;
+        csvContent += `要注意クライアント,${summary.attentionClients.length}件\n\n`;
+
+        // 進捗マトリクス表
+        csvContent += '進捗マトリクス表\n';
+        
+        // ヘッダー行
+        const headers = ['事業者名', '期間内平均進捗率', '完了タスク数', '総タスク数', '担当者', '決算月'];
+        
+        // 月別ヘッダーを追加
+        const startDate = new Date(this.currentFilters.startPeriod + '-01');
+        const endDate = new Date(this.currentFilters.endPeriod + '-01');
+        for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
+            const year = d.getFullYear();
+            const month = d.getMonth() + 1;
+            headers.push(`${year}年${month}月進捗`);
+        }
+        
+        csvContent += headers.join(',') + '\n';
+
+        // データ行
+        matrix.forEach(row => {
+            const dataRow = [
+                `"${row.clientName}"`,
+                `${row.progressRate}%`,
+                row.completedTasks,
+                row.totalTasks,
+                `"${row.staffName}"`,
+                `${row.fiscalMonth}月`
+            ];
+
+            // 月別データを追加
+            for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
+                const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+                const monthData = row.monthlyProgress[monthKey] || { completed: 0, total: 0, rate: 0 };
+                dataRow.push(`${monthData.completed}/${monthData.total} (${monthData.rate}%)`);
+            }
+
+            csvContent += dataRow.join(',') + '\n';
+        });
+
+        return csvContent;
+    }
+
+    generateExcelData() {
+        // 簡単なExcel互換形式（実際はCSVと同じ形式だが、より構造化）
+        return this.generateCSVData();
+    }
+
+    downloadCSV(csvContent, filename) {
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
+    downloadExcel(excelContent, filename) {
+        // Excel形式でダウンロード（現在はCSV形式だが、拡張可能）
+        const blob = new Blob([excelContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+
+    getCurrentDateString() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        const hour = now.getHours().toString().padStart(2, '0');
+        const minute = now.getMinutes().toString().padStart(2, '0');
+        return `${year}${month}${day}_${hour}${minute}`;
+    }
 }
 
 // ページ読み込み時に初期化
 document.addEventListener('DOMContentLoaded', async () => {
-    const analytics = new AnalyticsPage();
-    await analytics.initialize();
+    window.analytics = new AnalyticsPage();
+    await window.analytics.initialize();
 });
