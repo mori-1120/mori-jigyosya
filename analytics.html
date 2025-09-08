@@ -119,18 +119,18 @@
         <div id="progress-matrix" style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px;">
             <h3 style="margin-top: 0;">📋 進捗マトリクス表</h3>
             
-            <div style="overflow-x: auto;">
+            <div style="overflow-x: auto; max-height: 80vh;">
                 <table id="analytics-table" style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                    <thead>
+                    <thead style="position: sticky; top: 0; z-index: 10; background: #f8f9fa;">
                         <tr style="background: #f8f9fa;">
-                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: left; cursor: pointer;" data-sort="name">
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: left; cursor: pointer; background: #f8f9fa; position: sticky; top: 0; z-index: 10;" data-sort="name">
                                 事業者名 <span class="sort-icon">▲▼</span>
                             </th>
-                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer;" data-sort="progress">
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer; background: #f8f9fa; position: sticky; top: 0; z-index: 10;" data-sort="progress">
                                 期間内平均進捗率 <span class="sort-icon">▲▼</span>
                             </th>
-                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center;">担当者</th>
-                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center;">決算月</th>
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center; background: #f8f9fa; position: sticky; top: 0; z-index: 10;">担当者</th>
+                            <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center; background: #f8f9fa; position: sticky; top: 0; z-index: 10;">決算月</th>
                             <!-- 動的に年月列が追加される -->
                         </tr>
                     </thead>

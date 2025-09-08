@@ -37,6 +37,9 @@ class AnalyticsPage {
             this.setupEventListeners();
             this.populateFilters();
             
+            // URLパラメータから担当者を自動選択
+            this.handleUrlParameters();
+            
             console.log('Analytics page initialized successfully');
             showToast('分析機能を読み込みました', 'success');
             
@@ -394,7 +397,14 @@ class AnalyticsPage {
             
             // 基本列
             tr.innerHTML = `
-                <td style="border: 1px solid #dee2e6; padding: 8px;">${row.clientName}</td>
+                <td style="border: 1px solid #dee2e6; padding: 8px;">
+                    <a href="details.html?id=${row.clientId}" 
+                       style="color: #007bff; text-decoration: none; cursor: pointer;"
+                       onmouseover="this.style.textDecoration='underline'"
+                       onmouseout="this.style.textDecoration='none'">
+                        ${row.clientName}
+                    </a>
+                </td>
                 <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
                     <span style="font-weight: bold; color: ${this.getProgressColor(row.progressRate)};">
                         ${row.progressRate}%
@@ -429,7 +439,7 @@ class AnalyticsPage {
             
             const th = document.createElement('th');
             th.className = 'month-column';
-            th.style.cssText = 'border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer;';
+            th.style.cssText = 'border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer; background: #f8f9fa; position: sticky; top: 0; z-index: 10;';
             th.setAttribute('data-sort', `month-${monthKey}`);
             th.innerHTML = `${year}/${month}<br><span class="sort-icon">▲▼</span>`;
             
@@ -580,6 +590,31 @@ class AnalyticsPage {
         if (activeHeader) {
             activeHeader.textContent = this.sortDirection === 'asc' ? '▲' : '▼';
             activeHeader.style.color = '#007bff';
+        }
+    }
+
+    handleUrlParameters() {
+        // URLパラメータを取得
+        const urlParams = new URLSearchParams(window.location.search);
+        const staffId = urlParams.get('staff');
+        
+        if (staffId) {
+            // 担当者フィルターを自動選択
+            const staffSelect = document.getElementById('staff-filter');
+            if (staffSelect) {
+                staffSelect.value = staffId;
+                
+                // 選択された担当者名を表示
+                const selectedStaff = this.staffs.find(s => s.id == staffId);
+                if (selectedStaff) {
+                    showToast(`担当者「${selectedStaff.name}」の分析画面を表示しています`, 'info');
+                    
+                    // 自動的に分析を実行
+                    setTimeout(() => {
+                        this.performAnalysis();
+                    }, 1000);
+                }
+            }
         }
     }
 }

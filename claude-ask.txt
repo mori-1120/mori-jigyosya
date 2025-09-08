@@ -1,14 +1,6 @@
-config.js:10 Supabase config loaded: {url: 'https://ocfljsoxxgmnzqlquchx.supabase.co'}
-analytics.js:22 Analytics page initializing...
-analytics.js:50 Loading initial data...
-supabase-client.js:209 Monthly task not found for client undefined, month undefined: {code: '22P02', details: null, hint: null, message: 'invalid input syntax for type integer: "undefined"'}
-getMonthlyTasks @ supabase-client.js:209
-await in getMonthlyTasks
-loadInitialData @ analytics.js:56
-initialize @ analytics.js:34
-await in initialize
-(anonymous) @ analytics.js:539Understand this warning
-analytics.js:63 Loaded: 91 clients, 10 staffs, 0 tasks
-analytics.js:40 Analytics page initialized successfully
-analytics.js:192 Calculating analytics with filters: {startPeriod: '2024-10', endPeriod: '2025-09', staffId: '2', fiscalMonth: ''}
-analytics.js:196 Filtered clients: 
+Supabase config loaded: {url: 'https://ocfljsoxxgmnzqlquchx.supabase.co'}url: "https://ocfljsoxxgmnzqlquchx.supabase.co"[[Prototype]]: Object
+performance.js:16 Performance page initializing...
+performance.js:44 Loading initial data...
+performance.js:57 Loaded: 91 clients, 10 staffs, 456 tasks
+performance.js:34 Performance page initialized successfully
+performance.js:184 Calculating performance metrics for period: 
