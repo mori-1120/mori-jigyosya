@@ -256,6 +256,15 @@
                     <div class="settings-section">
                         <h3>📋 個別設定</h3>
                         <div class="setting-item">
+                            <label for="font-size-control">文字サイズ:</label>
+                            <div class="font-size-control-group" style="display: flex; align-items: center; gap: 10px;">
+                                <button id="font-size-decrease" class="font-size-button" style="width: 30px; height: 30px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 4px; cursor: pointer;">－</button>
+                                <span id="font-size-display" style="min-width: 40px; text-align: center; font-weight: bold;">100%</span>
+                                <button id="font-size-increase" class="font-size-button" style="width: 30px; height: 30px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 4px; cursor: pointer;">＋</button>
+                                <button id="font-size-reset" class="font-size-button" style="padding: 4px 8px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer; font-size: 12px;">リセット</button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
                             <label for="font-family-select">全体のフォント:</label>
                             <select id="font-family-select"></select>
                         </div>

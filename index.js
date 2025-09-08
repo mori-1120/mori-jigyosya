@@ -745,6 +745,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target === urlSettingsModal) closeUrlSettingsModal();
         });
 
+        // Font size control event listeners
+        const fontSizeDecrease = document.getElementById('font-size-decrease');
+        const fontSizeIncrease = document.getElementById('font-size-increase');
+        const fontSizeReset = document.getElementById('font-size-reset');
+        const fontSizeDisplay = document.getElementById('font-size-display');
+
+        if (fontSizeDecrease && fontSizeIncrease && fontSizeReset && fontSizeDisplay) {
+            fontSizeDecrease.addEventListener('click', () => adjustFontSize(-5));
+            fontSizeIncrease.addEventListener('click', () => adjustFontSize(5));
+            fontSizeReset.addEventListener('click', () => resetFontSize());
+        }
+
         // CSV file input (共通で使用)
         document.getElementById('csv-file-input').addEventListener('change', importCSV);
 
@@ -2784,6 +2796,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // Font size control functions
+    function loadFontSize() {
+        const savedFontSize = localStorage.getItem('app-font-size');
+        if (savedFontSize) {
+            const fontSize = parseInt(savedFontSize);
+            applyFontSize(fontSize);
+        } else {
+            updateFontSizeDisplay(100);
+        }
+    }
+
+    function adjustFontSize(change) {
+        const currentFontSize = getCurrentFontSize();
+        const newFontSize = Math.max(70, Math.min(150, currentFontSize + change));
+        applyFontSize(newFontSize);
+        saveFontSize(newFontSize);
+    }
+
+    function resetFontSize() {
+        applyFontSize(100);
+        saveFontSize(100);
+    }
+
+    function getCurrentFontSize() {
+        const savedFontSize = localStorage.getItem('app-font-size');
+        return savedFontSize ? parseInt(savedFontSize) : 100;
+    }
+
+    function applyFontSize(size) {
+        document.documentElement.style.fontSize = `${size}%`;
+        updateFontSizeDisplay(size);
+    }
+
+    function updateFontSizeDisplay(size) {
+        const display = document.getElementById('font-size-display');
+        if (display) {
+            display.textContent = `${size}%`;
+        }
+    }
+
+    function saveFontSize(size) {
+        localStorage.setItem('app-font-size', size.toString());
+    }
+
+    // ページ読み込み時にフォントサイズを適用
+    loadFontSize();
+
     // レスポンシブテーブル機能を初期化
     setTimeout(() => {
         initResponsiveTable();
