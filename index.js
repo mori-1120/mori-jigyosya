@@ -1194,7 +1194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // 削除ボタンまたはその子要素がクリックされた場合
         const deleteButton = e.target.closest('.delete-staff-button');
         if (deleteButton && !deleteButton.disabled) {
-            const staffItem = deleteButton.closest('.staff-item');
+            const staffItem = deleteButton.closest('.modern-staff-item');
             if (!staffItem) return; // nullチェックを追加
             const index = parseInt(staffItem.dataset.index);
             
@@ -1217,7 +1217,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     staffListContainer.addEventListener('input', (e) => {
         const target = e.target;
-        const staffItem = target.closest('.staff-item');
+        const staffItem = target.closest('.modern-staff-item');
         if (!staffItem) return;
 
         const index = parseInt(staffItem.dataset.index);
