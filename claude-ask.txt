@@ -1,0 +1,52 @@
+はい、承知いたしました。画像の内容を文字起こしします。
+
+---
+### デプロイメント一覧
+
+* **FVrt3PCk**
+    * Preview
+    * **Ready** 9s (2m ago)
+    * `analytics-feature` - `55adeef` trigger: force redeploy for analytics...
+    * 2m ago by takao-yoshitomi
+
+* **D9uqLLcws**
+    * Production `Current`
+    * **Ready** 9s (33m ago)
+    * `main` - `47300dc` main-start2
+    * 33m ago
+
+* **7xmyiUALr**
+    * Production
+    * **Ready** 9s (42m ago)
+    * `main` - `982a343` fix: HTMLバリデーションエラー修正とnull...
+    * 42m ago
+
+* **Ahv1uu6Gx**
+    * Production
+    * **Ready** 9s (13h ago)
+    * `main` - `5f1376f` fix: 担当者管理の削除ボタンが反応しな...
+    * 13h ago
+
+* **Bdau4v8Tc**
+    * Production
+    * **Ready** 8s (13h ago)
+    * `main` - `9586df5` main-start
+    * 13h ago
+
+* **FcVKcsZvk**
+    * Preview
+    * **Ready** 8s (14h ago)
+    * `analytics-feature` - `2ebd704` feat: フェーズ2完成 - 担当者別フォーマ...
+    * 14h ago
+
+---
+### `D9uqLLcws`のメニュー
+
+* Instant Rollback
+* Promote to Production ←
+* Redeploy
+* Inspect Deployment
+* View Source
+* Copy URL
+* Assign Domain
+* Visit

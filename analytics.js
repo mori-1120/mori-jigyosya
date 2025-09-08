@@ -1,6 +1,6 @@
 // 分析機能メインスクリプト
 import { SupabaseAPI } from './supabase-client.js';
-import { showToast } from './toast.js';
+import './toast.js'; // showToastはwindow.showToastとしてグローバルに利用可能
 
 class AnalyticsPage {
     constructor() {
