@@ -137,11 +137,17 @@
                 </div>
 
                 <!-- 右側エリア (1/3) - ステータス別構成円グラフ -->
-                <div style="flex: 1; background: #f8f9fa; padding: 15px; border-radius: 6px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
-                    <div style="font-size: 14px; color: #495057; margin-bottom: 10px; font-weight: bold;">📊 ステータス別構成</div>
-                    <canvas id="status-chart" width="200" height="200" style="max-width: 200px; max-height: 200px;"></canvas>
-                    <div id="chart-legend" style="margin-top: 10px; font-size: 12px;">
-                        <!-- JavaScript で動的生成 -->
+                <div style="flex: 1; background: #f8f9fa; padding: 15px; border-radius: 6px;">
+                    <div style="font-size: 14px; color: #495057; margin-bottom: 10px; font-weight: bold; text-align: center;">📊 ステータス別構成</div>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                        <!-- 円グラフ -->
+                        <div style="flex-shrink: 0;">
+                            <canvas id="status-chart" width="160" height="160" style="max-width: 160px; max-height: 160px;"></canvas>
+                        </div>
+                        <!-- 凡例 -->
+                        <div id="chart-legend" style="flex: 1; font-size: 12px; text-align: left;">
+                            <!-- JavaScript で動的生成 -->
+                        </div>
                     </div>
                 </div>
             </div>

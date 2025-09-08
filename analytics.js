@@ -1106,11 +1106,11 @@ class AnalyticsPage {
             }
         });
 
-        // 凡例作成
+        // 凡例作成（縦並び）
         const legend = data.map(segment => 
-            `<div style="display: inline-block; margin: 0 5px;">
-                <span style="display: inline-block; width: 12px; height: 12px; background: ${segment.color}; margin-right: 4px; border-radius: 2px;"></span>
-                ${segment.label}: ${segment.count} (${segment.percentage}%)
+            `<div style="display: flex; align-items: center; margin-bottom: 6px; line-height: 1.4;">
+                <span style="display: inline-block; width: 12px; height: 12px; background: ${segment.color}; margin-right: 8px; border-radius: 2px; flex-shrink: 0;"></span>
+                <span style="font-size: 11px;"><strong>${segment.label}:</strong><br>${segment.count}件 (${segment.percentage}%)</span>
             </div>`
         ).join('');
 
