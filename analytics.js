@@ -263,12 +263,13 @@ class AnalyticsPage {
         
         const progressRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
         
-        // 要注意クライアント（進捗率50%未満）
+        // 要注意クライアント（進捗率50%未満 または 遅延・停滞ステータス）
         const attentionClients = [];
         clients.forEach(client => {
             const clientMonthlyTasks = tasks.filter(t => t.client_id === client.id);
             let clientTotal = 0;
             let clientCompleted = 0;
+            let hasDelayedStatus = false;
             
             clientMonthlyTasks.forEach(monthlyTask => {
                 if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
@@ -278,14 +279,22 @@ class AnalyticsPage {
                     const completedCount = tasksList.filter(task => task === true || task === '完了').length;
                     clientCompleted += completedCount;
                 }
+                
+                // 遅延・停滞ステータスチェック
+                if (monthlyTask.status === '遅延' || monthlyTask.status === '停滞') {
+                    hasDelayedStatus = true;
+                }
             });
             
             const clientProgressRate = clientTotal > 0 ? (clientCompleted / clientTotal) * 100 : 0;
             
-            if (clientProgressRate < 50 && clientTotal > 0) {
+            // 進捗率50%未満 または 遅延・停滞ステータスがある場合
+            if ((clientProgressRate < 50 && clientTotal > 0) || hasDelayedStatus) {
+                const reason = hasDelayedStatus ? '遅延・停滞' : '進捗率低下';
                 attentionClients.push({
                     name: client.name,
-                    progressRate: Math.round(clientProgressRate)
+                    progressRate: Math.round(clientProgressRate),
+                    reason: reason
                 });
             }
         });
@@ -387,7 +396,7 @@ class AnalyticsPage {
         
         if (summary.attentionClients.length > 0) {
             attentionList.innerHTML = summary.attentionClients
-                .map(client => `<li>${client.name} (進捗率: ${client.progressRate}%)</li>`)
+                .map(client => `<li>${client.name} (${client.reason}: ${client.progressRate}%)</li>`)
                 .join('');
             attentionContainer.style.display = 'block';
         } else {
@@ -689,7 +698,17 @@ class AnalyticsPage {
         csvContent += `集計期間,${this.currentFilters.startPeriod} ～ ${this.currentFilters.endPeriod}\n`;
         csvContent += `全体進捗率,${summary.progressRate}%\n`;
         csvContent += `完了タスク,${summary.completedTasks} / ${summary.totalTasks}\n`;
-        csvContent += `要注意クライアント,${summary.attentionClients.length}件\n\n`;
+        csvContent += `要注意クライアント,${summary.attentionClients.length}件\n`;
+        
+        // 要注意クライアント詳細
+        if (summary.attentionClients.length > 0) {
+            csvContent += '要注意クライアント詳細\n';
+            csvContent += 'クライアント名,理由,進捗率\n';
+            summary.attentionClients.forEach(client => {
+                csvContent += `"${client.name}",${client.reason},${client.progressRate}%\n`;
+            });
+        }
+        csvContent += '\n';
 
         // 進捗マトリクス表
         csvContent += '進捗マトリクス表\n';
