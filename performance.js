@@ -210,14 +210,26 @@ class PerformancePage {
     }
 
     calculateStaffMetrics(staffClients, periodTasks, period) {
-        const totalTasks = periodTasks.length;
-        const completedTasks = periodTasks.filter(task => task.status === '完了').length;
+        let totalTasks = 0;
+        let completedTasks = 0;
+        
+        // 各月次タスクレコード内のJSONタスクを計算
+        periodTasks.forEach(monthlyTask => {
+            if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
+                const tasksList = Object.values(monthlyTask.tasks);
+                totalTasks += tasksList.length;
+                
+                const completedCount = tasksList.filter(task => task === true || task === '完了').length;
+                completedTasks += completedCount;
+            }
+        });
+        
         const avgCompletionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
         
         // 完了月数の計算（月別で100%完了した月の数）
         const completedMonths = this.calculateCompletedMonths(staffClients, periodTasks, period);
         
-        // 遅延発生月数の計算
+        // 遅延発生月数の計算（月次レコードの状態ベース）
         const delayedMonths = periodTasks.filter(task => 
             task.status === '遅延' || task.status === '停滞'
         ).length;
@@ -247,11 +259,23 @@ class PerformancePage {
             const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
             const monthTasks = periodTasks.filter(task => task.month === monthKey);
             
-            if (monthTasks.length > 0) {
-                const monthCompleted = monthTasks.filter(task => task.status === '完了').length;
-                if (monthCompleted === monthTasks.length) {
-                    completedMonths++;
+            let monthTotalTasks = 0;
+            let monthCompletedTasks = 0;
+            
+            // 各月のタスクレコード内のJSONタスクを集計
+            monthTasks.forEach(monthlyTask => {
+                if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
+                    const tasksList = Object.values(monthlyTask.tasks);
+                    monthTotalTasks += tasksList.length;
+                    
+                    const completedCount = tasksList.filter(task => task === true || task === '完了').length;
+                    monthCompletedTasks += completedCount;
                 }
+            });
+            
+            // その月が100%完了していればカウント
+            if (monthTotalTasks > 0 && monthCompletedTasks === monthTotalTasks) {
+                completedMonths++;
             }
         }
         
