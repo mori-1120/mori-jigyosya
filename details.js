@@ -17,7 +17,7 @@ function createLinkedTextDisplay(textarea) {
     const displayDiv = document.createElement('div');
     displayDiv.className = 'linked-text-display';
     displayDiv.style.cssText = `
-        min-height: 60px;
+        min-height: 120px;
         padding: 8px;
         border: 1px solid #ced4da;
         border-radius: 4px;
@@ -42,7 +42,7 @@ function createLinkedTextDisplay(textarea) {
         if (text.trim()) {
             displayDiv.innerHTML = autoLinkifyText(text);
         } else {
-            displayDiv.innerHTML = '<span style="color: #6c757d; font-style: italic;">メモを入力してください...</span>';
+            displayDiv.innerHTML = '';
         }
     }
     
