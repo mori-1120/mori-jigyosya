@@ -6,6 +6,53 @@ function getCurrentFontSize() {
     return savedFontSize ? parseInt(savedFontSize) : 100;
 }
 
+// URL自動リンク化機能
+function autoLinkifyText(text) {
+    const urlRegex = /(https?:\/\/[^\s\n]+)/g;
+    return text.replace(urlRegex, '<a href="$1" target="_blank" style="color: #007bff; text-decoration: underline; cursor: pointer;">$1</a>');
+}
+
+function createLinkedTextDisplay(textarea) {
+    // リンク表示用のdivを作成
+    const linkDisplay = document.createElement('div');
+    linkDisplay.className = 'linked-text-display';
+    linkDisplay.style.cssText = `
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 8px;
+        margin-top: 8px;
+        font-family: inherit;
+        font-size: inherit;
+        line-height: 1.4;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        display: none;
+    `;
+    
+    textarea.parentNode.appendChild(linkDisplay);
+    
+    function updateLinkedDisplay() {
+        const text = textarea.value;
+        const hasUrls = /(https?:\/\/[^\s\n]+)/g.test(text);
+        
+        if (hasUrls && text.trim()) {
+            linkDisplay.innerHTML = autoLinkifyText(text);
+            linkDisplay.style.display = 'block';
+        } else {
+            linkDisplay.style.display = 'none';
+        }
+    }
+    
+    textarea.addEventListener('input', updateLinkedDisplay);
+    textarea.addEventListener('blur', updateLinkedDisplay);
+    
+    // 初期表示
+    updateLinkedDisplay();
+    
+    return linkDisplay;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     let orientationLocked = false;
     
@@ -404,9 +451,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function renderClientInfo() {
         const staffName = clientDetails.staffs?.name || '-';
+        
+        // タイトル横に大きく事業者名を表示
+        const clientNameDisplay = document.getElementById('client-name-display');
+        if (clientNameDisplay) {
+            clientNameDisplay.textContent = clientDetails.name;
+        }
+        
         clientInfoArea.innerHTML = `
             <table class="client-info-table">
-                <tr><th>事業所名</th><td>${clientDetails.name}</td><th>決算月</th><td>${clientDetails.fiscal_month}月</td></tr>
+                <tr><th>事業者ID</th><td>${clientDetails.id}</td><th>決算月</th><td>${clientDetails.fiscal_month}月</td></tr>
                 <tr><th>担当者</th><td>${staffName}</td><th>会計方式</th><td>${clientDetails.accounting_method || '-'}</td></tr>
             </table>`;
     }
@@ -963,6 +1017,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         notesTableBody.innerHTML = urlRowHtml + memoRowHtml;
         addNotesEventListeners();
+        
+        // 月次メモ欄にURL自動リンク化を適用
+        setTimeout(() => {
+            const memoTextareas = document.querySelectorAll('#notes-table textarea[data-field="memo"]');
+            memoTextareas.forEach(textarea => {
+                if (!textarea.parentNode.querySelector('.linked-text-display')) {
+                    createLinkedTextDisplay(textarea);
+                }
+            });
+        }, 100);
     }
 
     // --- Event Listeners ---
@@ -1635,7 +1699,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (clientInfoArea) clientInfoArea.innerHTML = `<div class="error-message"><h3>初期化エラー</h3><p>${handleSupabaseError(error)}</p><button onclick="location.reload()">再読み込み</button></div>`;
         } finally {
             hideLoading();
+            // URL自動リンク化を初期化
+            initializeAutoLinkify();
         }
+    }
+
+    // URL自動リンク化初期化
+    function initializeAutoLinkify() {
+        // 全体メモ欄
+        const generalMemo = document.getElementById('general-memo');
+        if (generalMemo) {
+            createLinkedTextDisplay(generalMemo);
+        }
+
+        // 月次メモ欄（動的に生成されるため、定期的にチェック）
+        setTimeout(() => {
+            const memoTextareas = document.querySelectorAll('#notes-table textarea[data-field="memo"]');
+            memoTextareas.forEach(textarea => {
+                if (!textarea.parentNode.querySelector('.linked-text-display')) {
+                    createLinkedTextDisplay(textarea);
+                }
+            });
+        }, 1000);
     }
 
 

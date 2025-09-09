@@ -354,7 +354,10 @@
     </div>
     <div class="container">
         <div class="sticky-header-area">
-            <h1>顧客進捗管理 - 詳細（Supabase版）</h1>
+            <div class="title-row">
+                <h1>顧客進捗管理 - 詳細</h1>
+                <h2 id="client-name-display" class="client-name-large"><!-- 事業者名がここに表示されます --></h2>
+            </div>
             <div class="nav-links">
                 <a href="index.html" id="back-to-main">メイン画面に戻る</a>
                 <!-- 「年度を選択してください」のラベルを削除 -->
@@ -526,6 +529,28 @@
 
         .client-info-table td {
             background-color: #fff;
+        }
+
+        /* タイトル行のレイアウト */
+        .title-row {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 10px;
+        }
+
+        .title-row h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .client-name-large {
+            margin: 0;
+            font-size: 48px;
+            font-weight: bold;
+            color: #2c5aa0;
+            text-align: center;
+            flex-grow: 1;
         }
 
         /* チェックボックスの当たり判定を広く */
