@@ -2595,18 +2595,19 @@ document.addEventListener('DOMContentLoaded', () => {
             // フィットモードの場合のみ横スクロール無効化
             tableContainer.style.overflowX = 'hidden';
             
-            // ウィンドウ幅に基づく動的調整
+            // ウィンドウ幅に基づく動的調整（ユーザー設定を考慮）
+            const userFontSize = getCurrentFontSize() / 100;
             if (containerWidth < 800) {
                 // 狭い画面では最小限の列幅
-                clientsTable.style.fontSize = '11px';
+                clientsTable.style.fontSize = `${11 * userFontSize}px`;
                 adjustColumnWidths(containerWidth, 'compact');
             } else if (containerWidth < 1200) {
                 // 中程度の画面では適度な列幅
-                clientsTable.style.fontSize = '12px';
+                clientsTable.style.fontSize = `${12 * userFontSize}px`;
                 adjustColumnWidths(containerWidth, 'medium');
             } else {
                 // 広い画面では標準の列幅
-                clientsTable.style.fontSize = '14px';
+                clientsTable.style.fontSize = `${14 * userFontSize}px`;
                 adjustColumnWidths(containerWidth, 'standard');
             }
         }
@@ -2648,7 +2649,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentMode === 'fit') {
                 // フィットモード→スクロールモードに切り替え
                 tableContainer.style.overflowX = 'auto';
-                clientsTable.style.fontSize = '14px';
+                const userFontSize = getCurrentFontSize() / 100;
+                clientsTable.style.fontSize = `${14 * userFontSize}px`;
                 // 元の幅に戻す
                 const ths = clientsTable.querySelectorAll('th');
                 ths.forEach(th => {
@@ -2686,7 +2688,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (savedMode === 'scroll') {
                 // スクロールモードを適用
                 tableContainer.style.overflowX = 'auto';
-                clientsTable.style.fontSize = '14px';
+                const userFontSize = getCurrentFontSize() / 100;
+                clientsTable.style.fontSize = `${14 * userFontSize}px`;
                 const ths = clientsTable.querySelectorAll('th');
                 ths.forEach(th => {
                     th.style.width = '';

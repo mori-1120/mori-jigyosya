@@ -1,5 +1,11 @@
 import { SupabaseAPI, handleSupabaseError } from './supabase-client.js';
 
+// フォントサイズ取得関数
+function getCurrentFontSize() {
+    const savedFontSize = localStorage.getItem('app-font-size');
+    return savedFontSize ? parseInt(savedFontSize) : 100;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     let orientationLocked = false;
     
@@ -1666,18 +1672,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             // フィットモードの場合のみ横スクロールを無効化
             detailsWrapper.style.overflowX = 'hidden';
             
-            // ウィンドウ幅に基づくフォントサイズ調整
+            // ウィンドウ幅に基づくフォントサイズ調整（ユーザー設定を考慮）
+            const userFontSize = getCurrentFontSize() / 100; // パーセンテージを倍率に変換
             if (containerWidth < 800) {
-                detailsTable.style.fontSize = '10px';
-                if (notesTable) notesTable.style.fontSize = '10px';
+                detailsTable.style.fontSize = `${10 * userFontSize}px`;
+                if (notesTable) notesTable.style.fontSize = `${10 * userFontSize}px`;
                 adjustDetailsColumnWidths('compact');
             } else if (containerWidth < 1200) {
-                detailsTable.style.fontSize = '11px';
-                if (notesTable) notesTable.style.fontSize = '11px';
+                detailsTable.style.fontSize = `${11 * userFontSize}px`;
+                if (notesTable) notesTable.style.fontSize = `${11 * userFontSize}px`;
                 adjustDetailsColumnWidths('medium');
             } else {
-                detailsTable.style.fontSize = '13px';
-                if (notesTable) notesTable.style.fontSize = '12px';
+                detailsTable.style.fontSize = `${13 * userFontSize}px`;
+                if (notesTable) notesTable.style.fontSize = `${12 * userFontSize}px`;
                 adjustDetailsColumnWidths('standard');
             }
         }
@@ -1742,8 +1749,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (currentMode === 'fit') {
                 // フィットモード→スクロールモードに切り替え
                 detailsWrapper.style.overflowX = 'auto';
-                detailsTable.style.fontSize = '13px';
-                if (notesTable) notesTable.style.fontSize = '12px';
+                const userFontSize = getCurrentFontSize() / 100;
+                detailsTable.style.fontSize = `${13 * userFontSize}px`;
+                if (notesTable) notesTable.style.fontSize = `${12 * userFontSize}px`;
                 
                 // 元の幅に戻す
                 const allDetailsCells = detailsTable.querySelectorAll('th, td');
@@ -1793,8 +1801,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (savedMode === 'scroll') {
                 // スクロールモードを適用
                 detailsWrapper.style.overflowX = 'auto';
-                detailsTable.style.fontSize = '13px';
-                if (notesTable) notesTable.style.fontSize = '12px';
+                const userFontSize = getCurrentFontSize() / 100;
+                detailsTable.style.fontSize = `${13 * userFontSize}px`;
+                if (notesTable) notesTable.style.fontSize = `${12 * userFontSize}px`;
                 
                 const allDetailsCells = detailsTable.querySelectorAll('th, td');
                 allDetailsCells.forEach(cell => {
