@@ -766,8 +766,82 @@ class AnalyticsPage {
     }
 
     generateExcelData() {
-        // 簡単なExcel互換形式（実際はCSVと同じ形式だが、より構造化）
-        return this.generateCSVData();
+        const { summary, matrix } = this.lastAnalysisData;
+        
+        // Excelワークブック作成
+        const workbook = XLSX.utils.book_new();
+        
+        // サマリーシート
+        const summarySheet = this.createSummarySheet(summary);
+        XLSX.utils.book_append_sheet(workbook, summarySheet, 'サマリー');
+        
+        // 進捗マトリクスシート
+        const matrixSheet = this.createMatrixSheet(matrix);
+        XLSX.utils.book_append_sheet(workbook, matrixSheet, '進捗マトリクス');
+        
+        return workbook;
+    }
+    
+    createSummarySheet(summary) {
+        const data = [
+            ['集計結果サマリー'],
+            [''],
+            ['集計期間', `${this.currentFilters.startPeriod} ～ ${this.currentFilters.endPeriod}`],
+            ['全体進捗率', `${summary.progressRate}%`],
+            ['完了タスク', `${summary.completedTasks} / ${summary.totalTasks}`],
+            ['要注意クライアント', `${summary.attentionClients.length}件`],
+            [''],
+            ['要注意クライアント詳細'],
+            ['クライアント名', '理由', '進捗率']
+        ];
+        
+        // 要注意クライアント詳細を追加
+        summary.attentionClients.forEach(client => {
+            data.push([client.name, client.reason, `${client.progressRate}%`]);
+        });
+        
+        return XLSX.utils.aoa_to_sheet(data);
+    }
+    
+    createMatrixSheet(matrix) {
+        const data = [];
+        
+        // ヘッダー行作成
+        const periods = Object.keys(matrix[0].monthlyProgress || {}).sort();
+        const headers = ['事業者名', '担当者', '全体進捗率', ...periods];
+        data.push(headers);
+        
+        // データ行作成
+        matrix.forEach(client => {
+            const row = [
+                client.name,
+                client.staffName || '',
+                this.formatProgressForExcel(client.completedTasks, client.totalTasks)
+            ];
+            
+            // 各月の進捗を分数形式で追加（日付と間違われないように対策）
+            periods.forEach(period => {
+                const monthData = client.monthlyProgress?.[period];
+                if (monthData) {
+                    row.push(this.formatProgressForExcel(monthData.completed, monthData.total));
+                } else {
+                    row.push('');
+                }
+            });
+            
+            data.push(row);
+        });
+        
+        return XLSX.utils.aoa_to_sheet(data);
+    }
+    
+    formatProgressForExcel(completed, total) {
+        if (!total || total === 0) return '';
+        
+        // 日付と間違われないように対策：
+        // 1. 前後にスペースを入れる
+        // 2. 文字列として明示的にフォーマット
+        return ` ${completed}/${total} `;
     }
 
     downloadCSV(csvContent, filename) {
@@ -784,9 +858,19 @@ class AnalyticsPage {
         }
     }
 
-    downloadExcel(excelContent, filename) {
-        // Excel形式でダウンロード（現在はCSV形式だが、拡張可能）
-        const blob = new Blob([excelContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    downloadExcel(workbook, filename) {
+        // SheetJSでワークブックをExcelバイナリに変換
+        const excelBuffer = XLSX.write(workbook, { 
+            bookType: 'xlsx', 
+            type: 'array',
+            compression: true
+        });
+        
+        // 正しいMIMEタイプでダウンロード
+        const blob = new Blob([excelBuffer], { 
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+        });
+        
         const link = document.createElement('a');
         if (link.download !== undefined) {
             const url = URL.createObjectURL(blob);
@@ -796,6 +880,7 @@ class AnalyticsPage {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
     }
 
