@@ -574,6 +574,14 @@ class AnalyticsPage {
                     aValue = a.progressRate;
                     bValue = b.progressRate;
                     break;
+                case 'staff':
+                    aValue = a.staffName || '';
+                    bValue = b.staffName || '';
+                    break;
+                case 'fiscal':
+                    aValue = parseInt(a.fiscalMonth) || 0;
+                    bValue = parseInt(b.fiscalMonth) || 0;
+                    break;
                 default:
                     return 0;
             }
@@ -595,7 +603,13 @@ class AnalyticsPage {
         // 表示更新
         this.displayProgressMatrix(sortedMatrix);
         
-        showToast(`${sortBy === 'name' ? '事業者名' : '進捗率'}で${this.sortDirection === 'asc' ? '昇順' : '降順'}ソート`, 'success');
+        const sortNames = {
+            'name': '事業者名',
+            'progress': '進捗率', 
+            'staff': '担当者',
+            'fiscal': '決算月'
+        };
+        showToast(`${sortNames[sortBy]}で${this.sortDirection === 'asc' ? '昇順' : '降順'}ソート`, 'success');
     }
 
     updateSortIcons(activeSortBy) {
