@@ -255,7 +255,7 @@ class PerformancePage {
         // 担当者のクライアントIDを取得
         const clientIds = staffClients.map(client => client.id);
         
-        // 各月について、担当者のクライアントのタスクが100%完了している月をカウント
+        // 各月について、担当者の各クライアントのタスクが100%完了している延べ月数をカウント
         for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
             const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
             
@@ -264,31 +264,19 @@ class PerformancePage {
                 task.month === monthKey && clientIds.includes(task.client_id)
             );
             
-            let monthTotalTasks = 0;
-            let monthCompletedTasks = 0;
-            let hasCompletedClients = false; // 完了したクライアントがいるかフラグ
-            
-            // 各クライアントのタスクレコードを集計
+            // 各クライアント（月次タスクレコード）について100%完了かチェック
             monthTasks.forEach(monthlyTask => {
                 if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
                     const tasksList = Object.values(monthlyTask.tasks);
                     const totalTasks = tasksList.length;
                     const completedCount = tasksList.filter(task => task === true || task === '完了').length;
                     
-                    // このクライアントが100%完了している場合のみカウント
+                    // このクライアント×この月が100%完了している場合、延べ月数にカウント
                     if (totalTasks > 0 && completedCount === totalTasks) {
-                        hasCompletedClients = true;
+                        completedMonths++;
                     }
-                    
-                    monthTotalTasks += totalTasks;
-                    monthCompletedTasks += completedCount;
                 }
             });
-            
-            // この月に完了したクライアントがいる場合、完了月数にカウント
-            if (hasCompletedClients) {
-                completedMonths++;
-            }
         }
         
         return completedMonths;
@@ -302,7 +290,7 @@ class PerformancePage {
         // 担当者のクライアントIDを取得
         const clientIds = staffClients.map(client => client.id);
         
-        // 各月について、担当者のクライアントで遅延・停滞があるかチェック
+        // 各月について、担当者の各クライアントで遅延・停滞している延べ月数をカウント
         for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
             const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
             
@@ -311,9 +299,7 @@ class PerformancePage {
                 task.month === monthKey && clientIds.includes(task.client_id)
             );
             
-            // その月に遅延・停滞または進捗が50%未満のクライアントがあるかチェック
-            let hasDelayedClients = false;
-            
+            // 各クライアント（月次タスクレコード）について遅延・停滞かチェック
             monthTasks.forEach(monthlyTask => {
                 if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
                     const tasksList = Object.values(monthlyTask.tasks);
@@ -321,16 +307,12 @@ class PerformancePage {
                     const completedCount = tasksList.filter(task => task === true || task === '完了').length;
                     const progressRate = totalTasks > 0 ? (completedCount / totalTasks) * 100 : 0;
                     
-                    // 進捗率が50%未満または明示的に遅延・停滞ステータスの場合
+                    // このクライアント×この月が遅延ステータス（進捗率50%未満または明示的ステータス）の場合、延べ月数にカウント
                     if (progressRate < 50 || monthlyTask.status === '遅延' || monthlyTask.status === '停滞') {
-                        hasDelayedClients = true;
+                        delayedMonths++;
                     }
                 }
             });
-            
-            if (hasDelayedClients) {
-                delayedMonths++;
-            }
         }
         
         return delayedMonths;
