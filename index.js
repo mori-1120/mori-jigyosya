@@ -2830,6 +2830,26 @@ document.addEventListener('DOMContentLoaded', () => {
     function applyFontSize(size) {
         document.documentElement.style.fontSize = `${size}%`;
         updateFontSizeDisplay(size);
+        
+        // テーブルのフォントサイズも更新
+        updateTableFontSize();
+    }
+    
+    function updateTableFontSize() {
+        const clientsTable = document.getElementById('clients-table');
+        if (!clientsTable) return;
+        
+        const userFontSize = getCurrentFontSize() / 100;
+        const containerWidth = document.querySelector('.table-container')?.offsetWidth || 1200;
+        
+        // 画面幅に応じたベースサイズにユーザー設定を適用
+        if (containerWidth < 800) {
+            clientsTable.style.fontSize = `${11 * userFontSize}px`;
+        } else if (containerWidth < 1200) {
+            clientsTable.style.fontSize = `${12 * userFontSize}px`;
+        } else {
+            clientsTable.style.fontSize = `${14 * userFontSize}px`;
+        }
     }
 
     function updateFontSizeDisplay(size) {

@@ -230,7 +230,7 @@ class PerformancePage {
         const completedMonths = this.calculateCompletedMonths(staffClients, periodTasks, period);
         
         // 遅延発生月数の計算（重複月を除外）
-        const delayedMonths = this.calculateDelayedMonths(periodTasks, period);
+        const delayedMonths = this.calculateDelayedMonths(staffClients, periodTasks, period);
         
         // パフォーマンス評価
         const performanceLevel = this.getPerformanceLevel(avgCompletionRate);
@@ -252,27 +252,41 @@ class PerformancePage {
         const endDate = new Date(period.end + '-01');
         let completedMonths = 0;
         
-        // 各月について、その月のタスクが100%完了しているかチェック
+        // 担当者のクライアントIDを取得
+        const clientIds = staffClients.map(client => client.id);
+        
+        // 各月について、担当者のクライアントのタスクが100%完了している月をカウント
         for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
             const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-            const monthTasks = periodTasks.filter(task => task.month === monthKey);
+            
+            // この月の担当者のクライアントのタスクレコードを取得
+            const monthTasks = periodTasks.filter(task => 
+                task.month === monthKey && clientIds.includes(task.client_id)
+            );
             
             let monthTotalTasks = 0;
             let monthCompletedTasks = 0;
+            let hasCompletedClients = false; // 完了したクライアントがいるかフラグ
             
-            // 各月のタスクレコード内のJSONタスクを集計
+            // 各クライアントのタスクレコードを集計
             monthTasks.forEach(monthlyTask => {
                 if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
                     const tasksList = Object.values(monthlyTask.tasks);
-                    monthTotalTasks += tasksList.length;
-                    
+                    const totalTasks = tasksList.length;
                     const completedCount = tasksList.filter(task => task === true || task === '完了').length;
+                    
+                    // このクライアントが100%完了している場合のみカウント
+                    if (totalTasks > 0 && completedCount === totalTasks) {
+                        hasCompletedClients = true;
+                    }
+                    
+                    monthTotalTasks += totalTasks;
                     monthCompletedTasks += completedCount;
                 }
             });
             
-            // その月が100%完了していればカウント
-            if (monthTotalTasks > 0 && monthCompletedTasks === monthTotalTasks) {
+            // この月に完了したクライアントがいる場合、完了月数にカウント
+            if (hasCompletedClients) {
                 completedMonths++;
             }
         }
@@ -280,22 +294,41 @@ class PerformancePage {
         return completedMonths;
     }
 
-    calculateDelayedMonths(periodTasks, period) {
+    calculateDelayedMonths(staffClients, periodTasks, period) {
         const startDate = new Date(period.start + '-01');
         const endDate = new Date(period.end + '-01');
         let delayedMonths = 0;
         
-        // 各月について、その月に遅延・停滞があるかチェック
+        // 担当者のクライアントIDを取得
+        const clientIds = staffClients.map(client => client.id);
+        
+        // 各月について、担当者のクライアントで遅延・停滞があるかチェック
         for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
             const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-            const monthTasks = periodTasks.filter(task => task.month === monthKey);
             
-            // その月に遅延・停滞のタスクがあるかチェック
-            const hasDelayed = monthTasks.some(task => 
-                task.status === '遅延' || task.status === '停滞'
+            // この月の担当者のクライアントのタスクレコードを取得
+            const monthTasks = periodTasks.filter(task => 
+                task.month === monthKey && clientIds.includes(task.client_id)
             );
             
-            if (hasDelayed) {
+            // その月に遅延・停滞または進捗が50%未満のクライアントがあるかチェック
+            let hasDelayedClients = false;
+            
+            monthTasks.forEach(monthlyTask => {
+                if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
+                    const tasksList = Object.values(monthlyTask.tasks);
+                    const totalTasks = tasksList.length;
+                    const completedCount = tasksList.filter(task => task === true || task === '完了').length;
+                    const progressRate = totalTasks > 0 ? (completedCount / totalTasks) * 100 : 0;
+                    
+                    // 進捗率が50%未満または明示的に遅延・停滞ステータスの場合
+                    if (progressRate < 50 || monthlyTask.status === '遅延' || monthlyTask.status === '停滞') {
+                        hasDelayedClients = true;
+                    }
+                }
+            });
+            
+            if (hasDelayedClients) {
                 delayedMonths++;
             }
         }
