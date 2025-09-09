@@ -17,7 +17,7 @@ function createLinkedTextDisplay(textarea) {
     const displayDiv = document.createElement('div');
     displayDiv.className = 'linked-text-display';
     displayDiv.style.cssText = `
-        min-height: 120px;
+        min-height: 165px;
         padding: 8px;
         border: 1px solid #ced4da;
         border-radius: 4px;
