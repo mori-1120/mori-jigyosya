@@ -13,44 +13,65 @@ function autoLinkifyText(text) {
 }
 
 function createLinkedTextDisplay(textarea) {
-    // リンク表示用のdivを作成
-    const linkDisplay = document.createElement('div');
-    linkDisplay.className = 'linked-text-display';
-    linkDisplay.style.cssText = `
-        background: #f8f9fa;
-        border: 1px solid #dee2e6;
-        border-radius: 4px;
+    // 表示用のdivを作成
+    const displayDiv = document.createElement('div');
+    displayDiv.className = 'linked-text-display';
+    displayDiv.style.cssText = `
+        min-height: 60px;
         padding: 8px;
-        margin-top: 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background-color: #ffffff;
         font-family: inherit;
         font-size: inherit;
         line-height: 1.4;
         white-space: pre-wrap;
         word-wrap: break-word;
-        display: none;
+        cursor: text;
+        color: #495057;
     `;
     
-    textarea.parentNode.appendChild(linkDisplay);
+    // テキストエリアを一時的に非表示
+    textarea.style.display = 'none';
     
-    function updateLinkedDisplay() {
+    // テキストエリアの後に表示用divを挿入
+    textarea.parentNode.insertBefore(displayDiv, textarea.nextSibling);
+    
+    function updateDisplay() {
         const text = textarea.value;
-        const hasUrls = /(https?:\/\/[^\s\n]+)/g.test(text);
-        
-        if (hasUrls && text.trim()) {
-            linkDisplay.innerHTML = autoLinkifyText(text);
-            linkDisplay.style.display = 'block';
+        if (text.trim()) {
+            displayDiv.innerHTML = autoLinkifyText(text);
         } else {
-            linkDisplay.style.display = 'none';
+            displayDiv.innerHTML = '<span style="color: #6c757d; font-style: italic;">メモを入力してください...</span>';
         }
     }
     
-    textarea.addEventListener('input', updateLinkedDisplay);
-    textarea.addEventListener('blur', updateLinkedDisplay);
+    // 表示div をクリックしたらテキストエリアに切り替え
+    displayDiv.addEventListener('click', (e) => {
+        // リンクをクリックした場合は編集モードに入らない
+        if (e.target.tagName !== 'A') {
+            displayDiv.style.display = 'none';
+            textarea.style.display = 'block';
+            textarea.focus();
+        }
+    });
+    
+    // テキストエリアからフォーカスが外れたら表示モードに戻る
+    textarea.addEventListener('blur', () => {
+        setTimeout(() => {
+            displayDiv.style.display = 'block';
+            textarea.style.display = 'none';
+            updateDisplay();
+        }, 100);
+    });
+    
+    // テキスト変更時に表示を更新
+    textarea.addEventListener('input', updateDisplay);
     
     // 初期表示
-    updateLinkedDisplay();
+    updateDisplay();
     
-    return linkDisplay;
+    return displayDiv;
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
