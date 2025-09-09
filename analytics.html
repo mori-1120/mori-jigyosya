@@ -86,8 +86,14 @@
                             <div onclick="analytics.exportToCSV()" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;">
                                 📄 CSV形式
                             </div>
-                            <div onclick="analytics.exportToExcel()" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;">
-                                📗 Excel形式
+                            <div onclick="analytics.exportToExcel('basic')" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;">
+                                📗 Excel形式（基本）
+                            </div>
+                            <div onclick="analytics.exportToExcel('table')" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;">
+                                📊 Excel形式（テーブル）
+                            </div>
+                            <div onclick="analytics.exportToExcel('styled')" style="padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #eee;">
+                                ✨ Excel形式（高機能）
                             </div>
                             <div onclick="analytics.exportToPDF()" style="padding: 10px 15px; cursor: pointer;">
                                 📕 PDF形式

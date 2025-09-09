@@ -670,16 +670,28 @@ class AnalyticsPage {
         }
     }
 
-    exportToExcel() {
+    exportToExcel(format = 'basic') {
         if (!this.lastAnalysisData) {
             showToast('先に集計を実行してください', 'warning');
             return;
         }
 
         try {
-            const excelData = this.generateExcelData();
-            this.downloadExcel(excelData, `進捗分析結果_${this.getCurrentDateString()}.xlsx`);
-            showToast('Excel形式でエクスポートしました', 'success');
+            let formatName = '';
+            switch(format) {
+                case 'table':
+                    formatName = '（テーブル形式）';
+                    break;
+                case 'styled':
+                    formatName = '（高機能形式）';
+                    break;
+                default:
+                    formatName = '（基本形式）';
+            }
+
+            const excelData = this.generateExcelData(format);
+            this.downloadExcel(excelData, `進捗分析結果${formatName}_${this.getCurrentDateString()}.xlsx`);
+            showToast(`Excel形式${formatName}でエクスポートしました`, 'success');
             document.getElementById('export-menu').style.display = 'none';
         } catch (error) {
             console.error('Excel export failed:', error);
@@ -765,24 +777,24 @@ class AnalyticsPage {
         return csvContent;
     }
 
-    generateExcelData() {
+    generateExcelData(format = 'basic') {
         const { summary, matrix } = this.lastAnalysisData;
         
         // Excelワークブック作成
         const workbook = XLSX.utils.book_new();
         
         // サマリーシート
-        const summarySheet = this.createSummarySheet(summary);
+        const summarySheet = this.createSummarySheet(summary, format);
         XLSX.utils.book_append_sheet(workbook, summarySheet, 'サマリー');
         
         // 進捗マトリクスシート
-        const matrixSheet = this.createMatrixSheet(matrix);
+        const matrixSheet = this.createMatrixSheet(matrix, format);
         XLSX.utils.book_append_sheet(workbook, matrixSheet, '進捗マトリクス');
         
         return workbook;
     }
     
-    createSummarySheet(summary) {
+    createSummarySheet(summary, format = 'basic') {
         const data = [
             ['集計結果サマリー'],
             [''],
@@ -803,7 +815,7 @@ class AnalyticsPage {
         return XLSX.utils.aoa_to_sheet(data);
     }
     
-    createMatrixSheet(matrix) {
+    createMatrixSheet(matrix, format = 'basic') {
         const data = [];
         
         // ヘッダー行作成
@@ -832,7 +844,129 @@ class AnalyticsPage {
             data.push(row);
         });
         
-        return XLSX.utils.aoa_to_sheet(data);
+        // ワークシート作成
+        const worksheet = XLSX.utils.aoa_to_sheet(data);
+        
+        // フォーマットに応じた追加処理
+        if (format === 'basic') {
+            // 基本形式：最低限のフォーマットのみ
+            this.applyBasicFormatting(worksheet, data, headers);
+        } else if (format === 'table') {
+            // テーブル形式：フィルタリング・ソート機能付き
+            this.applyTableFormatting(worksheet, data, headers);
+        } else if (format === 'styled') {
+            // 高機能形式：テーブル + 条件付き書式 + スタイル
+            this.applyTableFormatting(worksheet, data, headers);
+            this.applyAdvancedStyling(worksheet, data, headers);
+        }
+        
+        return worksheet;
+    }
+    
+    applyTableFormatting(worksheet, data, headers) {
+        const range = XLSX.utils.encode_range({
+            s: { c: 0, r: 0 },
+            e: { c: headers.length - 1, r: data.length - 1 }
+        });
+        
+        // テーブル定義を追加（フィルタリング・ソート機能付き）
+        if (!worksheet['!tables']) {
+            worksheet['!tables'] = [];
+        }
+        
+        worksheet['!tables'].push({
+            ref: range,
+            name: 'ProgressTable',
+            headerRowCount: 1,
+            tableStyleInfo: {
+                name: 'TableStyleMedium2',
+                showFirstColumn: false,
+                showLastColumn: false,
+                showRowStripes: true,
+                showColumnStripes: false
+            }
+        });
+        
+        // 列幅自動調整
+        this.setColumnWidths(worksheet, data, headers);
+    }
+    
+    applyBasicFormatting(worksheet, data, headers) {
+        // 基本的な列幅設定のみ
+        this.setColumnWidths(worksheet, data, headers);
+    }
+    
+    applyAdvancedStyling(worksheet, data, headers) {
+        // ヘッダー行のスタイル設定
+        for (let i = 0; i < headers.length; i++) {
+            const cellRef = XLSX.utils.encode_cell({ r: 0, c: i });
+            if (!worksheet[cellRef].s) worksheet[cellRef].s = {};
+            
+            worksheet[cellRef].s = {
+                fill: { fgColor: { rgb: "366092" } },
+                font: { color: { rgb: "FFFFFF" }, bold: true },
+                alignment: { horizontal: "center", vertical: "center" },
+                border: {
+                    top: { style: "thin", color: { rgb: "000000" } },
+                    bottom: { style: "thin", color: { rgb: "000000" } },
+                    left: { style: "thin", color: { rgb: "000000" } },
+                    right: { style: "thin", color: { rgb: "000000" } }
+                }
+            };
+        }
+        
+        // 条件付き書式（進捗率に応じた色分け）
+        this.applyConditionalFormatting(worksheet, data, headers);
+        
+        // 行の高さ設定
+        if (!worksheet['!rows']) worksheet['!rows'] = [];
+        for (let i = 0; i < data.length; i++) {
+            worksheet['!rows'][i] = { hpt: 20 };
+        }
+    }
+    
+    setColumnWidths(worksheet, data, headers) {
+        const colWidths = [];
+        for (let i = 0; i < headers.length; i++) {
+            let maxWidth = headers[i].length;
+            for (let j = 1; j < data.length; j++) {
+                if (data[j][i]) {
+                    maxWidth = Math.max(maxWidth, String(data[j][i]).length);
+                }
+            }
+            colWidths.push({ wch: Math.min(maxWidth + 2, 20) });
+        }
+        worksheet['!cols'] = colWidths;
+    }
+    
+    applyConditionalFormatting(worksheet, data, headers) {
+        // 全体進捗率列（3列目）に条件付き書式を適用
+        const progressColIndex = 2; // 全体進捗率の列
+        
+        for (let row = 1; row < data.length; row++) {
+            const cellRef = XLSX.utils.encode_cell({ r: row, c: progressColIndex });
+            if (worksheet[cellRef] && worksheet[cellRef].v) {
+                const progressText = String(worksheet[cellRef].v).trim();
+                const match = progressText.match(/(\d+)\/(\d+)/);
+                
+                if (match) {
+                    const completed = parseInt(match[1]);
+                    const total = parseInt(match[2]);
+                    const rate = (completed / total) * 100;
+                    
+                    if (!worksheet[cellRef].s) worksheet[cellRef].s = {};
+                    
+                    // 進捗率に応じた背景色
+                    if (rate >= 80) {
+                        worksheet[cellRef].s.fill = { fgColor: { rgb: "C6EFCE" } }; // 薄い緑
+                    } else if (rate >= 50) {
+                        worksheet[cellRef].s.fill = { fgColor: { rgb: "FFEB9C" } }; // 薄い黄
+                    } else {
+                        worksheet[cellRef].s.fill = { fgColor: { rgb: "FFC7CE" } }; // 薄い赤
+                    }
+                }
+            }
+        }
     }
     
     formatProgressForExcel(completed, total) {

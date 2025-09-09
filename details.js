@@ -484,6 +484,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <tr><th>事業者ID</th><td>${clientDetails.id}</td><th>決算月</th><td>${clientDetails.fiscal_month}月</td></tr>
                 <tr><th>担当者</th><td>${staffName}</td><th>会計方式</th><td>${clientDetails.accounting_method || '-'}</td></tr>
             </table>`;
+        
+        // 全体メモの読み込み
+        loadOverallMemo();
     }
 
     async function renderYearFilter() {
@@ -1081,6 +1084,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 setUnsavedChanges(true);
             });
         });
+
+        // 全体メモ欄の変更検知を追加
+        const generalMemoField = document.getElementById('general-memo');
+        if (generalMemoField) {
+            generalMemoField.addEventListener('input', (e) => {
+                setUnsavedChanges(true);
+            });
+        }
     }
 
     function checkForIndividualConfetti(monthKey) {
@@ -1221,6 +1232,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const updatedResults = await Promise.all(savePromises);
 
+            // 全体メモの保存
+            await saveOverallMemo();
+
             // 紙吹雪は個別のチェックボックス操作でのみ発生、保存時には発生しない
 
             toast.update(saveToast, '変更が保存されました', 'success');
@@ -1231,6 +1245,28 @@ document.addEventListener('DOMContentLoaded', async () => {
             setUnsavedChanges(true);
         } finally {
             isSaving = false;
+        }
+    }
+
+    // 全体メモ保存処理
+    async function saveOverallMemo() {
+        const generalMemoField = document.getElementById('general-memo');
+        if (generalMemoField && clientId) {
+            const memoValue = generalMemoField.value.trim();
+            await SupabaseAPI.updateClient(clientId, { 
+                overall_memo: memoValue 
+            });
+            console.log('[Details] Overall memo saved:', memoValue);
+        }
+    }
+
+    // 全体メモ読み込み処理
+    function loadOverallMemo() {
+        const generalMemoField = document.getElementById('general-memo');
+        if (generalMemoField && clientDetails) {
+            const memoValue = clientDetails.overall_memo || '';
+            generalMemoField.value = memoValue;
+            console.log('[Details] Overall memo loaded:', memoValue);
         }
     }
 
