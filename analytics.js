@@ -783,15 +783,85 @@ class AnalyticsPage {
         // Excelワークブック作成
         const workbook = XLSX.utils.book_new();
         
-        // サマリーシート
-        const summarySheet = this.createSummarySheet(summary, format);
-        XLSX.utils.book_append_sheet(workbook, summarySheet, 'サマリー');
-        
-        // 進捗マトリクスシート
-        const matrixSheet = this.createMatrixSheet(matrix, format);
-        XLSX.utils.book_append_sheet(workbook, matrixSheet, '進捗マトリクス');
+        // サマリーと進捗マトリクスを1つのシートに統合
+        const combinedSheet = this.createCombinedSheet(summary, matrix, format);
+        XLSX.utils.book_append_sheet(workbook, combinedSheet, '分析結果');
         
         return workbook;
+    }
+    
+    createCombinedSheet(summary, matrix, format = 'basic') {
+        const data = [];
+        
+        // === サマリーセクション ===
+        data.push(['📊 集計結果サマリー']);
+        data.push(['']);
+        data.push(['集計期間', `${this.currentFilters.startPeriod} ～ ${this.currentFilters.endPeriod}`]);
+        data.push(['全体進捗率', `${summary.progressRate}%`]);
+        data.push(['完了タスク', `${summary.completedTasks} / ${summary.totalTasks}`]);
+        data.push(['要注意クライアント', `${summary.attentionClients.length}件`]);
+        data.push(['']);
+        
+        // 要注意クライアント詳細
+        if (summary.attentionClients.length > 0) {
+            data.push(['⚠️ 要注意クライアント詳細']);
+            data.push(['クライアント名', '理由', '進捗率']);
+            summary.attentionClients.forEach(client => {
+                data.push([client.name, client.reason, `${client.progressRate}%`]);
+            });
+            data.push(['']);
+        }
+        
+        // === 進捗マトリクスセクション ===
+        data.push(['📋 進捗マトリクス表']);
+        data.push(['']);
+        
+        // マトリクスヘッダー行作成
+        const periods = Object.keys(matrix[0].monthlyProgress || {}).sort();
+        const headers = ['事業者名', '担当者', '全体進捗率', ...periods];
+        data.push(headers);
+        
+        // マトリクスデータ行作成
+        matrix.forEach(client => {
+            const row = [
+                client.name,
+                client.staffName || '',
+                this.formatProgressForExcel(client.completedTasks, client.totalTasks)
+            ];
+            
+            // 各月の進捗を分数形式で追加（日付と間違われないように対策）
+            periods.forEach(period => {
+                const monthData = client.monthlyProgress?.[period];
+                if (monthData) {
+                    row.push(this.formatProgressForExcel(monthData.completed, monthData.total));
+                } else {
+                    row.push('');
+                }
+            });
+            
+            data.push(row);
+        });
+        
+        // ワークシート作成
+        const worksheet = XLSX.utils.aoa_to_sheet(data);
+        
+        // マトリクス部分のヘッダー行インデックスを計算
+        const matrixHeaderRowIndex = summary.attentionClients.length > 0 ? 
+            9 + summary.attentionClients.length : 8;
+        
+        // フォーマットに応じた追加処理
+        if (format === 'basic') {
+            this.setColumnWidths(worksheet, data, headers);
+        } else if (format === 'table') {
+            this.setColumnWidths(worksheet, data, headers);
+            this.applyCombinedHeaderStyling(worksheet, data, matrixHeaderRowIndex, headers);
+        } else if (format === 'styled') {
+            this.setColumnWidths(worksheet, data, headers);
+            this.applyCombinedHeaderStyling(worksheet, data, matrixHeaderRowIndex, headers);
+            this.applyCombinedConditionalFormatting(worksheet, data, matrixHeaderRowIndex);
+        }
+        
+        return worksheet;
     }
     
     createSummarySheet(summary, format = 'basic') {
@@ -864,31 +934,15 @@ class AnalyticsPage {
     }
     
     applyTableFormatting(worksheet, data, headers) {
-        const range = XLSX.utils.encode_range({
-            s: { c: 0, r: 0 },
-            e: { c: headers.length - 1, r: data.length - 1 }
-        });
-        
-        // テーブル定義を追加（フィルタリング・ソート機能付き）
-        if (!worksheet['!tables']) {
-            worksheet['!tables'] = [];
-        }
-        
-        worksheet['!tables'].push({
-            ref: range,
-            name: 'ProgressTable',
-            headerRowCount: 1,
-            tableStyleInfo: {
-                name: 'TableStyleMedium2',
-                showFirstColumn: false,
-                showLastColumn: false,
-                showRowStripes: true,
-                showColumnStripes: false
-            }
-        });
+        // SheetJS Community Edition制限により、テーブル形式は利用できません
+        // 代わりに基本的なフォーマットを適用
+        console.warn('テーブル形式: SheetJS Community Edition では対応していません');
         
         // 列幅自動調整
         this.setColumnWidths(worksheet, data, headers);
+        
+        // ヘッダー行の基本的なスタイル（可能な範囲で）
+        this.applyHeaderStyling(worksheet, headers);
     }
     
     applyBasicFormatting(worksheet, data, headers) {
@@ -939,8 +993,22 @@ class AnalyticsPage {
         worksheet['!cols'] = colWidths;
     }
     
+    applyHeaderStyling(worksheet, headers) {
+        // SheetJS Community Edition での基本的なヘッダースタイル
+        for (let i = 0; i < headers.length; i++) {
+            const cellRef = XLSX.utils.encode_cell({ r: 0, c: i });
+            if (worksheet[cellRef]) {
+                // セル値にマークを追加して視覚的に強調
+                worksheet[cellRef].v = `【${headers[i]}】`;
+            }
+        }
+    }
+    
     applyConditionalFormatting(worksheet, data, headers) {
-        // 全体進捗率列（3列目）に条件付き書式を適用
+        // SheetJS Community Edition制限により、条件付き書式は利用できません
+        console.warn('条件付き書式: SheetJS Community Edition では対応していません');
+        
+        // 代わりに進捗率の数値表現を改善（テキストレベルでの視覚化）
         const progressColIndex = 2; // 全体進捗率の列
         
         for (let row = 1; row < data.length; row++) {
@@ -954,16 +1022,59 @@ class AnalyticsPage {
                     const total = parseInt(match[2]);
                     const rate = (completed / total) * 100;
                     
-                    if (!worksheet[cellRef].s) worksheet[cellRef].s = {};
-                    
-                    // 進捗率に応じた背景色
+                    // 進捗率に応じた視覚的な表現を追加
+                    let statusIcon = '';
                     if (rate >= 80) {
-                        worksheet[cellRef].s.fill = { fgColor: { rgb: "C6EFCE" } }; // 薄い緑
+                        statusIcon = '✅'; // 完了
                     } else if (rate >= 50) {
-                        worksheet[cellRef].s.fill = { fgColor: { rgb: "FFEB9C" } }; // 薄い黄
+                        statusIcon = '⚠️'; // 注意
                     } else {
-                        worksheet[cellRef].s.fill = { fgColor: { rgb: "FFC7CE" } }; // 薄い赤
+                        statusIcon = '🔴'; // 遅延
                     }
+                    
+                    // セルの値を更新（アイコン付き）
+                    worksheet[cellRef].v = `${statusIcon} ${progressText}`;
+                }
+            }
+        }
+    }
+    
+    applyCombinedHeaderStyling(worksheet, data, matrixHeaderRowIndex, headers) {
+        // 統合シートのヘッダー強調
+        for (let i = 0; i < headers.length; i++) {
+            const cellRef = XLSX.utils.encode_cell({ r: matrixHeaderRowIndex, c: i });
+            if (worksheet[cellRef]) {
+                worksheet[cellRef].v = `【${headers[i]}】`;
+            }
+        }
+    }
+    
+    applyCombinedConditionalFormatting(worksheet, data, matrixHeaderRowIndex) {
+        // 統合シートの進捗アイコン追加
+        const progressColIndex = 2; // 全体進捗率の列
+        const startDataRow = matrixHeaderRowIndex + 1;
+        
+        for (let row = startDataRow; row < data.length; row++) {
+            const cellRef = XLSX.utils.encode_cell({ r: row, c: progressColIndex });
+            if (worksheet[cellRef] && worksheet[cellRef].v) {
+                const progressText = String(worksheet[cellRef].v).trim();
+                const match = progressText.match(/(\d+)\/(\d+)/);
+                
+                if (match) {
+                    const completed = parseInt(match[1]);
+                    const total = parseInt(match[2]);
+                    const rate = (completed / total) * 100;
+                    
+                    let statusIcon = '';
+                    if (rate >= 80) {
+                        statusIcon = '✅';
+                    } else if (rate >= 50) {
+                        statusIcon = '⚠️';
+                    } else {
+                        statusIcon = '🔴';
+                    }
+                    
+                    worksheet[cellRef].v = `${statusIcon} ${progressText}`;
                 }
             }
         }
@@ -1042,8 +1153,8 @@ class AnalyticsPage {
             <title>進捗分析結果レポート - ${this.getCurrentDateString()}</title>
             <style>
                 @page { 
-                    size: A4; 
-                    margin: 20mm;
+                    size: A4 landscape; 
+                    margin: 15mm;
                 }
                 * {
                     margin: 0;
@@ -1132,9 +1243,25 @@ class AnalyticsPage {
                     background-color: #f8f9fa;
                     font-weight: bold;
                 }
-                .progress-high { color: #28a745; font-weight: bold; }
-                .progress-medium { color: #ffc107; font-weight: bold; }
-                .progress-low { color: #dc3545; font-weight: bold; }
+                .progress-high { 
+                    background-color: #d4edda !important; 
+                    color: #155724; 
+                    font-weight: bold; 
+                }
+                .progress-medium { 
+                    background-color: #fff3cd !important; 
+                    color: #856404; 
+                    font-weight: bold; 
+                }
+                .progress-low { 
+                    background-color: #f8d7da !important; 
+                    color: #721c24; 
+                    font-weight: bold; 
+                }
+                .month-cell {
+                    font-size: 9px;
+                    white-space: nowrap;
+                }
                 .page-break { page-break-before: always; }
             </style>
         </head>
@@ -1176,29 +1303,8 @@ class AnalyticsPage {
             <div class="page-break"></div>
             
             <div class="summary-section">
-                <h2>📋 進捗マトリクス表</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>事業者名</th>
-                            <th>進捗率</th>
-                            <th>完了/総数</th>
-                            <th>担当者</th>
-                            <th>決算月</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${matrix.map(row => `
-                        <tr>
-                            <td style="text-align: left; font-weight: bold;">${row.clientName}</td>
-                            <td class="${row.progressRate >= 80 ? 'progress-high' : row.progressRate >= 50 ? 'progress-medium' : 'progress-low'}">${row.progressRate}%</td>
-                            <td>${row.completedTasks}/${row.totalTasks}</td>
-                            <td>${row.staffName}</td>
-                            <td>${row.fiscalMonth}月</td>
-                        </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                <h2>📋 進捗マトリクス表（月次進捗含む）</h2>
+                ${this.generateMonthlyProgressTable(matrix)}
             </div>
         </body>
         </html>`;
@@ -1213,6 +1319,58 @@ class AnalyticsPage {
                 printWindow.close();
             };
         };
+    }
+
+    generateMonthlyProgressTable(matrix) {
+        if (!matrix || matrix.length === 0) return '<p>データがありません</p>';
+        
+        // 期間内の月を取得
+        const periods = Object.keys(matrix[0].monthlyProgress || {}).sort();
+        
+        // テーブルヘッダー
+        const headers = ['事業者名', '担当者', '全体進捗', ...periods];
+        
+        return `
+        <table style="font-size: 8px;">
+            <thead>
+                <tr>
+                    ${headers.map(header => `<th style="padding: 6px 4px;">${header}</th>`).join('')}
+                </tr>
+            </thead>
+            <tbody>
+                ${matrix.map(client => {
+                    // 全体進捗の色分けクラスを決定
+                    const overallRate = client.totalTasks > 0 ? 
+                        Math.round((client.completedTasks / client.totalTasks) * 100) : 0;
+                    const overallClass = overallRate >= 80 ? 'progress-high' : 
+                                        overallRate >= 50 ? 'progress-medium' : 'progress-low';
+                    
+                    return `
+                    <tr>
+                        <td style="text-align: left; font-weight: bold; padding: 6px 4px;">${client.name}</td>
+                        <td style="padding: 6px 4px;">${client.staffName || '-'}</td>
+                        <td class="${overallClass}" style="padding: 6px 4px;">${overallRate}% (${client.completedTasks}/${client.totalTasks})</td>
+                        ${periods.map(period => {
+                            const monthData = client.monthlyProgress?.[period];
+                            if (!monthData) return '<td style="padding: 6px 4px;">-</td>';
+                            
+                            const monthRate = monthData.total > 0 ? 
+                                Math.round((monthData.completed / monthData.total) * 100) : 0;
+                            const monthClass = monthRate >= 80 ? 'progress-high' : 
+                                              monthRate >= 50 ? 'progress-medium' : 'progress-low';
+                            
+                            return `<td class="${monthClass} month-cell" style="padding: 6px 4px;">${monthData.completed}/${monthData.total}</td>`;
+                        }).join('')}
+                    </tr>`;
+                }).join('')}
+            </tbody>
+        </table>
+        <div style="margin-top: 15px; font-size: 10px;">
+            <strong>色分けの説明:</strong> 
+            <span style="background-color: #d4edda; padding: 2px 6px; border-radius: 3px; margin: 0 3px;">80%以上</span>
+            <span style="background-color: #fff3cd; padding: 2px 6px; border-radius: 3px; margin: 0 3px;">50-79%</span>
+            <span style="background-color: #f8d7da; padding: 2px 6px; border-radius: 3px; margin: 0 3px;">50%未満</span>
+        </div>`;
     }
 
     calculateStatusComposition(tasks) {
