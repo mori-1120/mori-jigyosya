@@ -19,12 +19,12 @@ function createLinkedTextDisplay(textarea) {
     displayDiv.style.cssText = `
         min-height: 165px;
         padding: 8px;
-        border: 1px solid #ced4da;
+        border: 0px solid #ced4da;
         border-radius: 4px;
         background-color: #ffffff;
         font-family: inherit;
         font-size: inherit;
-        line-height: 1.4;
+        line-height: 1;
         white-space: pre-wrap;
         word-wrap: break-word;
         cursor: text;
