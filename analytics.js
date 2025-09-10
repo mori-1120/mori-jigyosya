@@ -850,12 +850,26 @@ class AnalyticsPage {
     }
 
     generateCSVData() {
-        const { summary, matrix } = this.lastAnalysisData;
+        const { summary } = this.lastAnalysisData;
+        const matrix = this.getSortedMatrix(); // ソート済みデータを取得
         let csvContent = '\uFEFF'; // UTF-8 BOM for Excel compatibility
 
         // サマリー情報
         csvContent += '集計結果サマリー\n';
         csvContent += `集計期間,${this.currentFilters.startPeriod} ～ ${this.currentFilters.endPeriod}\n`;
+        
+        // フィルター条件を追加
+        const filterInfo = this.getFilterInfo();
+        if (filterInfo.length > 0) {
+            csvContent += `検索条件,${filterInfo.join(' | ')}\n`;
+        }
+        
+        // ソート情報を追加
+        const sortInfo = this.getSortInfo();
+        if (sortInfo) {
+            csvContent += `並び順,${sortInfo}\n`;
+        }
+        
         csvContent += `全体進捗率,${summary.progressRate}%\n`;
         csvContent += `完了タスク,${summary.completedTasks} / ${summary.totalTasks}\n`;
         csvContent += `要注意クライアント,${summary.attentionClients.length}件\n`;
@@ -902,7 +916,7 @@ class AnalyticsPage {
             for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
                 const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
                 const monthData = row.monthlyProgress[monthKey] || { completed: 0, total: 0, rate: 0 };
-                dataRow.push(`${monthData.completed}/${monthData.total} (${monthData.rate}%)`);
+                dataRow.push(`${monthData.completed}/${monthData.total}`);
             }
 
             csvContent += dataRow.join(',') + '\n';
@@ -912,7 +926,8 @@ class AnalyticsPage {
     }
 
     generateExcelData(format = 'basic') {
-        const { summary, matrix } = this.lastAnalysisData;
+        const { summary } = this.lastAnalysisData;
+        const matrix = this.getSortedMatrix(); // ソート済みデータを取得
         
         // Excelワークブック作成
         const workbook = XLSX.utils.book_new();
@@ -931,6 +946,19 @@ class AnalyticsPage {
         data.push(['📊 集計結果サマリー']);
         data.push(['']);
         data.push(['集計期間', `${this.currentFilters.startPeriod} ～ ${this.currentFilters.endPeriod}`]);
+        
+        // フィルター条件を追加
+        const filterInfo = this.getFilterInfo();
+        if (filterInfo.length > 0) {
+            data.push(['検索条件', filterInfo.join(' | ')]);
+        }
+        
+        // ソート情報を追加
+        const sortInfo = this.getSortInfo();
+        if (sortInfo) {
+            data.push(['並び順', sortInfo]);
+        }
+        
         data.push(['全体進捗率', `${summary.progressRate}%`]);
         data.push(['完了タスク', `${summary.completedTasks} / ${summary.totalTasks}`]);
         data.push(['要注意クライアント', `${summary.attentionClients.length}件`]);
@@ -1275,7 +1303,8 @@ class AnalyticsPage {
 
     generatePDFReport() {
         // PDF用のレポート内容を生成
-        const { summary, matrix } = this.lastAnalysisData;
+        const { summary } = this.lastAnalysisData;
+        const matrix = this.getSortedMatrix(); // ソート済みデータを取得
         
         // 新しいウィンドウでPDF用のレポートページを開く
         const printWindow = window.open('', '_blank');
@@ -1333,7 +1362,7 @@ class AnalyticsPage {
                     margin-bottom: 20px;
                 }
                 .summary-card {
-                    border: 1px solid #dee2e6;
+                    border: 1px solid #999;
                     border-radius: 4px;
                     padding: 15px;
                     text-align: center;
@@ -1369,7 +1398,7 @@ class AnalyticsPage {
                     font-size: 10px;
                 }
                 th, td {
-                    border: 1px solid #dee2e6;
+                    border: 1px solid #333;
                     padding: 8px;
                     text-align: center;
                 }
@@ -1404,6 +1433,8 @@ class AnalyticsPage {
                 <h1>📊 進捗分析結果レポート</h1>
                 <div class="date">作成日時: ${new Date().toLocaleString('ja-JP')}</div>
                 <div class="date">集計期間: ${this.currentFilters.startPeriod} ～ ${this.currentFilters.endPeriod}</div>
+                ${this.getFilterInfo().length > 0 ? `<div class="date">検索条件: ${this.getFilterInfo().join(' | ')}</div>` : ''}
+                ${this.getSortInfo() ? `<div class="date">並び順: ${this.getSortInfo()}</div>` : ''}
             </div>
             
             <div class="summary-section">
@@ -1481,7 +1512,7 @@ class AnalyticsPage {
                     
                     return `
                     <tr>
-                        <td style="text-align: left; font-weight: bold; padding: 6px 4px;">${client.name}</td>
+                        <td style="text-align: left; font-weight: bold; padding: 6px 4px;">${client.clientName}</td>
                         <td style="padding: 6px 4px;">${client.staffName || '-'}</td>
                         <td class="${overallClass}" style="padding: 6px 4px;">${overallRate}% (${client.completedTasks}/${client.totalTasks})</td>
                         ${periods.map(period => {
@@ -1686,6 +1717,115 @@ class AnalyticsPage {
         if (this.lastAnalysisData && this.lastAnalysisData.summary.attentionClients) {
             this.displayAttentionClients(this.lastAnalysisData.summary.attentionClients);
         }
+    }
+
+    getFilterInfo() {
+        const filterInfo = [];
+        
+        // 担当者フィルター
+        if (this.currentFilters.staffId) {
+            const selectedStaff = this.staffs.find(s => s.id == this.currentFilters.staffId);
+            if (selectedStaff) {
+                filterInfo.push(`担当者: ${selectedStaff.name}`);
+            }
+        }
+        
+        // 決算月フィルター
+        if (this.currentFilters.fiscalMonth) {
+            filterInfo.push(`決算月: ${this.currentFilters.fiscalMonth}月`);
+        }
+        
+        return filterInfo;
+    }
+
+    getSortedMatrix() {
+        if (!this.lastAnalysisData || !this.lastAnalysisData.matrix) {
+            return [];
+        }
+
+        let matrix = [...this.lastAnalysisData.matrix];
+
+        // 現在のソート状態が設定されている場合、そのソートを適用
+        if (this.currentSort) {
+            matrix = this.applySortToMatrix(matrix);
+        }
+
+        return matrix;
+    }
+
+    applySortToMatrix(matrix) {
+        return matrix.sort((a, b) => {
+            let aValue, bValue;
+            
+            // 月別ソートの場合
+            if (this.currentSort && this.currentSort.startsWith('month-')) {
+                const monthKey = this.currentSort.replace('month-', '');
+                const aData = a.monthlyProgress[monthKey] || { rate: -1 };
+                const bData = b.monthlyProgress[monthKey] || { rate: -1 };
+                const result = aData.rate - bData.rate;
+                return this.sortDirection === 'asc' ? result : -result;
+            }
+            
+            // 基本ソートの場合
+            switch (this.currentSort) {
+                case 'name':
+                    aValue = a.clientName;
+                    bValue = b.clientName;
+                    break;
+                case 'progress':
+                    aValue = a.progressRate;
+                    bValue = b.progressRate;
+                    break;
+                case 'staff':
+                    aValue = a.staffName || '';
+                    bValue = b.staffName || '';
+                    break;
+                case 'fiscal':
+                    aValue = parseInt(a.fiscalMonth) || 0;
+                    bValue = parseInt(b.fiscalMonth) || 0;
+                    break;
+                default:
+                    return 0;
+            }
+            
+            // 文字列の場合
+            if (typeof aValue === 'string') {
+                const result = aValue.localeCompare(bValue, 'ja');
+                return this.sortDirection === 'asc' ? result : -result;
+            }
+            
+            // 数値の場合
+            const result = aValue - bValue;
+            return this.sortDirection === 'asc' ? result : -result;
+        });
+    }
+
+    getSortInfo() {
+        if (!this.currentSort) {
+            return '';
+        }
+
+        const sortNames = {
+            'name': '事業者名',
+            'progress': '進捗率', 
+            'staff': '担当者',
+            'fiscal': '決算月'
+        };
+
+        // 月別ソートの場合
+        if (this.currentSort.startsWith('month-')) {
+            const monthKey = this.currentSort.replace('month-', '');
+            const [year, month] = monthKey.split('-');
+            return `${year}年${month}月の進捗率で${this.sortDirection === 'asc' ? '昇順' : '降順'}`;
+        }
+
+        // 基本ソートの場合
+        const sortName = sortNames[this.currentSort];
+        if (sortName) {
+            return `${sortName}で${this.sortDirection === 'asc' ? '昇順' : '降順'}`;
+        }
+
+        return '';
     }
 }
 
