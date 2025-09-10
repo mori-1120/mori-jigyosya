@@ -139,6 +139,11 @@ class AnalyticsPage {
             await this.performAnalysis();
         });
 
+        // クリアフィルターボタン
+        document.getElementById('clear-analytics-filters-button').addEventListener('click', () => {
+            this.clearAllFilters();
+        });
+
         // ソート機能
         document.querySelectorAll('[data-sort]').forEach(header => {
             header.addEventListener('click', (e) => {
@@ -148,6 +153,38 @@ class AnalyticsPage {
 
         // エクスポート機能
         this.setupExportEventListeners();
+    }
+
+    clearAllFilters() {
+        // 期間を初期値（12ヶ月前～今月）にリセット
+        this.setDefaultPeriod();
+        
+        // 担当者フィルターをクリア
+        document.getElementById('staff-filter').value = '';
+        
+        // 決算月フィルターをクリア
+        document.getElementById('fiscal-month-filter').value = '';
+        
+        // サマリーダッシュボードを非表示
+        const summaryDashboard = document.getElementById('summary-dashboard');
+        if (summaryDashboard) {
+            summaryDashboard.style.display = 'none';
+        }
+        
+        // 進捗マトリクステーブルをクリア
+        const matrixTableBody = document.querySelector('#progress-matrix tbody');
+        if (matrixTableBody) {
+            matrixTableBody.innerHTML = '';
+        }
+        
+        // エクスポートボタンを無効化
+        const exportButton = document.getElementById('export-button');
+        if (exportButton) {
+            exportButton.disabled = true;
+        }
+        
+        // 成功メッセージ
+        showToast('フィルターをクリアしました', 'success');
     }
 
     async performAnalysis() {
