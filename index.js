@@ -605,6 +605,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Filter functionality
         staffFilter.addEventListener('change', handleFilterChange);
         monthFilter.addEventListener('change', handleFilterChange);
+        
+        // Clear filters button
+        const clearFiltersButton = document.getElementById('clear-filters-button');
+        if (clearFiltersButton) {
+            clearFiltersButton.addEventListener('click', clearAllFilters);
+        }
 
         // Staff modal - with debugging
         console.log('Setting up staff modal event listeners...');
@@ -1655,6 +1661,33 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleFilterChange() {
         renderClients();
         saveFilterState();
+    }
+
+    function clearAllFilters() {
+        // Clear search input
+        searchInput.value = '';
+        
+        // Reset staff filter to default
+        staffFilter.value = '';
+        
+        // Reset month filter to default
+        monthFilter.value = '';
+        
+        // Update custom dropdown displays
+        const staffTrigger = document.querySelector('#staff-filter').previousElementSibling;
+        const monthTrigger = document.querySelector('#month-filter').previousElementSibling;
+        
+        if (staffTrigger) staffTrigger.textContent = 'すべての担当者';
+        if (monthTrigger) monthTrigger.textContent = 'すべての決算月';
+        
+        // Re-render clients with cleared filters
+        renderClients();
+        
+        // Save cleared filter state
+        saveFilterState();
+        
+        // Show toast notification
+        showToast('フィルターをクリアしました', 'success');
     }
 
     function getFilteredClients() {
