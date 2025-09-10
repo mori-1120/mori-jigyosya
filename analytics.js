@@ -216,6 +216,10 @@ class AnalyticsPage {
         // 決算月フィルターをクリア
         document.getElementById('fiscal-month-filter').value = '';
         
+        // ソート状態をリセット（デフォルト決算月ソートを適用するため）
+        this.currentSort = null;
+        this.sortDirection = 'asc';
+        
         // ローカルストレージからも削除
         this.clearAnalysisFromLocalStorage();
         
@@ -339,6 +343,11 @@ class AnalyticsPage {
             // 結果表示
             this.displaySummary(analysisData.summary);
             this.displayProgressMatrix(analysisData.matrix);
+            
+            // デフォルト決算月ソートを適用（ソート状態がない場合のみ）
+            if (!this.currentSort) {
+                this.applyDefaultFiscalSort();
+            }
             
             // サマリーダッシュボード表示
             document.getElementById('summary-dashboard').style.display = 'block';
@@ -1823,9 +1832,8 @@ class AnalyticsPage {
                     bValue = b.staffName || '';
                     break;
                 case 'fiscal':
-                    aValue = parseInt(a.fiscalMonth) || 0;
-                    bValue = parseInt(b.fiscalMonth) || 0;
-                    break;
+                    // 決算月の場合は現在の月-2ヶ月を起点としたカスタムソート
+                    return this.sortByFiscalMonth(a, b);
                 default:
                     return 0;
             }
@@ -1840,6 +1848,56 @@ class AnalyticsPage {
             const result = aValue - bValue;
             return this.sortDirection === 'asc' ? result : -result;
         });
+    }
+
+    sortByFiscalMonth(a, b) {
+        const currentMonth = new Date().getMonth() + 1; // 0-11 -> 1-12
+        const sortStartMonth = (currentMonth - 2 + 12) % 12 || 12; // 現在の月-2ヶ月を起点 (1-12)
+
+        let aMonth = parseInt(a.fiscalMonth);
+        let bMonth = parseInt(b.fiscalMonth);
+
+        // null や undefined の場合はソートの最後に持ってくる
+        if (!aMonth || isNaN(aMonth)) return 1;
+        if (!bMonth || isNaN(bMonth)) return -1;
+
+        // 起点からの距離を計算
+        let aDistance = (aMonth - sortStartMonth + 12) % 12;
+        let bDistance = (bMonth - sortStartMonth + 12) % 12;
+
+        // 決算月が同じ場合は進捗率でソート
+        if (aDistance === bDistance) {
+            const result = b.progressRate - a.progressRate; // 進捗率の高い順
+            return this.sortDirection === 'asc' ? -result : result;
+        }
+
+        const result = aDistance - bDistance;
+        return this.sortDirection === 'asc' ? result : -result;
+    }
+
+    applyDefaultFiscalSort() {
+        if (!this.lastAnalysisData || !this.lastAnalysisData.matrix) {
+            return;
+        }
+
+        // デフォルト決算月ソートを設定
+        this.currentSort = 'fiscal';
+        this.sortDirection = 'asc';
+        
+        // ソート適用
+        const sortedMatrix = this.applySortToMatrix([...this.lastAnalysisData.matrix]);
+        
+        // 表示更新
+        this.displayProgressMatrix(sortedMatrix);
+        
+        // ソートアイコン更新
+        this.updateSortIcons('fiscal');
+        
+        // データを更新して保存
+        this.lastAnalysisData.matrix = sortedMatrix;
+        this.saveAnalysisToLocalStorage(this.lastAnalysisData, this.currentFilters);
+        
+        console.log('Default fiscal month sort applied');
     }
 
     getSortInfo() {
