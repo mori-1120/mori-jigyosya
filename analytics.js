@@ -40,6 +40,9 @@ class AnalyticsPage {
             // URLパラメータから担当者を自動選択
             this.handleUrlParameters();
             
+            // 保存された分析結果があれば復元
+            this.restoreAnalysisFromLocalStorage();
+            
             console.log('Analytics page initialized successfully');
             showToast('分析機能を読み込みました', 'success');
             
@@ -183,8 +186,85 @@ class AnalyticsPage {
             exportButton.disabled = true;
         }
         
+        // ローカルストレージからも削除
+        this.clearAnalysisFromLocalStorage();
+        
         // 成功メッセージ
         showToast('フィルターをクリアしました', 'success');
+    }
+
+    // ローカルストレージに分析結果を一時保存
+    saveAnalysisToLocalStorage(analysisData, filters) {
+        try {
+            const saveData = {
+                analysisData,
+                filters,
+                timestamp: Date.now(),
+                version: '1.0'
+            };
+            localStorage.setItem('analytics_temp_results', JSON.stringify(saveData));
+            console.log('Analysis results saved to localStorage');
+        } catch (error) {
+            console.warn('Failed to save analysis to localStorage:', error);
+        }
+    }
+
+    // ローカルストレージから分析結果を復元
+    restoreAnalysisFromLocalStorage() {
+        try {
+            const savedData = localStorage.getItem('analytics_temp_results');
+            if (!savedData) return;
+
+            const { analysisData, filters, timestamp } = JSON.parse(savedData);
+            
+            // 1時間以内のデータのみ復元
+            const oneHour = 60 * 60 * 1000;
+            if (Date.now() - timestamp > oneHour) {
+                localStorage.removeItem('analytics_temp_results');
+                return;
+            }
+
+            // フィルター設定を復元
+            if (filters) {
+                document.getElementById('start-period').value = filters.startPeriod || '';
+                document.getElementById('end-period').value = filters.endPeriod || '';
+                document.getElementById('staff-filter').value = filters.staffId || '';
+                document.getElementById('fiscal-month-filter').value = filters.fiscalMonth || '';
+                
+                this.currentFilters = { ...filters };
+            }
+
+            // 分析結果を復元
+            if (analysisData) {
+                this.lastAnalysisData = analysisData;
+                
+                // 結果表示
+                this.displaySummary(analysisData.summary);
+                this.displayProgressMatrix(analysisData.matrix);
+                
+                // サマリーダッシュボード表示
+                document.getElementById('summary-dashboard').style.display = 'block';
+                
+                // エクスポートボタンを有効化
+                document.getElementById('export-button').disabled = false;
+                
+                console.log('Analysis results restored from localStorage');
+                showToast('前回の集計結果を復元しました', 'info');
+            }
+        } catch (error) {
+            console.warn('Failed to restore analysis from localStorage:', error);
+            localStorage.removeItem('analytics_temp_results');
+        }
+    }
+
+    // ローカルストレージから分析結果を削除
+    clearAnalysisFromLocalStorage() {
+        try {
+            localStorage.removeItem('analytics_temp_results');
+            console.log('Analysis results cleared from localStorage');
+        } catch (error) {
+            console.warn('Failed to clear analysis from localStorage:', error);
+        }
     }
 
     async performAnalysis() {
@@ -215,6 +295,9 @@ class AnalyticsPage {
             
             // 分析結果を保存
             this.lastAnalysisData = analysisData;
+            
+            // ローカルストレージに一時保存
+            this.saveAnalysisToLocalStorage(analysisData, this.currentFilters);
             
             // 結果表示
             this.displaySummary(analysisData.summary);
@@ -875,7 +958,7 @@ class AnalyticsPage {
         // マトリクスデータ行作成
         matrix.forEach(client => {
             const row = [
-                client.name,
+                client.clientName,
                 client.staffName || '',
                 this.formatProgressForExcel(client.completedTasks, client.totalTasks)
             ];
@@ -947,7 +1030,7 @@ class AnalyticsPage {
         // データ行作成
         matrix.forEach(client => {
             const row = [
-                client.name,
+                client.clientName,
                 client.staffName || '',
                 this.formatProgressForExcel(client.completedTasks, client.totalTasks)
             ];

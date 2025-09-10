@@ -1272,6 +1272,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Main Event Listeners ---
     function addMainEventListeners() {
+        // 分析機能ボタン
+        const analyticsButton = document.getElementById('analytics-button');
+        if (analyticsButton) {
+            analyticsButton.addEventListener('click', () => {
+                window.location.href = 'analytics.html';
+            });
+        }
+
         // 年度変更イベントを委譲で処理
         document.addEventListener('change', async (e) => {
             if (e.target && e.target.id === 'year-filter') {
