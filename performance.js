@@ -31,6 +31,11 @@ class PerformancePage {
             this.setupEventListeners();
             this.setupPeriodSelector();
             
+            // 初期分析を自動実行
+            setTimeout(async () => {
+                await this.performAnalysis();
+            }, 500); // UI初期化完了後に実行
+            
             console.log('Performance page initialized successfully');
             showToast('担当者別パフォーマンス分析画面を読み込みました', 'success');
             
@@ -89,6 +94,35 @@ class PerformancePage {
                 customContainer.style.display = 'none';
             }
         });
+        
+        // リアルタイムフィルタリング
+        this.setupRealtimeFilters();
+    }
+
+    setupRealtimeFilters() {
+        // デバウンス用のタイマー
+        let debounceTimer = null;
+        
+        const debouncedAnalysis = () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(async () => {
+                await this.performAnalysis();
+            }, 300); // 300ms のデバウンス
+        };
+        
+        // 期間選択変更時
+        document.getElementById('evaluation-period').addEventListener('change', debouncedAnalysis);
+        
+        // カスタム期間変更時
+        const customStartPeriod = document.getElementById('custom-start-period');
+        const customEndPeriod = document.getElementById('custom-end-period');
+        
+        if (customStartPeriod) {
+            customStartPeriod.addEventListener('change', debouncedAnalysis);
+        }
+        if (customEndPeriod) {
+            customEndPeriod.addEventListener('change', debouncedAnalysis);
+        }
     }
 
     setupPeriodSelector() {

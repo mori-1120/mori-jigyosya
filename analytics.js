@@ -40,8 +40,14 @@ class AnalyticsPage {
             // URLパラメータから担当者を自動選択
             this.handleUrlParameters();
             
-            // 保存された分析結果があれば復元
-            this.restoreAnalysisFromLocalStorage();
+            // 保存された分析結果があれば復元、なければ初期集計を実行
+            const hasRestoredData = this.restoreAnalysisFromLocalStorage();
+            if (!hasRestoredData) {
+                // 初期データで自動集計を実行
+                setTimeout(async () => {
+                    await this.performAnalysis();
+                }, 500); // UI初期化完了後に実行
+            }
             
             console.log('Analytics page initialized successfully');
             showToast('分析機能を読み込みました', 'success');
@@ -137,7 +143,7 @@ class AnalyticsPage {
             window.location.href = 'performance.html';
         });
 
-        // 集計ボタン
+        // 集計ボタン（リアルタイム更新時は手動実行用として残す）
         document.getElementById('aggregate-button').addEventListener('click', async () => {
             await this.performAnalysis();
         });
@@ -156,6 +162,48 @@ class AnalyticsPage {
 
         // エクスポート機能
         this.setupExportEventListeners();
+        
+        // リアルタイムフィルタリング
+        this.setupRealtimeFilters();
+    }
+
+    setupRealtimeFilters() {
+        const filters = [
+            'start-period', 
+            'end-period', 
+            'staff-filter', 
+            'fiscal-month-filter'
+        ];
+        
+        // デバウンス用のタイマー
+        let debounceTimer = null;
+        
+        const debouncedAnalysis = () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(async () => {
+                // バリデーション
+                const startPeriod = document.getElementById('start-period').value;
+                const endPeriod = document.getElementById('end-period').value;
+                
+                if (startPeriod && endPeriod) {
+                    if (startPeriod <= endPeriod) {
+                        await this.performAnalysis();
+                    } else {
+                        // 期間が逆転している場合はサマリーを非表示
+                        document.getElementById('summary-dashboard').style.display = 'none';
+                        showToast('開始年月は終了年月より前に設定してください', 'warning');
+                    }
+                }
+            }, 300); // 300ms のデバウンス
+        };
+        
+        // 各フィルターにイベントリスナーを追加
+        filters.forEach(filterId => {
+            const element = document.getElementById(filterId);
+            if (element) {
+                element.addEventListener('change', debouncedAnalysis);
+            }
+        });
     }
 
     clearAllFilters() {
@@ -213,7 +261,7 @@ class AnalyticsPage {
     restoreAnalysisFromLocalStorage() {
         try {
             const savedData = localStorage.getItem('analytics_temp_results');
-            if (!savedData) return;
+            if (!savedData) return false;
 
             const { analysisData, filters, timestamp } = JSON.parse(savedData);
             
@@ -221,7 +269,7 @@ class AnalyticsPage {
             const oneHour = 60 * 60 * 1000;
             if (Date.now() - timestamp > oneHour) {
                 localStorage.removeItem('analytics_temp_results');
-                return;
+                return false;
             }
 
             // フィルター設定を復元
@@ -250,11 +298,13 @@ class AnalyticsPage {
                 
                 console.log('Analysis results restored from localStorage');
                 showToast('前回の集計結果を復元しました', 'info');
+                return true;
             }
         } catch (error) {
             console.warn('Failed to restore analysis from localStorage:', error);
             localStorage.removeItem('analytics_temp_results');
         }
+        return false;
     }
 
     // ローカルストレージから分析結果を削除
@@ -916,7 +966,12 @@ class AnalyticsPage {
             for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
                 const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
                 const monthData = row.monthlyProgress[monthKey] || { completed: 0, total: 0, rate: 0 };
-                dataRow.push(`${monthData.completed}/${monthData.total}`);
+                // Excel/CSV で日付として認識されないよう、タブ文字で開始して文字列として強制
+                if (monthData.total > 0) {
+                    dataRow.push(`="${monthData.completed}/${monthData.total}"`);
+                } else {
+                    dataRow.push('"-"');
+                }
             }
 
             csvContent += dataRow.join(',') + '\n';
