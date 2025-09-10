@@ -2428,26 +2428,129 @@ document.addEventListener('DOMContentLoaded', () => {
     // Manual backup
     manualBackupButton.addEventListener('click', async () => {
         const settings = SupabaseAPI.getBackupSettings();
-        const loadingToast = toast.show('バックアップを作成中...', 'info', 0);
+        const destination = settings.destination || 'local';
+        
+        let loadingMessage, successMessage;
+        switch (destination) {
+            case 'cloud':
+                loadingMessage = 'クラウドバックアップを作成中...';
+                successMessage = 'クラウドバックアップが正常に完了しました';
+                break;
+            case 'both':
+                loadingMessage = 'フルバックアップを実行中...';
+                successMessage = 'フルバックアップ（クラウド+ローカル）が正常に完了しました';
+                break;
+            default:
+                loadingMessage = 'バックアップを作成中...';
+                successMessage = 'バックアップが正常に完了しました';
+        }
+        
+        const loadingToast = toast.show(loadingMessage, 'info', 0);
         
         try {
             let result;
-            if (settings.directoryHandle && window.showDirectoryPicker) {
-                // フォルダ選択済みの場合は高度なバックアップ
-                result = await SupabaseAPI.downloadBackupWithFolder();
+            
+            if (destination === 'cloud') {
+                result = await SupabaseAPI.uploadBackupToCloud();
+            } else if (destination === 'both') {
+                result = await SupabaseAPI.executeFullBackup();
             } else {
-                // 通常のダウンロードフォルダバックアップ
-                result = await SupabaseAPI.downloadBackup();
+                // local
+                if (settings.directoryHandle && window.showDirectoryPicker) {
+                    // フォルダ選択済みの場合は高度なバックアップ
+                    result = await SupabaseAPI.downloadBackupWithFolder();
+                } else {
+                    // 通常のダウンロードフォルダバックアップ
+                    result = await SupabaseAPI.downloadBackup();
+                }
             }
             
             const method = settings.method === 'weekly-rotation' ? '週次ローテーション' : 'シンプル';
-            toast.update(loadingToast, `バックアップが正常に完了しました (${method})`, 'success');
+            const displayMessage = destination === 'local' ? `${successMessage} (${method})` : successMessage;
+            toast.update(loadingToast, displayMessage, 'success');
             updateBackupHistory();
         } catch (error) {
             console.error('Manual backup error:', error);
             toast.update(loadingToast, `バックアップエラー: ${handleSupabaseError(error)}`, 'error');
         }
     });
+
+    // Manual cloud backup
+    const manualCloudBackupButton = document.getElementById('manual-cloud-backup-button');
+    if (manualCloudBackupButton) {
+        manualCloudBackupButton.addEventListener('click', async () => {
+            const loadingToast = toast.show('クラウドバックアップを作成中...', 'info', 0);
+            
+            try {
+                const result = await SupabaseAPI.uploadBackupToCloud();
+                toast.update(loadingToast, 'クラウドバックアップが正常に完了しました', 'success');
+                updateBackupHistory();
+            } catch (error) {
+                console.error('Cloud backup error:', error);
+                toast.update(loadingToast, `クラウドバックアップエラー: ${handleSupabaseError(error)}`, 'error');
+            }
+        });
+    }
+
+    // Manual full backup (cloud + local)
+    const manualFullBackupButton = document.getElementById('manual-full-backup-button');
+    if (manualFullBackupButton) {
+        manualFullBackupButton.addEventListener('click', async () => {
+            const loadingToast = toast.show('フルバックアップを実行中...', 'info', 0);
+            
+            try {
+                const result = await SupabaseAPI.executeFullBackup();
+                toast.update(loadingToast, 'フルバックアップ（クラウド+ローカル）が正常に完了しました', 'success');
+                updateBackupHistory();
+            } catch (error) {
+                console.error('Full backup error:', error);
+                toast.update(loadingToast, `フルバックアップエラー: ${handleSupabaseError(error)}`, 'error');
+            }
+        });
+    }
+
+    // Restore cloud backup
+    const restoreCloudBackupButton = document.getElementById('restore-cloud-backup-button');
+    if (restoreCloudBackupButton) {
+        restoreCloudBackupButton.addEventListener('click', async () => {
+            // 確認ダイアログ
+            if (!confirm('クラウドから最新のバックアップを復元します。\n現在のデータは全て置き換えられます。\n復元を実行しますか？')) {
+                return;
+            }
+
+            const loadingToast = toast.show('クラウドバックアップから復元中...', 'info', 0);
+            
+            try {
+                const backupData = await SupabaseAPI.downloadBackupFromCloud();
+                if (!backupData) {
+                    toast.update(loadingToast, 'クラウドにバックアップファイルが見つかりません', 'error');
+                    return;
+                }
+
+                const skipDelete = document.getElementById('restore-skip-delete').checked;
+                const results = await SupabaseAPI.restoreFromBackup(backupData, skipDelete);
+                
+                let message = 'クラウドバックアップからの復元が完了しました:\n\n';
+                let totalRestored = 0;
+                
+                for (const [table, result] of Object.entries(results)) {
+                    message += `${table}: ${result.restored}件\n`;
+                    totalRestored += result.restored;
+                }
+                
+                toast.update(loadingToast, `復元完了 (${totalRestored}件)`, 'success');
+                
+                // データを再読み込み
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Cloud restore error:', error);
+                toast.update(loadingToast, `クラウド復元エラー: ${handleSupabaseError(error)}`, 'error');
+            }
+        });
+    }
 
     // Restore backup
     restoreBackupButton.addEventListener('click', () => {
@@ -2517,7 +2620,8 @@ document.addEventListener('DOMContentLoaded', () => {
             enabled: autoBackupEnabledCheckbox.checked,
             frequency: backupFrequencySelect.value,
             time: backupTimeSelect.value,
-            method: backupMethodSelect.value
+            method: backupMethodSelect.value,
+            destination: document.getElementById('backup-destination')?.value || 'local'
         };
         
         // 一時保存されたフォルダ設定があれば統合
@@ -2543,6 +2647,12 @@ document.addEventListener('DOMContentLoaded', () => {
         backupFrequencySelect.value = settings.frequency;
         backupTimeSelect.value = settings.time;
         backupMethodSelect.value = settings.method || 'weekly-rotation';
+        
+        // バックアップ先の設定を読み込み
+        const backupDestination = document.getElementById('backup-destination');
+        if (backupDestination) {
+            backupDestination.value = settings.destination || 'local';
+        }
         
         // フォルダ選択状態を表示
         if (settings.selectedPath) {
