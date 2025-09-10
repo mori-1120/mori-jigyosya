@@ -1673,12 +1673,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset month filter to default
         monthFilter.value = '';
         
-        // Update custom dropdown displays
-        const staffTrigger = document.querySelector('#staff-filter').previousElementSibling;
-        const monthTrigger = document.querySelector('#month-filter').previousElementSibling;
+        // Update custom dropdown displays and reset their state
+        updateCustomDropdownTriggers();
         
-        if (staffTrigger) staffTrigger.textContent = 'すべての担当者';
-        if (monthTrigger) monthTrigger.textContent = 'すべての決算月';
+        // Clear selected state from custom dropdown options
+        document.querySelectorAll('.custom-options .selected').forEach(option => {
+            option.classList.remove('selected');
+        });
         
         // Re-render clients with cleared filters
         renderClients();
