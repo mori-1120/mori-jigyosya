@@ -149,8 +149,8 @@ class AnalyticsPage {
         });
 
         // クリアフィルターボタン
-        document.getElementById('clear-analytics-filters-button').addEventListener('click', () => {
-            this.clearAllFilters();
+        document.getElementById('clear-analytics-filters-button').addEventListener('click', async () => {
+            await this.clearAllFilters();
         });
 
         // ソート機能
@@ -206,7 +206,7 @@ class AnalyticsPage {
         });
     }
 
-    clearAllFilters() {
+    async clearAllFilters() {
         // 期間を初期値（12ヶ月前～今月）にリセット
         this.setDefaultPeriod();
         
@@ -216,29 +216,16 @@ class AnalyticsPage {
         // 決算月フィルターをクリア
         document.getElementById('fiscal-month-filter').value = '';
         
-        // サマリーダッシュボードを非表示
-        const summaryDashboard = document.getElementById('summary-dashboard');
-        if (summaryDashboard) {
-            summaryDashboard.style.display = 'none';
-        }
-        
-        // 進捗マトリクステーブルをクリア
-        const matrixTableBody = document.querySelector('#progress-matrix tbody');
-        if (matrixTableBody) {
-            matrixTableBody.innerHTML = '';
-        }
-        
-        // エクスポートボタンを無効化
-        const exportButton = document.getElementById('export-button');
-        if (exportButton) {
-            exportButton.disabled = true;
-        }
-        
         // ローカルストレージからも削除
         this.clearAnalysisFromLocalStorage();
         
         // 成功メッセージ
         showToast('フィルターをクリアしました', 'success');
+        
+        // 初期状態で集計を実行
+        setTimeout(async () => {
+            await this.performAnalysis();
+        }, 100); // フィルター変更が反映されてから実行
     }
 
     // ローカルストレージに分析結果を一時保存
