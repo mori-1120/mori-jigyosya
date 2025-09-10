@@ -556,6 +556,9 @@ class AnalyticsPage {
         document.getElementById('completed-tasks').textContent = `${summary.completedTasks} / ${summary.totalTasks}`;
         document.getElementById('attention-clients').textContent = `${summary.attentionClients.length}件`;
         
+        // フィルター情報を表示
+        this.updateSummaryFilterInfo();
+        
         // 要注意クライアントリスト
         const attentionList = document.getElementById('attention-clients-list');
         const attentionContainer = document.getElementById('attention-list');
@@ -569,6 +572,53 @@ class AnalyticsPage {
 
         // ステータス別構成円グラフを描画
         this.drawStatusChart(summary.statusComposition);
+    }
+
+    updateSummaryFilterInfo() {
+        const filterInfoElement = document.getElementById('summary-filter-info');
+        if (!filterInfoElement) return;
+
+        const filterParts = [];
+
+        // 集計期間
+        if (this.currentFilters.startPeriod && this.currentFilters.endPeriod) {
+            const startText = this.formatPeriodText(this.currentFilters.startPeriod);
+            const endText = this.formatPeriodText(this.currentFilters.endPeriod);
+            filterParts.push(`📅 期間: ${startText} ～ ${endText}`);
+        }
+
+        // 担当者フィルター
+        if (this.currentFilters.staffId) {
+            const selectedStaff = this.staffs.find(s => s.id == this.currentFilters.staffId);
+            if (selectedStaff) {
+                filterParts.push(`👤 担当者: ${selectedStaff.name}`);
+            }
+        }
+
+        // 決算月フィルター
+        if (this.currentFilters.fiscalMonth) {
+            filterParts.push(`📈 決算月: ${this.currentFilters.fiscalMonth}月`);
+        }
+
+        // フィルター情報がない場合のデフォルト表示
+        if (filterParts.length === 0) {
+            filterInfoElement.innerHTML = `📅 期間: 過去12ヶ月 | 👤 担当者: 全員 | 📈 決算月: 全決算月`;
+        } else {
+            // 足りない情報は「全て」として補完
+            if (!this.currentFilters.staffId) {
+                filterParts.push(`👤 担当者: 全員`);
+            }
+            if (!this.currentFilters.fiscalMonth) {
+                filterParts.push(`📈 決算月: 全決算月`);
+            }
+            filterInfoElement.innerHTML = filterParts.join(' | ');
+        }
+    }
+
+    formatPeriodText(period) {
+        // YYYY-MM 形式を YYYY年MM月 に変換
+        const [year, month] = period.split('-');
+        return `${year}年${parseInt(month)}月`;
     }
 
     displayProgressMatrix(matrix) {
