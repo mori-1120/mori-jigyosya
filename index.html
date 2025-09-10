@@ -131,7 +131,7 @@
                 background: linear-gradient(135deg, #ffd700, #ffb347); 
                 color: #333; 
                 border: none; 
-                padding: 8px 16px; 
+                padding: 14px 28px; 
                 border-radius: 6px; 
                 cursor: pointer; 
                 font-size: 14px; 
@@ -394,6 +394,15 @@
                         </label>
                     </div>
                     <div class="backup-setting-item">
+                        <label for="backup-destination">保存先:</label>
+                        <select id="backup-destination">
+                            <option value="cloud">☁️ クラウド（推奨）</option>
+                            <option value="local">💻 ローカル</option>
+                            <option value="both">🔄 クラウド + ローカル</option>
+                        </select>
+                        <small>クラウドは常時実行、ローカルは緊急用として利用可能</small>
+                    </div>
+                    <div class="backup-setting-item">
                         <label for="backup-frequency">実行頻度:</label>
                         <select id="backup-frequency">
                             <option value="daily">毎日</option>
@@ -432,10 +441,22 @@
                 <div class="backup-section">
                     <h3>💾 手動バックアップ</h3>
                     <div class="backup-setting-item">
-                        <button id="manual-backup-button" class="backup-action-button">
-                            今すぐバックアップを実行
+                        <button id="manual-cloud-backup-button" class="backup-action-button">
+                            ☁️ クラウドバックアップを実行
                         </button>
-                        <small>現在のデータを即座にダウンロードします</small>
+                        <small>データをクラウド（Supabase Storage）に保存します</small>
+                    </div>
+                    <div class="backup-setting-item">
+                        <button id="manual-backup-button" class="backup-action-button restore-button">
+                            💻 ローカルバックアップを実行（緊急用）
+                        </button>
+                        <small>データを端末のローカルフォルダに即座ダウンロードします</small>
+                    </div>
+                    <div class="backup-setting-item">
+                        <button id="manual-full-backup-button" class="backup-action-button" style="background: linear-gradient(135deg, #6f42c1, #563d7c);">
+                            🔄 統合バックアップを実行
+                        </button>
+                        <small>クラウドとローカル両方にバックアップを実行します</small>
                     </div>
                 </div>
 
@@ -450,8 +471,14 @@
                         <small>Supabase制限回避用。既存データに上書きのみ行います</small>
                     </div>
                     <div class="backup-setting-item">
+                        <button id="restore-cloud-backup-button" class="backup-action-button">
+                            ☁️ クラウドから復元
+                        </button>
+                        <small>クラウドに保存されたバックアップから復元します</small>
+                    </div>
+                    <div class="backup-setting-item">
                         <button id="restore-backup-button" class="backup-action-button restore-button">
-                            バックアップファイルから復元
+                            📁 ローカルファイルから復元
                         </button>
                         <small>⚠️ 現在のデータは全て置き換えられます</small>
                         <input type="file" id="restore-file-input" accept=".json" style="display: none;">
@@ -464,7 +491,11 @@
                     <div class="backup-history">
                         <div id="backup-history-list">
                             <div class="history-item">
-                                <span class="history-date">最終バックアップ: </span>
+                                <span class="history-date">☁️ 最終クラウドバックアップ: </span>
+                                <span id="last-cloud-backup-date">未実行</span>
+                            </div>
+                            <div class="history-item">
+                                <span class="history-date">💻 最終ローカルバックアップ: </span>
                                 <span id="last-backup-date">未実行</span>
                             </div>
                             <div class="history-item">

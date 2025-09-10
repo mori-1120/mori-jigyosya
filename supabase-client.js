@@ -1696,6 +1696,170 @@ export class SupabaseAPI {
             }, 60000); // 1分後に再スケジュール
         }
     }
+
+    // === Supabase Storage バックアップ機能 ===
+    
+    // クラウドバックアップ（Supabase Storage）
+    static async uploadBackupToCloud(backupData, fileName = null) {
+        try {
+            if (!fileName) {
+                // 週次ローテーション方式でファイル名生成
+                const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const today = new Date().getDay();
+                const dayName = dayNames[today];
+                fileName = `weekly/${dayName}/jigyosya-backup-${dayName}.json`;
+            }
+
+            const jsonData = JSON.stringify(backupData, null, 2);
+            const blob = new Blob([jsonData], { type: 'application/json' });
+
+            // Supabase Storageにアップロード（上書き）
+            const { data, error } = await supabase.storage
+                .from('backups')
+                .upload(fileName, blob, { 
+                    upsert: true,
+                    cacheControl: '3600'
+                });
+
+            if (error) throw error;
+
+            console.log(`クラウドバックアップ完了: ${fileName}`, data);
+            
+            // 成功ログをローカルストレージに保存
+            const backupHistory = this.getCloudBackupHistory();
+            backupHistory.unshift({
+                fileName,
+                uploadedAt: new Date().toISOString(),
+                size: blob.size,
+                path: data.path
+            });
+
+            // 履歴は最新10件のみ保持
+            if (backupHistory.length > 10) {
+                backupHistory.splice(10);
+            }
+
+            localStorage.setItem('cloudBackupHistory', JSON.stringify(backupHistory));
+            localStorage.setItem('lastCloudBackupDate', new Date().toISOString());
+
+            return {
+                success: true,
+                path: data.path,
+                size: blob.size
+            };
+
+        } catch (error) {
+            console.error('クラウドバックアップエラー:', error);
+            throw error;
+        }
+    }
+
+    // クラウドからバックアップファイル一覧を取得
+    static async getCloudBackupList() {
+        try {
+            const { data, error } = await supabase.storage
+                .from('backups')
+                .list('weekly', {
+                    limit: 100,
+                    sortBy: { column: 'created_at', order: 'desc' }
+                });
+
+            if (error) throw error;
+
+            return data.map(file => ({
+                name: file.name,
+                size: file.metadata?.size || 0,
+                lastModified: file.updated_at,
+                path: `weekly/${file.name}`
+            }));
+
+        } catch (error) {
+            console.error('クラウドバックアップ一覧取得エラー:', error);
+            throw error;
+        }
+    }
+
+    // クラウドからバックアップデータをダウンロード
+    static async downloadBackupFromCloud(fileName) {
+        try {
+            const { data, error } = await supabase.storage
+                .from('backups')
+                .download(fileName);
+
+            if (error) throw error;
+
+            const text = await data.text();
+            const backupData = JSON.parse(text);
+
+            console.log(`クラウドからバックアップダウンロード完了: ${fileName}`);
+            return backupData;
+
+        } catch (error) {
+            console.error('クラウドバックアップダウンロードエラー:', error);
+            throw error;
+        }
+    }
+
+    // クラウドバックアップ履歴取得
+    static getCloudBackupHistory() {
+        const stored = localStorage.getItem('cloudBackupHistory');
+        return stored ? JSON.parse(stored) : [];
+    }
+
+    // 自動クラウドバックアップ実行
+    static async executeAutoCloudBackup() {
+        try {
+            console.log('自動クラウドバックアップを実行中...');
+            
+            const backupData = await this.createFullBackup();
+            const result = await this.uploadBackupToCloud(backupData);
+            
+            console.log('自動クラウドバックアップ完了:', result);
+            return result;
+
+        } catch (error) {
+            console.error('自動クラウドバックアップエラー:', error);
+            throw error;
+        }
+    }
+
+    // クラウドバックアップとローカルバックアップを統合実行
+    static async executeFullBackup() {
+        try {
+            const results = {
+                cloud: null,
+                local: null,
+                errors: []
+            };
+
+            // まずバックアップデータを作成
+            const backupData = await this.createFullBackup();
+
+            // 1. クラウドバックアップ実行
+            try {
+                results.cloud = await this.uploadBackupToCloud(backupData);
+                console.log('クラウドバックアップ成功');
+            } catch (error) {
+                console.error('クラウドバックアップ失敗:', error);
+                results.errors.push({ type: 'cloud', error: error.message });
+            }
+
+            // 2. ローカルバックアップ実行（緊急用）
+            try {
+                results.local = await this.downloadBackupWithFolder();
+                console.log('ローカルバックアップ成功');
+            } catch (error) {
+                console.error('ローカルバックアップ失敗:', error);
+                results.errors.push({ type: 'local', error: error.message });
+            }
+
+            return results;
+
+        } catch (error) {
+            console.error('統合バックアップエラー:', error);
+            throw error;
+        }
+    }
 }
 
 export const handleSupabaseError = (error) => {
