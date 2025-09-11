@@ -149,10 +149,6 @@ class AnalyticsPage {
             window.location.href = 'performance.html';
         });
 
-        // 集計ボタン（リアルタイム更新時は手動実行用として残す）
-        document.getElementById('aggregate-button').addEventListener('click', async () => {
-            await this.performAnalysis();
-        });
 
         // クリアフィルターボタン
         document.getElementById('clear-analytics-filters-button').addEventListener('click', async () => {

@@ -72,10 +72,6 @@ class PerformancePage {
             window.location.href = 'analytics.html';
         });
 
-        // 分析実行ボタン
-        document.getElementById('analyze-performance-button').addEventListener('click', async () => {
-            await this.performAnalysis();
-        });
 
         // ソート機能
         document.querySelectorAll('[data-sort]').forEach(header => {
