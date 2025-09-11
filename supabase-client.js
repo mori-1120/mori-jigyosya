@@ -1791,6 +1791,9 @@ export class SupabaseAPI {
 
             console.log(`✅ クラウドバックアップ完了: ${fileName}`, data);
             
+            // バックアップレポートデータ作成
+            const reportData = this.generateBackupReport(backupData, blob.size, data.path);
+            
             // 成功ログをローカルストレージに保存
             const backupHistory = this.getCloudBackupHistory();
             backupHistory.unshift({
@@ -1798,8 +1801,13 @@ export class SupabaseAPI {
                 uploadedAt: new Date().toISOString(),
                 size: blob.size,
                 path: data.path,
-                recordCount: Object.values(backupData?.tables || {}).reduce((sum, table) => sum + (Array.isArray(table) ? table.length : 0), 0)
+                recordCount: reportData.totalRecords,
+                tableBreakdown: reportData.tableBreakdown,
+                reportSummary: reportData.summary
             });
+            
+            // バックアップレポートをSupabase Storageに保存
+            await this.saveBackupReport(reportData);
 
             // 履歴は最新10件のみ保持
             if (backupHistory.length > 10) {
@@ -1871,6 +1879,126 @@ export class SupabaseAPI {
     static getCloudBackupHistory() {
         const stored = localStorage.getItem('cloudBackupHistory');
         return stored ? JSON.parse(stored) : [];
+    }
+
+    // バックアップレポート生成
+    static generateBackupReport(backupData, fileSize, filePath) {
+        const now = new Date();
+        const jstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000)); // JST
+        
+        const tableBreakdown = {};
+        let totalRecords = 0;
+        
+        // 各テーブルの詳細分析
+        Object.entries(backupData.tables || {}).forEach(([tableName, tableData]) => {
+            const recordCount = Array.isArray(tableData) ? tableData.length : 0;
+            totalRecords += recordCount;
+            
+            tableBreakdown[tableName] = {
+                recordCount,
+                tableNameJP: this.getTableNameJP(tableName),
+                sampleData: Array.isArray(tableData) && tableData.length > 0 ? 
+                    Object.keys(tableData[0] || {}).slice(0, 5) : []
+            };
+        });
+        
+        const summary = `📊 バックアップレポート ${jstDate.toLocaleDateString('ja-JP')} ${jstDate.toLocaleTimeString('ja-JP')}\n\n` +
+            `🗂️ 総テーブル数: ${Object.keys(tableBreakdown).length}テーブル\n` +
+            `📋 総レコード数: ${totalRecords.toLocaleString()}件\n` +
+            `💾 ファイルサイズ: ${Math.round(fileSize / 1024).toLocaleString()} KB\n` +
+            `☁️ 保存場所: ${filePath}\n\n` +
+            `📈 テーブル別詳細:\n` +
+            Object.entries(tableBreakdown)
+                .sort((a, b) => b[1].recordCount - a[1].recordCount)
+                .map(([table, data]) => 
+                    `  • ${data.tableNameJP} (${table}): ${data.recordCount.toLocaleString()}件`
+                ).join('\n');
+        
+        return {
+            timestamp: jstDate.toISOString(),
+            backupTimestamp: backupData.timestamp,
+            totalTables: Object.keys(tableBreakdown).length,
+            totalRecords,
+            fileSizeKB: Math.round(fileSize / 1024),
+            filePath,
+            tableBreakdown,
+            summary,
+            reportDate: jstDate.toLocaleDateString('ja-JP'),
+            reportTime: jstDate.toLocaleTimeString('ja-JP')
+        };
+    }
+
+    // テーブル名の日本語変換
+    static getTableNameJP(tableName) {
+        const nameMap = {
+            'clients': '事業者',
+            'staffs': '担当者',
+            'monthly_tasks': '月次タスク',
+            'editing_sessions': '編集セッション',
+            'settings': 'システム設定',
+            'default_tasks': 'デフォルトタスク',
+            'app_links': 'アプリリンク'
+        };
+        return nameMap[tableName] || tableName;
+    }
+
+    // バックアップレポートをSupabase Storageに保存
+    static async saveBackupReport(reportData) {
+        try {
+            console.log('📋 バックアップレポート保存中...');
+            
+            // 毎日上書き方式でレポートファイル名生成
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD
+            const reportFileName = `reports/backup-report-${todayStr}.json`;
+            
+            // レポートJSONをBlobに変換
+            const reportJson = JSON.stringify(reportData, null, 2);
+            const reportBlob = new Blob([reportJson], { type: 'application/json' });
+            
+            // Supabase Storageにレポート保存（毎日上書き）
+            const { data, error } = await supabase.storage
+                .from('backups')
+                .upload(reportFileName, reportBlob, { 
+                    upsert: true,
+                    cacheControl: '3600'
+                });
+            
+            if (error) {
+                console.error('❌ レポート保存エラー:', error);
+            } else {
+                console.log(`✅ バックアップレポート保存完了: ${reportFileName}`);
+            }
+            
+            // 詳細な完了通知を表示
+            this.showBackupCompletionNotification(reportData);
+            
+        } catch (error) {
+            console.error('💥 バックアップレポート保存エラー:', error);
+        }
+    }
+
+    // バックアップ完了通知表示
+    static showBackupCompletionNotification(reportData) {
+        const notificationText = 
+            `🎉 バックアップ完了！\n\n` +
+            `📊 事業者: ${reportData.tableBreakdown?.clients?.recordCount || 0}件\n` +
+            `👥 担当者: ${reportData.tableBreakdown?.staffs?.recordCount || 0}件\n` +
+            `📋 月次タスク: ${reportData.tableBreakdown?.monthly_tasks?.recordCount || 0}件\n` +
+            `💾 総容量: ${reportData.fileSizeKB} KB\n` +
+            `📅 ${reportData.reportDate} ${reportData.reportTime}`;
+        
+        console.log(notificationText);
+        
+        // Toast通知がある場合は表示
+        if (typeof window !== 'undefined' && window.showToast) {
+            window.showToast(
+                `バックアップ完了！事業者${reportData.tableBreakdown?.clients?.recordCount || 0}件、` +
+                `月次タスク${reportData.tableBreakdown?.monthly_tasks?.recordCount || 0}件 (${reportData.fileSizeKB}KB)`,
+                'success',
+                10000 // 10秒表示
+            );
+        }
     }
 
     // 自動クラウドバックアップ実行
