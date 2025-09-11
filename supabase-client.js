@@ -1276,6 +1276,7 @@ export class SupabaseAPI {
     // データベースバックアップ機能
     static async createFullBackup() {
         try {
+            console.log('🔄 バックアップ作成開始...');
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
             const backupData = {
                 timestamp,
@@ -1287,21 +1288,62 @@ export class SupabaseAPI {
             // 全テーブルからデータを取得 (編集セッション含む)
             const tables = ['clients', 'staffs', 'monthly_tasks', 'editing_sessions', 'settings', 'default_tasks', 'app_links'];
             
+            let totalRecords = 0;
+            
             for (const tableName of tables) {
-                console.log(`バックアップ中: ${tableName}`);
-                const { data, error } = await supabase
-                    .from(tableName)
-                    .select('*');
+                console.log(`📊 バックアップ中: ${tableName}`);
                 
-                if (error) throw error;
-                backupData.tables[tableName] = data || [];
-                console.log(`${tableName}: ${data?.length || 0} 件`);
+                try {
+                    const { data, error } = await supabase
+                        .from(tableName)
+                        .select('*');
+                    
+                    if (error) {
+                        console.error(`❌ ${tableName} テーブル取得エラー:`, error);
+                        throw error;
+                    }
+                    
+                    backupData.tables[tableName] = data || [];
+                    const recordCount = data?.length || 0;
+                    totalRecords += recordCount;
+                    
+                    console.log(`✅ ${tableName}: ${recordCount} 件取得完了`);
+                    
+                    // 詳細なデータ確認（最初の数件をサンプル表示）
+                    if (recordCount > 0) {
+                        console.log(`📄 ${tableName} サンプルデータ:`, data.slice(0, Math.min(2, recordCount)));
+                    }
+                    
+                } catch (tableError) {
+                    console.error(`❌ ${tableName} テーブル処理中にエラー:`, tableError);
+                    // エラーが発生したテーブルは空配列で初期化
+                    backupData.tables[tableName] = [];
+                }
             }
-
-            console.log('バックアップ作成完了:', backupData);
+            
+            const backupSize = JSON.stringify(backupData).length;
+            console.log(`🎉 バックアップ作成完了:`, {
+                totalTables: tables.length,
+                totalRecords,
+                backupSizeBytes: backupSize,
+                backupSizeKB: Math.round(backupSize / 1024),
+                timestamp: backupData.timestamp
+            });
+            
+            // 全体のデータ構造をチェック
+            console.log('📋 バックアップデータ構造:', {
+                hasTimestamp: !!backupData.timestamp,
+                hasVersion: !!backupData.version,
+                hasDatabase: !!backupData.database,
+                hasTablesObject: !!backupData.tables,
+                tableKeys: Object.keys(backupData.tables),
+                totalDataSize: Object.values(backupData.tables).reduce((sum, table) => sum + table.length, 0)
+            });
+            
             return backupData;
+            
         } catch (error) {
-            console.error('バックアップ作成エラー:', error);
+            console.error('💥 バックアップ作成エラー:', error);
             throw error;
         }
     }
@@ -1702,6 +1744,8 @@ export class SupabaseAPI {
     // クラウドバックアップ（Supabase Storage）
     static async uploadBackupToCloud(backupData, fileName = null) {
         try {
+            console.log('☁️ クラウドバックアップ開始...');
+            
             if (!fileName) {
                 // 週次ローテーション方式でファイル名生成
                 const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -1710,10 +1754,29 @@ export class SupabaseAPI {
                 fileName = `weekly/${dayName}/jigyosya-backup-${dayName}.json`;
             }
 
+            // バックアップデータの詳細チェック
+            console.log('📊 アップロード準備中のデータ詳細:', {
+                timestamp: backupData?.timestamp,
+                version: backupData?.version,
+                database: backupData?.database,
+                tablesCount: Object.keys(backupData?.tables || {}).length,
+                totalRecords: Object.values(backupData?.tables || {}).reduce((sum, table) => sum + (Array.isArray(table) ? table.length : 0), 0)
+            });
+
             const jsonData = JSON.stringify(backupData, null, 2);
             const blob = new Blob([jsonData], { type: 'application/json' });
 
+            console.log(`📄 JSON文字列サイズ: ${jsonData.length} 文字`);
+            console.log(`💾 Blobサイズ: ${blob.size} バイト (${Math.round(blob.size / 1024)} KB)`);
+            
+            // データ内容の簡易チェック
+            if (jsonData.length < 1000) {
+                console.warn('⚠️ JSONサイズが小さすぎます。データが正しく含まれていない可能性があります');
+                console.log('🔍 JSON内容の一部:', jsonData.substring(0, 500));
+            }
+
             // Supabase Storageにアップロード（上書き）
+            console.log(`📤 Supabase Storageにアップロード中: ${fileName}`);
             const { data, error } = await supabase.storage
                 .from('backups')
                 .upload(fileName, blob, { 
@@ -1721,9 +1784,12 @@ export class SupabaseAPI {
                     cacheControl: '3600'
                 });
 
-            if (error) throw error;
+            if (error) {
+                console.error('❌ Supabase Storageアップロードエラー:', error);
+                throw error;
+            }
 
-            console.log(`クラウドバックアップ完了: ${fileName}`, data);
+            console.log(`✅ クラウドバックアップ完了: ${fileName}`, data);
             
             // 成功ログをローカルストレージに保存
             const backupHistory = this.getCloudBackupHistory();
@@ -1731,7 +1797,8 @@ export class SupabaseAPI {
                 fileName,
                 uploadedAt: new Date().toISOString(),
                 size: blob.size,
-                path: data.path
+                path: data.path,
+                recordCount: Object.values(backupData?.tables || {}).reduce((sum, table) => sum + (Array.isArray(table) ? table.length : 0), 0)
             });
 
             // 履歴は最新10件のみ保持
