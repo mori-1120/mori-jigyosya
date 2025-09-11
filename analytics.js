@@ -238,11 +238,15 @@ class AnalyticsPage {
             const saveData = {
                 analysisData,
                 filters,
+                sortState: {
+                    currentSort: this.currentSort,
+                    sortDirection: this.sortDirection
+                },
                 timestamp: Date.now(),
-                version: '1.0'
+                version: '1.1'
             };
             localStorage.setItem('analytics_temp_results', JSON.stringify(saveData));
-            console.log('Analysis results saved to localStorage');
+            console.log('Analysis results saved to localStorage with sort state');
         } catch (error) {
             console.warn('Failed to save analysis to localStorage:', error);
         }
@@ -254,7 +258,7 @@ class AnalyticsPage {
             const savedData = localStorage.getItem('analytics_temp_results');
             if (!savedData) return false;
 
-            const { analysisData, filters, timestamp } = JSON.parse(savedData);
+            const { analysisData, filters, sortState, timestamp } = JSON.parse(savedData);
             
             // 1時間以内のデータのみ復元
             const oneHour = 60 * 60 * 1000;
@@ -273,13 +277,28 @@ class AnalyticsPage {
                 this.currentFilters = { ...filters };
             }
 
+            // ソート状態を復元
+            if (sortState) {
+                this.currentSort = sortState.currentSort;
+                this.sortDirection = sortState.sortDirection;
+            }
+
             // 分析結果を復元
             if (analysisData) {
                 this.lastAnalysisData = analysisData;
                 
                 // 結果表示
                 this.displaySummary(analysisData.summary);
-                this.displayProgressMatrix(analysisData.matrix);
+                
+                // ソート状態がある場合は適用、ない場合はデフォルト表示
+                if (this.currentSort) {
+                    const sortedMatrix = this.applySortToMatrix([...analysisData.matrix]);
+                    this.displayProgressMatrix(sortedMatrix);
+                    this.updateSortIcons(this.currentSort);
+                    console.log(`Sort state restored: ${this.currentSort} ${this.sortDirection}`);
+                } else {
+                    this.displayProgressMatrix(analysisData.matrix);
+                }
                 
                 // サマリーダッシュボード表示
                 document.getElementById('summary-dashboard').style.display = 'block';
@@ -312,6 +331,12 @@ class AnalyticsPage {
         showToast('集計中...', 'info');
         
         try {
+            // 現在のソート状態を保存
+            const previousSortState = {
+                currentSort: this.currentSort,
+                sortDirection: this.sortDirection
+            };
+
             // フィルター値取得
             this.currentFilters = {
                 startPeriod: document.getElementById('start-period').value,
@@ -334,20 +359,31 @@ class AnalyticsPage {
             // 分析実行
             const analysisData = await this.calculateAnalytics();
             
-            // 分析結果を保存
+            // 分析結果を保存（ソートなしの生データ）
             this.lastAnalysisData = analysisData;
-            
-            // ローカルストレージに一時保存
-            this.saveAnalysisToLocalStorage(analysisData, this.currentFilters);
             
             // 結果表示
             this.displaySummary(analysisData.summary);
-            this.displayProgressMatrix(analysisData.matrix);
             
-            // デフォルト決算月ソートを適用（ソート状態がない場合のみ）
-            if (!this.currentSort) {
+            // 既存のソート状態がある場合は復元、ない場合はデフォルト決算月ソート
+            if (previousSortState.currentSort) {
+                // 既存のソート状態を復元
+                this.currentSort = previousSortState.currentSort;
+                this.sortDirection = previousSortState.sortDirection;
+                
+                // ソートを適用して表示
+                const sortedMatrix = this.applySortToMatrix([...analysisData.matrix]);
+                this.displayProgressMatrix(sortedMatrix);
+                this.updateSortIcons(this.currentSort);
+                
+                console.log(`Previous sort state restored: ${this.currentSort} ${this.sortDirection}`);
+            } else {
+                // デフォルト決算月ソートを適用
                 this.applyDefaultFiscalSort();
             }
+            
+            // ローカルストレージに一時保存
+            this.saveAnalysisToLocalStorage(this.lastAnalysisData, this.currentFilters);
             
             // サマリーダッシュボード表示
             document.getElementById('summary-dashboard').style.display = 'block';
@@ -677,7 +713,18 @@ class AnalyticsPage {
             th.className = 'month-column';
             th.style.cssText = 'border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer; background: #f8f9fa; position: sticky; top: 0; z-index: 10;';
             th.setAttribute('data-sort', `month-${monthKey}`);
-            th.innerHTML = `${year}/${month}<br><span class="sort-icon">▲▼</span>`;
+            
+            // 現在のソート状態に基づいてアイコンを設定
+            const sortKey = `month-${monthKey}`;
+            let iconText = '▲▼';
+            let iconColor = '#999';
+            
+            if (this.currentSort === sortKey) {
+                iconText = this.sortDirection === 'asc' ? '▲' : '▼';
+                iconColor = '#007bff';
+            }
+            
+            th.innerHTML = `${year}/${month}<br><span class="sort-icon" style="color: ${iconColor};">${iconText}</span>`;
             
             // ソートイベントリスナー追加
             th.addEventListener('click', () => {
@@ -1934,7 +1981,7 @@ class AnalyticsPage {
         this.currentSort = 'fiscal';
         this.sortDirection = 'asc';
         
-        // ソート適用
+        // ソート適用（元データは変更せず、ソート済みデータのみ表示用として生成）
         const sortedMatrix = this.applySortToMatrix([...this.lastAnalysisData.matrix]);
         
         // 表示更新
@@ -1943,8 +1990,7 @@ class AnalyticsPage {
         // ソートアイコン更新
         this.updateSortIcons('fiscal');
         
-        // データを更新して保存
-        this.lastAnalysisData.matrix = sortedMatrix;
+        // ソート状態をローカルストレージに保存（元データは生データのまま保持）
         this.saveAnalysisToLocalStorage(this.lastAnalysisData, this.currentFilters);
         
         console.log('Default fiscal month sort applied');
