@@ -37,16 +37,22 @@ class AnalyticsPage {
             this.setupEventListeners();
             this.populateFilters();
             
-            // URLパラメータから担当者を自動選択
-            this.handleUrlParameters();
+            // URLパラメータから担当者を自動選択（復元前に処理）
+            const hasUrlParameters = this.handleUrlParameters();
             
-            // 保存された分析結果があれば復元、なければ初期集計を実行
-            const hasRestoredData = this.restoreAnalysisFromLocalStorage();
-            if (!hasRestoredData) {
-                // 初期データで自動集計を実行
-                setTimeout(async () => {
-                    await this.performAnalysis();
-                }, 500); // UI初期化完了後に実行
+            // URLパラメータがある場合は復元をスキップして新規分析
+            if (hasUrlParameters) {
+                // URLパラメータがある場合は新規分析を優先
+                console.log('URL parameters detected, skipping localStorage restore');
+            } else {
+                // URLパラメータがない場合のみ保存された分析結果を復元
+                const hasRestoredData = this.restoreAnalysisFromLocalStorage();
+                if (!hasRestoredData) {
+                    // 初期データで自動集計を実行
+                    setTimeout(async () => {
+                        await this.performAnalysis();
+                    }, 500); // UI初期化完了後に実行
+                }
             }
             
             console.log('Analytics page initialized successfully');
@@ -946,6 +952,8 @@ class AnalyticsPage {
         const staffId = urlParams.get('staff');
         
         if (staffId) {
+            console.log(`URL parameter detected: staff=${staffId}`);
+            
             // 担当者フィルターを自動選択
             const staffSelect = document.getElementById('staff-filter');
             if (staffSelect) {
@@ -959,18 +967,24 @@ class AnalyticsPage {
                 if (selectedStaff) {
                     showToast(`担当者「${selectedStaff.name}」の進捗分析を表示中`, 'info');
                     
-                    // 自動的に分析を実行（ローカルストレージの復元をスキップ）
+                    // ローカルストレージをクリアして新規分析を強制実行
+                    this.clearAnalysisFromLocalStorage();
+                    
+                    // より短いタイマーで確実に実行
                     setTimeout(async () => {
-                        // ローカルストレージをクリアして新規分析を強制実行
-                        this.clearAnalysisFromLocalStorage();
+                        console.log('Executing analysis with URL parameters');
                         await this.performAnalysis();
-                    }, 800);
+                    }, 300);
                 } else {
                     console.warn(`Staff with ID ${staffId} not found`);
                     showToast('指定された担当者が見つかりません', 'warning');
                 }
             }
+            
+            return true; // URLパラメータがあることを示す
         }
+        
+        return false; // URLパラメータがないことを示す
     }
 
     setupExportEventListeners() {
@@ -1698,14 +1712,23 @@ class AnalyticsPage {
         // 期間内の月を取得
         const periods = Object.keys(matrix[0].monthlyProgress || {}).sort();
         
-        // テーブルヘッダー
-        const headers = ['事業者名', '担当者', '全体進捗', ...periods];
+        // テーブルヘッダー（決算月情報付き）
+        const headers = ['事業者名', '担当者', '全体進捗', ...periods.map(period => {
+            const [year, month] = period.split('-');
+            return `${year}/${month}`;
+        })];
         
         return `
-        <table style="font-size: 8px;">
+        <table style="font-size: 8px; border-collapse: collapse; width: 100%;">
             <thead>
-                <tr>
-                    ${headers.map(header => `<th style="padding: 6px 4px;">${header}</th>`).join('')}
+                <tr style="background-color: #f8f9fa;">
+                    ${headers.map((header, index) => {
+                        if (index < 3) {
+                            return `<th style="padding: 8px 4px; border: 1px solid #333; text-align: center; font-weight: bold;">${header}</th>`;
+                        } else {
+                            return `<th style="padding: 8px 4px; border: 1px solid #333; text-align: center; font-weight: bold; writing-mode: horizontal-tb;">${header}</th>`;
+                        }
+                    }).join('')}
                 </tr>
             </thead>
             <tbody>
@@ -1715,32 +1738,70 @@ class AnalyticsPage {
                         Math.round((client.completedTasks / client.totalTasks) * 100) : 0;
                     const overallClass = overallRate >= 80 ? 'progress-high' : 
                                         overallRate >= 50 ? 'progress-medium' : 'progress-low';
+                    const fiscalMonth = parseInt(client.fiscalMonth);
                     
                     return `
                     <tr>
-                        <td style="text-align: left; font-weight: bold; padding: 6px 4px;">${client.clientName}</td>
-                        <td style="padding: 6px 4px;">${client.staffName || '-'}</td>
-                        <td class="${overallClass}" style="padding: 6px 4px;">${overallRate}% (${client.completedTasks}/${client.totalTasks})</td>
+                        <td style="text-align: left; font-weight: bold; padding: 6px 4px; border: 1px solid #333; background-color: #fafafa;">${client.clientName}</td>
+                        <td style="padding: 6px 4px; border: 1px solid #333; text-align: center;">${client.staffName || '-'}</td>
+                        <td class="${overallClass}" style="padding: 6px 4px; border: 1px solid #333; text-align: center; font-weight: bold;">${overallRate}% (${client.completedTasks}/${client.totalTasks})</td>
                         ${periods.map(period => {
+                            const [year, month] = period.split('-');
+                            const currentMonth = parseInt(month);
                             const monthData = client.monthlyProgress?.[period];
-                            if (!monthData) return '<td style="padding: 6px 4px;">-</td>';
+                            
+                            if (!monthData) {
+                                return `<td style="padding: 6px 4px; border: 1px solid #333; text-align: center;">-</td>`;
+                            }
                             
                             const monthRate = monthData.total > 0 ? 
                                 Math.round((monthData.completed / monthData.total) * 100) : 0;
                             const monthClass = monthRate >= 80 ? 'progress-high' : 
                                               monthRate >= 50 ? 'progress-medium' : 'progress-low';
                             
-                            return `<td class="${monthClass} month-cell" style="padding: 6px 4px;">${monthData.completed}/${monthData.total}</td>`;
+                            // 決算月の特別スタイル
+                            let cellStyle = 'padding: 6px 4px; border: 1px solid #333; text-align: center; font-weight: bold;';
+                            let cellContent = `${monthData.completed}/${monthData.total}`;
+                            
+                            if (fiscalMonth && currentMonth === fiscalMonth) {
+                                // 決算月は赤色の太い境界線と背景色
+                                cellStyle += ' border-right: 4px solid #dc3545 !important; background-color: rgba(220, 53, 69, 0.1);';
+                                cellContent += ' 📅'; // 決算月アイコン
+                            } else {
+                                // 会計年度期間の判定と表示
+                                const fiscalYearStart = fiscalMonth === 12 ? 1 : fiscalMonth + 1;
+                                const fiscalYearEnd = fiscalMonth;
+                                
+                                let isInFiscalYear = false;
+                                if (fiscalYearStart <= fiscalYearEnd) {
+                                    isInFiscalYear = currentMonth >= fiscalYearStart && currentMonth <= fiscalYearEnd;
+                                } else {
+                                    isInFiscalYear = currentMonth >= fiscalYearStart || currentMonth <= fiscalYearEnd;
+                                }
+                                
+                                if (isInFiscalYear) {
+                                    cellStyle += ' border-top: 3px solid #17a2b8; border-bottom: 3px solid #17a2b8;';
+                                }
+                            }
+                            
+                            return `<td class="${monthClass}" style="${cellStyle}">${cellContent}</td>`;
                         }).join('')}
                     </tr>`;
                 }).join('')}
             </tbody>
         </table>
-        <div style="margin-top: 15px; font-size: 10px;">
-            <strong>色分けの説明:</strong> 
-            <span style="background-color: #d4edda; padding: 2px 6px; border-radius: 3px; margin: 0 3px;">80%以上</span>
-            <span style="background-color: #fff3cd; padding: 2px 6px; border-radius: 3px; margin: 0 3px;">50-79%</span>
-            <span style="background-color: #f8d7da; padding: 2px 6px; border-radius: 3px; margin: 0 3px;">50%未満</span>
+        <div style="margin-top: 15px; font-size: 10px; line-height: 1.6;">
+            <div style="margin-bottom: 8px;">
+                <strong>📊 進捗率の色分け:</strong> 
+                <span style="background-color: #d4edda; padding: 2px 6px; border-radius: 3px; margin: 0 3px; color: #155724;">■ 80%以上（良好）</span>
+                <span style="background-color: #fff3cd; padding: 2px 6px; border-radius: 3px; margin: 0 3px; color: #856404;">■ 50-79%（注意）</span>
+                <span style="background-color: #f8d7da; padding: 2px 6px; border-radius: 3px; margin: 0 3px; color: #721c24;">■ 50%未満（要対応）</span>
+            </div>
+            <div>
+                <strong>📅 決算月の表示:</strong> 
+                <span style="border-right: 4px solid #dc3545; padding: 2px 6px; margin: 0 3px; background-color: rgba(220, 53, 69, 0.1);">■ 決算月（右端赤線＋📅マーク）</span>
+                <span style="border-top: 3px solid #17a2b8; border-bottom: 3px solid #17a2b8; padding: 2px 6px; margin: 0 3px;">■ 会計年度期間（上下青線）</span>
+            </div>
         </div>`;
     }
 

@@ -395,7 +395,7 @@ class PerformancePage {
                     </span>
                 </td>
                 <td style="border: 1px solid #dee2e6; padding: 12px; text-align: center;">
-                    <button onclick="window.location.href='analytics.html?staff=${staff.staffId}'" 
+                    <button onclick="performance.viewStaffDetails(${staff.staffId}, '${staff.staffName}')" 
                             style="background: #007bff; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">
                         詳細確認
                     </button>
@@ -516,7 +516,7 @@ class PerformancePage {
                     </span>
                 </td>
                 <td style="border: 1px solid #dee2e6; padding: 12px; text-align: center;">
-                    <button onclick="window.location.href='analytics.html?staff=${staff.staffId}'" 
+                    <button onclick="performance.viewStaffDetails(${staff.staffId}, '${staff.staffName}')" 
                             style="background: #007bff; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">
                         詳細確認
                     </button>
@@ -540,10 +540,26 @@ class PerformancePage {
             activeHeader.style.color = '#007bff';
         }
     }
+
+    // 担当者詳細確認機能
+    viewStaffDetails(staffId, staffName) {
+        console.log(`Viewing details for staff: ${staffId} (${staffName})`);
+        
+        // 確認のトースト通知
+        showToast(`${staffName}さんの詳細分析画面に移動します`, 'info');
+        
+        // 少し遅延させてから遷移（トースト表示のため）
+        setTimeout(() => {
+            // URLパラメータを明示的に設定して遷移
+            const analyticsUrl = `analytics.html?staff=${staffId}&from=performance&t=${Date.now()}`;
+            console.log(`Navigating to: ${analyticsUrl}`);
+            window.location.href = analyticsUrl;
+        }, 800);
+    }
 }
 
 // ページ読み込み時に初期化
 document.addEventListener('DOMContentLoaded', async () => {
-    const performance = new PerformancePage();
-    await performance.initialize();
+    window.performance = new PerformancePage();
+    await window.performance.initialize();
 });
