@@ -686,8 +686,12 @@ class AnalyticsPage {
                 <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.fiscalMonth}月</td>
             `;
             
-            // 月別進捗列を追加
-            this.addMonthlyProgressCells(tr, row.monthlyProgress);
+            // クライアント情報を渡して月別進捗列を追加
+            const clientData = {
+                fiscalMonth: row.fiscalMonth,
+                clientName: row.clientName
+            };
+            this.addMonthlyProgressCells(tr, row.monthlyProgress, clientData);
             
             tbody.appendChild(tr);
         });
@@ -735,16 +739,62 @@ class AnalyticsPage {
         }
     }
 
-    addMonthlyProgressCells(tr, monthlyProgress) {
+    addMonthlyProgressCells(tr, monthlyProgress, client) {
         const startDate = new Date(this.currentFilters.startPeriod + '-01');
         const endDate = new Date(this.currentFilters.endPeriod + '-01');
+        
+        // クライアントの決算月を取得
+        const fiscalMonth = client ? parseInt(client.fiscalMonth) : null;
         
         for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
             const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
             const monthData = monthlyProgress[monthKey] || { completed: 0, total: 0, rate: 0 };
+            const currentMonth = d.getMonth() + 1; // 1-12
             
             const td = document.createElement('td');
-            td.style.cssText = 'border: 1px solid #dee2e6; padding: 8px; text-align: center;';
+            
+            // 基本スタイル
+            let borderStyle = '1px solid #dee2e6';
+            let backgroundColor = 'transparent';
+            let isFiscalMonth = false;
+            let isInFiscalYear = false;
+            
+            // 決算月と会計年度の判定
+            if (fiscalMonth) {
+                isFiscalMonth = (currentMonth === fiscalMonth);
+                
+                // 会計年度の開始月は決算月の翌月
+                const fiscalYearStart = fiscalMonth === 12 ? 1 : fiscalMonth + 1;
+                const fiscalYearEnd = fiscalMonth;
+                
+                // 会計年度内かどうかを判定
+                if (fiscalYearStart <= fiscalYearEnd) {
+                    // 通常の年度内（例：4月決算 → 5月-4月）
+                    isInFiscalYear = currentMonth >= fiscalYearStart && currentMonth <= fiscalYearEnd;
+                } else {
+                    // 年跨ぎの年度（例：3月決算 → 4月-3月）
+                    isInFiscalYear = currentMonth >= fiscalYearStart || currentMonth <= fiscalYearEnd;
+                }
+            }
+            
+            // 決算月の視覚化
+            if (isFiscalMonth) {
+                backgroundColor = 'rgba(220, 53, 69, 0.05)'; // 薄い赤色の背景
+                td.title = `決算月: ${fiscalMonth}月`;
+            }
+            
+            // 基本スタイルを適用
+            td.style.cssText = `border: ${borderStyle}; padding: 8px; text-align: center; background-color: ${backgroundColor};`;
+            
+            // 特別な境界線を後から適用（CSSText上書きを防ぐため）
+            if (isFiscalMonth) {
+                td.style.borderRight = '4px solid #dc3545'; // 決算月の右境界（赤色）
+            }
+            
+            if (isInFiscalYear) {
+                td.style.borderTop = '2px solid #17a2b8'; // 会計年度内の上下境界（青色）
+                td.style.borderBottom = '2px solid #17a2b8';
+            }
             
             if (monthData.total > 0) {
                 const progressColor = this.getProgressColor(monthData.rate);
@@ -901,15 +951,23 @@ class AnalyticsPage {
             if (staffSelect) {
                 staffSelect.value = staffId;
                 
+                // フィルターの状態を内部的にも更新
+                this.currentFilters.staffId = staffId;
+                
                 // 選択された担当者名を表示
                 const selectedStaff = this.staffs.find(s => s.id == staffId);
                 if (selectedStaff) {
-                    showToast(`担当者「${selectedStaff.name}」の分析画面を表示しています`, 'info');
+                    showToast(`担当者「${selectedStaff.name}」の進捗分析を表示中`, 'info');
                     
-                    // 自動的に分析を実行
-                    setTimeout(() => {
-                        this.performAnalysis();
-                    }, 1000);
+                    // 自動的に分析を実行（ローカルストレージの復元をスキップ）
+                    setTimeout(async () => {
+                        // ローカルストレージをクリアして新規分析を強制実行
+                        this.clearAnalysisFromLocalStorage();
+                        await this.performAnalysis();
+                    }, 800);
+                } else {
+                    console.warn(`Staff with ID ${staffId} not found`);
+                    showToast('指定された担当者が見つかりません', 'warning');
                 }
             }
         }
