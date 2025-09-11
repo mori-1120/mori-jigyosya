@@ -2451,7 +2451,8 @@ document.addEventListener('DOMContentLoaded', () => {
             let result;
             
             if (destination === 'cloud') {
-                result = await SupabaseAPI.uploadBackupToCloud();
+                const backupData = await SupabaseAPI.createFullBackup();
+                result = await SupabaseAPI.uploadBackupToCloud(backupData);
             } else if (destination === 'both') {
                 result = await SupabaseAPI.executeFullBackup();
             } else {
@@ -2482,7 +2483,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const loadingToast = toast.show('クラウドバックアップを作成中...', 'info', 0);
             
             try {
-                const result = await SupabaseAPI.uploadBackupToCloud();
+                const backupData = await SupabaseAPI.createFullBackup();
+                const result = await SupabaseAPI.uploadBackupToCloud(backupData);
                 toast.update(loadingToast, 'クラウドバックアップが正常に完了しました', 'success');
                 updateBackupHistory();
             } catch (error) {
