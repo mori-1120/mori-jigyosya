@@ -2001,6 +2001,166 @@ export class SupabaseAPI {
         }
     }
 
+    // 管理者向け詳細レポートを表示（モーダル形式）
+    static showAdminBackupReport(reportData, fileSize, filePath) {
+        // モーダルHTML作成
+        const modal = document.createElement('div');
+        modal.id = 'admin-backup-report-modal';
+        modal.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.5); z-index: 10000; display: flex; 
+            justify-content: center; align-items: center;
+        `;
+
+        const fileSizeKB = Math.round(fileSize / 1024);
+        const currentDate = new Date().toLocaleDateString('ja-JP', {
+            year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
+        });
+
+        // テーブル詳細の表示用HTML生成
+        let tableDetailsHTML = '';
+        const tableBreakdown = reportData.tableBreakdown || {};
+        const totalRecords = reportData.totalRecords || 0;
+        
+        for (const [tableName, data] of Object.entries(tableBreakdown)) {
+            const count = data.recordCount || 0;
+            const percentage = totalRecords > 0 ? ((count / totalRecords) * 100).toFixed(1) : '0.0';
+            const statusColor = count > 0 ? '#28a745' : '#dc3545';
+            const japaneseName = data.japaneseName || tableName;
+            
+            tableDetailsHTML += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee;">
+                    <span style="font-weight: 500;">${japaneseName}</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="color: ${statusColor}; font-weight: bold;">${count} 件</span>
+                        <span style="color: #6c757d; font-size: 12px;">(${percentage}%)</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        modal.innerHTML = `
+            <div style="
+                background: white; border-radius: 12px; padding: 30px; 
+                max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            ">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0; color: #343a40; display: flex; align-items: center; gap: 10px;">
+                        📊 日次バックアップレポート
+                    </h2>
+                    <button id="close-report-modal" style="
+                        background: #6c757d; color: white; border: none; 
+                        border-radius: 50%; width: 30px; height: 30px; cursor: pointer;
+                        display: flex; align-items: center; justify-content: center;
+                    ">×</button>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 15px 0; color: #495057; font-size: 16px;">📅 ${currentDate}</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: #007bff;">${totalRecords}</div>
+                            <div style="color: #6c757d; font-size: 14px;">総レコード数</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: #28a745;">${fileSizeKB} KB</div>
+                            <div style="color: #6c757d; font-size: 14px;">ファイルサイズ</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: #17a2b8;">${Object.keys(tableBreakdown).length}</div>
+                            <div style="color: #6c757d; font-size: 14px;">テーブル数</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 15px 0; color: #495057; font-size: 16px;">📋 テーブル別詳細</h3>
+                    <div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px;">
+                        ${tableDetailsHTML}
+                    </div>
+                </div>
+
+                <div style="background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 10px 0; color: #495057; font-size: 14px;">💾 保存先情報</h4>
+                    <div style="font-family: monospace; font-size: 12px; color: #6c757d; word-break: break-all;">
+                        ${filePath || 'クラウドストレージ'}
+                    </div>
+                </div>
+
+                <div style="text-align: center;">
+                    <button id="confirm-report-modal" style="
+                        background: #007bff; color: white; border: none; 
+                        padding: 10px 30px; border-radius: 6px; cursor: pointer;
+                        font-size: 16px; font-weight: 500;
+                    ">確認しました</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // イベントリスナー設定
+        const closeModal = () => {
+            document.body.removeChild(modal);
+            // 今日の日付を記録（再表示防止用）
+            localStorage.setItem('lastAdminReportShown', new Date().toDateString());
+        };
+
+        document.getElementById('close-report-modal').addEventListener('click', closeModal);
+        document.getElementById('confirm-report-modal').addEventListener('click', closeModal);
+        
+        // モーダル外クリックで閉じる
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+    }
+
+    // 管理者の初回アクセス時にレポート表示が必要かチェック
+    static shouldShowAdminReport() {
+        const today = new Date().toDateString();
+        const lastShown = localStorage.getItem('lastAdminReportShown');
+        const backupHistory = JSON.parse(localStorage.getItem('cloudBackupHistory') || '[]');
+        
+        // 今日初回アクセス かつ 最新のバックアップが今日のもの
+        return lastShown !== today && backupHistory.length > 0 && 
+               new Date(backupHistory[0].uploadedAt).toDateString() === today;
+    }
+
+    // 最新バックアップレポートを取得して表示
+    static async showLatestAdminReport() {
+        try {
+            if (!this.shouldShowAdminReport()) return;
+
+            const backupHistory = JSON.parse(localStorage.getItem('cloudBackupHistory') || '[]');
+            if (backupHistory.length === 0) return;
+
+            const latestBackup = backupHistory[0];
+            
+            // Supabase Storageから最新のレポートを取得
+            const today = new Date().toISOString().split('T')[0];
+            const reportFileName = `reports/backup-report-${today}.json`;
+            
+            const { data, error } = await supabase.storage
+                .from('backups')
+                .download(reportFileName);
+
+            if (error) {
+                console.log('本日のレポートファイルが見つかりません:', error.message);
+                return;
+            }
+
+            const reportText = await data.text();
+            const reportData = JSON.parse(reportText);
+            
+            // 管理者向けレポートを表示
+            this.showAdminBackupReport(reportData, latestBackup.size, latestBackup.fileName);
+            
+        } catch (error) {
+            console.error('管理者レポート表示エラー:', error);
+        }
+    }
+
     // 自動クラウドバックアップ実行
     static async executeAutoCloudBackup() {
         try {

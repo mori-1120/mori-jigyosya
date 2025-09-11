@@ -405,6 +405,17 @@ document.addEventListener('DOMContentLoaded', () => {
             
             toast.update(dataLoadToast, 'データ読み込み完了', 'success');
 
+            // 管理者の場合、初回アクセス時にバックアップレポートを表示
+            if (userRole === 'admin') {
+                setTimeout(async () => {
+                    try {
+                        await SupabaseAPI.showLatestAdminReport();
+                    } catch (error) {
+                        console.error('管理者レポート表示エラー:', error);
+                    }
+                }, 1000); // データ読み込み完了後1秒待って表示
+            }
+
         } catch (error) {
             if (typeof dataLoadToast !== 'undefined') toast.hide(dataLoadToast);
             if (typeof authCheckToast !== 'undefined') toast.hide(authCheckToast);
@@ -777,6 +788,9 @@ document.addEventListener('DOMContentLoaded', () => {
             openDefaultTasksModal();
         });
         document.getElementById('reset-column-widths-button').addEventListener('click', resetColumnWidths);
+
+        // 管理者レポートボタンを追加（管理者権限の場合のみ）
+        addAdminReportButton();
     }
 
     // --- Client Management ---
@@ -2941,6 +2955,99 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     accordionContent.appendChild(toggleButton);
                 }
+            }
+        }
+    }
+
+    // 管理者レポート表示ボタンを追加
+    function addAdminReportButton() {
+        // 管理者権限チェック
+        if (userRole !== 'admin') return;
+        
+        const accordionContent = document.querySelector('#management-accordion .accordion-content');
+        if (!accordionContent) return;
+        
+        // 既存のボタンがあるかチェック
+        const existingButton = accordionContent.querySelector('#admin-report-button');
+        if (existingButton) return;
+        
+        const reportButton = document.createElement('button');
+        reportButton.id = 'admin-report-button';
+        reportButton.className = 'btn';
+        reportButton.innerHTML = '📊 バックアップレポート表示';
+        reportButton.style.cssText = `
+            width: 100% !important; 
+            margin: 5px 0; 
+            text-align: center;
+            padding: 10px 15px !important;
+            min-height: 40px !important;
+            background: linear-gradient(135deg, #ff6b35, #f7931e) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 6px !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+            box-sizing: border-box !important;
+            display: block !important;
+            visibility: visible !important;
+        `;
+        
+        reportButton.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                // 最新のバックアップ履歴を取得
+                const backupHistory = JSON.parse(localStorage.getItem('cloudBackupHistory') || '[]');
+                if (backupHistory.length === 0) {
+                    if (window.showToast) {
+                        window.showToast('表示可能なバックアップレポートがありません', 'warning', 3000);
+                    }
+                    return;
+                }
+
+                const latestBackup = backupHistory[0];
+                
+                // Supabase Storageから最新のレポートを取得
+                const backupDate = new Date(latestBackup.uploadedAt).toISOString().split('T')[0];
+                const reportFileName = `reports/backup-report-${backupDate}.json`;
+                
+                const { data, error } = await supabase.storage
+                    .from('backups')
+                    .download(reportFileName);
+
+                if (error) {
+                    console.error('レポート取得エラー:', error);
+                    if (window.showToast) {
+                        window.showToast('レポートファイルの取得に失敗しました', 'error', 3000);
+                    }
+                    return;
+                }
+
+                const reportText = await data.text();
+                const reportData = JSON.parse(reportText);
+                
+                // 管理者向けレポートを表示（日付制限を無視）
+                SupabaseAPI.showAdminBackupReport(reportData, latestBackup.size, latestBackup.fileName);
+                
+            } catch (error) {
+                console.error('管理者レポート手動表示エラー:', error);
+                if (window.showToast) {
+                    window.showToast('レポート表示中にエラーが発生しました', 'error', 3000);
+                }
+            }
+        });
+        
+        // ユーザー情報セクションの前に挿入
+        const userInfoSection = accordionContent.querySelector('.user-info-section');
+        if (userInfoSection) {
+            userInfoSection.parentNode.insertBefore(reportButton, userInfoSection);
+        } else {
+            // フォールバック: テーブルモード切替ボタンの後に追加
+            const tableModeButton = accordionContent.querySelector('#table-mode-toggle-btn');
+            if (tableModeButton) {
+                tableModeButton.parentNode.insertBefore(reportButton, tableModeButton.nextSibling);
+            } else {
+                accordionContent.appendChild(reportButton);
             }
         }
     }
