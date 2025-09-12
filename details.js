@@ -677,332 +677,365 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 🎉 10種類の達成時エフェクト（Canvas Confetti + カスタムエフェクト）
-    class AchievementEffects {
+    class ModernAchievementEffects {
         constructor() {
             this.effectOverlay = document.getElementById('achievement-effect-overlay');
+            this.isAnimationReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            
+            // モダンエフェクト配列（10種類）
             this.effects = [
-                // Canvas Confetti エフェクト
+                // Canvas Confetti エフェクト（既存を活用）
                 this.triggerBasicConfetti.bind(this),
                 this.triggerStarsEffect.bind(this),
-                this.triggerCustomShapes.bind(this),
                 this.triggerEmojiEffect.bind(this),
-                // カスタムエフェクト
-                this.triggerDivineLight.bind(this),
-                this.triggerThumbsUp.bind(this),
-                this.triggerKusudama.bind(this),
-                this.triggerMusicalNotes.bind(this),
-                this.triggerCircusBalloons.bind(this),
-                this.triggerTrophyAward.bind(this)
+                
+                // 新しいモダンエフェクト（7種類追加）
+                this.triggerHologramBurst.bind(this),
+                this.triggerNeonRipple.bind(this),
+                this.triggerParticleExplosion.bind(this),
+                this.triggerFlipCard3D.bind(this),
+                this.triggerMorphingShape.bind(this),
+                this.triggerEnergyOrb.bind(this),
+                this.triggerRainbowExplosion.bind(this)
             ];
+            
+            // パフォーマンス最適化のための要素プール
+            this.elementPool = new Map();
+            this.activeElements = new Set();
+            
+            // リサイズイベントでモバイル最適化
+            this.handleResize = this.debounce(this.optimizeForViewport.bind(this), 250);
+            window.addEventListener('resize', this.handleResize);
+            
+            // 初期化時にビューポート最適化
+            this.optimizeForViewport();
         }
 
         // ランダムエフェクトを実行
         triggerRandomEffect() {
+            if (!this.effectOverlay) {
+                console.warn('エフェクトオーバーレイが見つかりません');
+                return;
+            }
+
+            // アクセシビリティ: アニメーション軽減設定をチェック
+            if (this.isAnimationReduced) {
+                this.triggerSimpleEffect();
+                return;
+            }
+
+            // パフォーマンス制御: 同時実行エフェクトを制限
+            if (this.activeElements.size > 3) {
+                this.cleanupOldEffects();
+            }
+
             const randomIndex = Math.floor(Math.random() * this.effects.length);
             this.effects[randomIndex]();
-            console.log(`🎉 達成エフェクト実行: ${randomIndex + 1}番目のエフェクト`);
+            console.log(`🎉 モダン達成エフェクト実行: ${randomIndex + 1}番目`);
             return randomIndex;
         }
 
-        // === Canvas Confetti エフェクト ===
-        // 1. 基本的な紙吹雪エフェクト
-        triggerBasicConfetti() {
-            if (typeof confetti !== 'undefined') {
-                confetti({
-                    particleCount: 100,
-                    spread: 70,
-                    origin: { y: 0.6 }
-                });
-            }
+        // デバウンス関数（パフォーマンス最適化）
+        debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         }
 
-        // 2. 星のエフェクト
-        triggerStarsEffect() {
-            if (typeof confetti !== 'undefined') {
-                const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
-                
-                function randomInRange(min, max) {
-                    return Math.random() * (max - min) + min;
-                }
-                
-                confetti({
-                    ...defaults,
-                    particleCount: 40,
-                    scalar: 1.2,
-                    shapes: ["star"]
-                });
-                
-                confetti({
-                    ...defaults,
-                    particleCount: 10,
-                    scalar: 0.75,
-                    shapes: ["circle"]
-                });
-            }
-        }
-
-        // 3. カスタムシェイプエフェクト
-        triggerCustomShapes() {
-            if (typeof confetti !== 'undefined') {
-                const colors = ['#bb0000', '#ffffff'];
-                confetti({
-                    particleCount: 150,
-                    angle: 60,
-                    spread: 55,
-                    origin: { x: 0 },
-                    colors: colors
-                });
-                confetti({
-                    particleCount: 150,
-                    angle: 120,
-                    spread: 55,
-                    origin: { x: 1 },
-                    colors: colors
-                });
-            }
-        }
-
-        // 4. 絵文字エフェクト
-        triggerEmojiEffect() {
-            if (typeof confetti !== 'undefined') {
-                const scalar = 2;
-                const emojis = ['🦄', '⭐️', '💀', '👻', '🎃'];
-                
-                confetti({
-                    particleCount: 40,
-                    spread: 55,
-                    origin: { y: 0.6 },
-                    scalar: scalar,
-                    shapes: emojis
-                });
-            }
-        }
-
-        // 2. 神々しい光エフェクト
-        triggerDivineLight() {
-            // 光の柱
-            for (let i = 0; i < 3; i++) {
-                const light = document.createElement('div');
-                light.className = 'divine-light';
-                light.style.left = (40 + i * 10) + '%';
-                light.style.animationDelay = i * 0.3 + 's';
-                
-                this.effectOverlay.appendChild(light);
-                
-                setTimeout(() => {
-                    if (light.parentNode) light.remove();
-                }, 4000);
-            }
-
-            // キラキラエフェクト
-            for (let i = 0; i < 20; i++) {
-                setTimeout(() => {
-                    const sparkle = document.createElement('div');
-                    sparkle.className = 'sparkle';
-                    sparkle.innerHTML = '✨';
-                    sparkle.style.left = Math.random() * 100 + 'vw';
-                    sparkle.style.top = Math.random() * 100 + 'vh';
-                    sparkle.style.fontSize = Math.random() * 20 + 15 + 'px';
-                    
-                    this.effectOverlay.appendChild(sparkle);
-                    
-                    setTimeout(() => {
-                        if (sparkle.parentNode) sparkle.remove();
-                    }, 1500);
-                }, i * 100);
-            }
-        }
-
-        // 3. Good!の指エフェクト
-        triggerThumbsUp() {
-            const thumbs = document.createElement('div');
-            thumbs.className = 'thumbs-up';
-            thumbs.innerHTML = '👍';
+        // ビューポート最適化
+        optimizeForViewport() {
+            const isMobile = window.innerWidth < 768;
+            const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
             
-            this.effectOverlay.appendChild(thumbs);
+            this.viewportConfig = {
+                isMobile,
+                isTablet,
+                isDesktop: !isMobile && !isTablet,
+                particleCount: isMobile ? 30 : isTablet ? 50 : 80,
+                animationDuration: isMobile ? 1.5 : 2.5
+            };
+        }
+
+        // アクセシビリティ対応のシンプルエフェクト
+        triggerSimpleEffect() {
+            const message = document.createElement('div');
+            message.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 2rem;
+                font-weight: bold;
+                color: #4caf50;
+                z-index: 1001;
+                pointer-events: none;
+            `;
+            message.textContent = '✅ 完了！';
             
-            // キラキラエフェクト周囲に追加
-            for (let i = 0; i < 15; i++) {
-                setTimeout(() => {
-                    const sparkle = document.createElement('div');
-                    sparkle.className = 'sparkle';
-                    sparkle.innerHTML = '✨';
-                    sparkle.style.left = (45 + Math.random() * 10) + '%';
-                    sparkle.style.top = (45 + Math.random() * 10) + '%';
-                    sparkle.style.fontSize = '20px';
-                    
-                    this.effectOverlay.appendChild(sparkle);
-                    
-                    setTimeout(() => {
-                        if (sparkle.parentNode) sparkle.remove();
-                    }, 1500);
-                }, i * 150);
-            }
+            this.effectOverlay.appendChild(message);
             
             setTimeout(() => {
-                if (thumbs.parentNode) thumbs.remove();
-            }, 2500);
-        }
-
-        // 4. くす玉+ハトエフェクト
-        triggerKusudama() {
-            const ball = document.createElement('div');
-            ball.className = 'kusudama-ball';
-            this.effectOverlay.appendChild(ball);
-            
-            setTimeout(() => {
-                if (ball.parentNode) ball.remove();
-                
-                // 破片エフェクト
-                const pieces = ['🎀', '🌸', '🎊', '✨', '💖', '🌟', '🎉'];
-                
-                for (let i = 0; i < 25; i++) {
-                    const piece = document.createElement('div');
-                    piece.className = 'kusudama-piece';
-                    piece.innerHTML = pieces[Math.floor(Math.random() * pieces.length)];
-                    piece.style.fontSize = Math.random() * 15 + 20 + 'px';
-                    piece.style.left = '50%';
-                    piece.style.top = '20%';
-                    
-                    const angle = (Math.random() * 2 - 1) * Math.PI;
-                    const distance = Math.random() * 300 + 100;
-                    const bx = Math.cos(angle) * distance;
-                    const by = Math.sin(angle) * distance + Math.random() * 200;
-                    
-                    piece.style.setProperty('--bx', bx + 'px');
-                    piece.style.setProperty('--by', by + 'px');
-                    
-                    this.effectOverlay.appendChild(piece);
-                    
-                    setTimeout(() => {
-                        if (piece.parentNode) piece.remove();
-                    }, 2000);
-                }
-
-                // ハトが飛び出すエフェクト
-                const doveCount = 4;
-                for (let i = 0; i < doveCount; i++) {
-                    setTimeout(() => {
-                        const dove = document.createElement('div');
-                        dove.className = 'kusudama-dove';
-                        dove.innerHTML = '🕊️';
-                        dove.style.left = '50%';
-                        dove.style.top = '20%';
-                        
-                        const flyAngle = (Math.random() * Math.PI) - (Math.PI / 2);
-                        const flyDistance = Math.random() * 250 + 150;
-                        const dx = Math.cos(flyAngle) * flyDistance;
-                        const dy = Math.sin(flyAngle) * flyDistance - Math.random() * 100;
-                        const rotation = Math.random() * 60 - 30;
-                        
-                        dove.style.setProperty('--dx', dx + 'px');
-                        dove.style.setProperty('--dy', dy + 'px');
-                        dove.style.setProperty('--rotation', rotation + 'deg');
-                        
-                        this.effectOverlay.appendChild(dove);
-                        
-                        setTimeout(() => {
-                            if (dove.parentNode) dove.remove();
-                        }, 3000);
-                    }, i * 200 + 300);
+                if (message.parentNode) {
+                    message.remove();
                 }
             }, 1000);
         }
 
-        // 5. 音符ダンスエフェクト
-        triggerMusicalNotes() {
-            const notes = ['🎵', '🎶', '♪', '♫', '🎼'];
-            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#feca57', '#ff9ff3'];
+        // 古いエフェクト要素のクリーンアップ
+        cleanupOldEffects() {
+            this.activeElements.forEach(element => {
+                if (element.parentNode) {
+                    element.remove();
+                }
+            });
+            this.activeElements.clear();
+        }
+
+        // エフェクト要素の追加（メモリ最適化付き）
+        addEffectElement(element, duration = 3000) {
+            this.effectOverlay.appendChild(element);
+            this.activeElements.add(element);
+
+            // GPU加速を明示的に有効化
+            element.style.transform += ' translateZ(0)';
             
-            for (let i = 0; i < 15; i++) {
-                setTimeout(() => {
-                    const note = document.createElement('div');
-                    note.className = 'musical-note';
-                    note.innerHTML = notes[Math.floor(Math.random() * notes.length)];
-                    note.style.left = Math.random() * 80 + 10 + 'vw';
-                    note.style.top = Math.random() * 50 + 30 + 'vh';
-                    note.style.color = colors[Math.floor(Math.random() * colors.length)];
-                    note.style.fontSize = (Math.random() * 20 + 25) + 'px';
-                    
-                    this.effectOverlay.appendChild(note);
-                    
-                    setTimeout(() => {
-                        if (note.parentNode) note.remove();
-                    }, 3000);
-                }, i * 200);
+            // 自動クリーンアップ
+            setTimeout(() => {
+                if (element.parentNode) {
+                    element.remove();
+                }
+                this.activeElements.delete(element);
+            }, duration);
+
+            return element;
+        }
+
+        // === Canvas Confetti エフェクト ===
+        // 1. 基本的な紙吹雪エフェクト（モバイル最適化）
+        triggerBasicConfetti() {
+            if (typeof confetti !== 'undefined') {
+                const config = this.viewportConfig;
+                confetti({
+                    particleCount: config.particleCount,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#feca57', '#ff9ff3'],
+                    ticks: config.isMobile ? 100 : 200
+                });
             }
         }
 
-        // 6. サーカス風船エフェクト
-        triggerCircusBalloons() {
+        // 2. 星のエフェクト（パフォーマンス最適化）
+        triggerStarsEffect() {
+            if (typeof confetti !== 'undefined') {
+                const config = this.viewportConfig;
+                const defaults = { 
+                    startVelocity: config.isMobile ? 20 : 30, 
+                    spread: 360, 
+                    ticks: config.isMobile ? 80 : 120, 
+                    zIndex: 1000 
+                };
+                
+                confetti({
+                    ...defaults,
+                    particleCount: Math.floor(config.particleCount * 0.6),
+                    scalar: config.isMobile ? 1.0 : 1.2,
+                    shapes: ["star"],
+                    colors: ['#ffdd59', '#ff6b6b', '#4ecdc4']
+                });
+                
+                confetti({
+                    ...defaults,
+                    particleCount: Math.floor(config.particleCount * 0.3),
+                    scalar: 0.75,
+                    shapes: ["circle"],
+                    colors: ['#fff', '#ffeb3b']
+                });
+            }
+        }
+
+        // 3. 絵文字エフェクト（達成感重視）
+        triggerEmojiEffect() {
+            if (typeof confetti !== 'undefined') {
+                const config = this.viewportConfig;
+                const scalar = config.isMobile ? 1.5 : 2;
+                const achievementEmojis = ['🎉', '🏆', '⭐', '🎊', '✨', '🥇', '🎯', '💫'];
+                
+                confetti({
+                    particleCount: Math.floor(config.particleCount * 0.8),
+                    spread: config.isMobile ? 45 : 70,
+                    origin: { y: 0.6 },
+                    scalar: scalar,
+                    shapes: achievementEmojis,
+                    ticks: config.isMobile ? 100 : 150
+                });
+            }
+        }
+
+        // === 新しいモダンエフェクト ===
+        // 4. ホログラム爆発エフェクト
+        triggerHologramBurst() {
+            const burst = document.createElement('div');
+            burst.className = 'hologram-burst';
+            this.addEffectElement(burst, 2500);
+            
+            // 追加のキラキラパーティクル
+            this.createSparkleParticles(15, 2000);
+        }
+
+        // 5. ネオン波紋エフェクト
+        triggerNeonRipple() {
+            // メインの波紋を3つ生成
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const ripple = document.createElement('div');
+                    ripple.className = 'neon-ripple';
+                    this.addEffectElement(ripple, 3000);
+                }, i * 400);
+            }
+            
+            // 追加エフェクト用パーティクル
+            this.createSparkleParticles(20, 2500);
+        }
+
+        // 6. パーティクル爆発エフェクト
+        triggerParticleExplosion() {
+            const config = this.viewportConfig;
+            const particleCount = config.isMobile ? 40 : 80;
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#feca57', '#ff9ff3', '#a78bfa'];
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle-explosion';
+                
+                // ランダムな色と位置
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.left = '50%';
+                particle.style.top = '50%';
+                
+                // 爆発方向の計算
+                const angle = (Math.PI * 2 * i) / particleCount;
+                const distance = Math.random() * 200 + 100;
+                const dx = Math.cos(angle) * distance;
+                const dy = Math.sin(angle) * distance;
+                
+                particle.style.setProperty('--dx', dx + 'px');
+                particle.style.setProperty('--dy', dy + 'px');
+                
+                this.addEffectElement(particle, 2000);
+            }
+        }
+
+        // 7. 3Dフリップカードエフェクト
+        triggerFlipCard3D() {
+            const card = document.createElement('div');
+            card.className = 'flip-card-3d';
+            
+            const cardInner = document.createElement('div');
+            cardInner.className = 'flip-card-inner';
+            cardInner.textContent = '🏆';
+            
+            card.appendChild(cardInner);
+            this.addEffectElement(card, 3000);
+            
+            // 周囲にキラキラ
+            this.createSparkleParticles(12, 2500);
+        }
+
+        // 8. モーフィング図形エフェクト
+        triggerMorphingShape() {
+            const shape = document.createElement('div');
+            shape.className = 'morphing-shape';
+            this.addEffectElement(shape, 4000);
+            
+            // 補完的なパーティクル
+            this.createSparkleParticles(18, 3500);
+        }
+
+        // 9. エネルギー球エフェクト
+        triggerEnergyOrb() {
+            const orb = document.createElement('div');
+            orb.className = 'energy-orb';
+            this.addEffectElement(orb, 2500);
+            
+            // エネルギー放電エフェクト
             for (let i = 0; i < 8; i++) {
                 setTimeout(() => {
-                    const balloon = document.createElement('div');
-                    balloon.className = 'circus-balloon';
-                    balloon.innerHTML = '🎈';
-                    balloon.style.left = Math.random() * 80 + 10 + 'vw';
-                    balloon.style.filter = `hue-rotate(${Math.random() * 360}deg)`;
-                    balloon.style.fontSize = (Math.random() * 15 + 30) + 'px';
+                    const spark = document.createElement('div');
+                    spark.className = 'sparkle-particle';
+                    spark.textContent = '⚡';
+                    spark.style.left = (48 + Math.random() * 4) + '%';
+                    spark.style.top = (48 + Math.random() * 4) + '%';
+                    spark.style.fontSize = '24px';
+                    spark.style.color = '#00bfff';
                     
-                    // 風船の紐を追加
-                    const string = document.createElement('div');
-                    string.className = 'balloon-string';
-                    string.style.left = '50%';
-                    string.style.top = '100%';
-                    string.style.height = Math.random() * 50 + 30 + 'px';
-                    
-                    balloon.appendChild(string);
-                    this.effectOverlay.appendChild(balloon);
-                    
-                    setTimeout(() => {
-                        if (balloon.parentNode) balloon.remove();
-                    }, 4000);
-                }, i * 300);
+                    this.addEffectElement(spark, 1500);
+                }, i * 100);
             }
         }
 
-        // 7. トロフィー授与エフェクト
-        triggerTrophyAward() {
-            // グローエフェクト
-            const glow = document.createElement('div');
-            glow.className = 'trophy-glow';
-            glow.style.top = '20vh';
-            this.effectOverlay.appendChild(glow);
+        // 10. レインボー爆発エフェクト
+        triggerRainbowExplosion() {
+            const explosion = document.createElement('div');
+            explosion.className = 'rainbow-explosion';
+            this.addEffectElement(explosion, 3000);
             
-            // トロフィー
-            const trophy = document.createElement('div');
-            trophy.className = 'trophy-award';
-            trophy.innerHTML = '🏆';
+            // 追加のレインボーパーティクル
+            const rainbowColors = ['#ff0000', '#ff8000', '#ffff00', '#80ff00', '#00ff00', '#00ff80', '#00ffff', '#0080ff'];
             
-            this.effectOverlay.appendChild(trophy);
+            for (let i = 0; i < 16; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'sparkle-particle';
+                    particle.textContent = '●';
+                    particle.style.left = (45 + Math.random() * 10) + '%';
+                    particle.style.top = (45 + Math.random() * 10) + '%';
+                    particle.style.color = rainbowColors[i % rainbowColors.length];
+                    particle.style.fontSize = '16px';
+                    
+                    this.addEffectElement(particle, 1500);
+                }, i * 50);
+            }
+        }
+
+        // ヘルパー関数：キラキラパーティクル生成
+        createSparkleParticles(count, duration) {
+            const sparkles = ['✨', '⭐', '💫', '🌟', '✧', '☆'];
+            const config = this.viewportConfig;
+            const actualCount = config.isMobile ? Math.floor(count * 0.6) : count;
             
-            // キラキラエフェクト
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < actualCount; i++) {
                 setTimeout(() => {
                     const sparkle = document.createElement('div');
-                    sparkle.className = 'sparkle';
-                    sparkle.innerHTML = '✨';
-                    sparkle.style.left = (45 + Math.random() * 10) + '%';
-                    sparkle.style.top = (15 + Math.random() * 10) + '%';
-                    sparkle.style.fontSize = Math.random() * 15 + 15 + 'px';
+                    sparkle.className = 'sparkle-particle';
+                    sparkle.textContent = sparkles[Math.floor(Math.random() * sparkles.length)];
+                    sparkle.style.left = Math.random() * 100 + '%';
+                    sparkle.style.top = Math.random() * 100 + '%';
+                    sparkle.style.fontSize = (Math.random() * 10 + 15) + 'px';
+                    sparkle.style.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
                     
-                    this.effectOverlay.appendChild(sparkle);
-                    
-                    setTimeout(() => {
-                        if (sparkle.parentNode) sparkle.remove();
-                    }, 1500);
-                }, i * 150);
+                    this.addEffectElement(sparkle, 1500);
+                }, i * (duration / actualCount));
             }
-            
-            setTimeout(() => {
-                if (trophy.parentNode) trophy.remove();
-                if (glow.parentNode) glow.remove();
-            }, 3000);
         }
+
+        // デストラクタ（リソースクリーンアップ）
+        destroy() {
+            window.removeEventListener('resize', this.handleResize);
+            this.cleanupOldEffects();
+            this.elementPool.clear();
+        }
+
     }
 
     // グローバルインスタンス作成
-    let achievementEffects = null;
+    let modernAchievementEffects = null;
     
     function triggerConfetti() {
         // 設定をチェックしてエフェクトを制御
@@ -1011,12 +1044,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         // 初回時にインスタンス作成
-        if (!achievementEffects) {
-            achievementEffects = new AchievementEffects();
+        if (!modernAchievementEffects) {
+            modernAchievementEffects = new ModernAchievementEffects();
         }
         
-        // 7種類からランダムにエフェクト実行
-        achievementEffects.triggerRandomEffect();
+        // 10種類のモダンエフェクトからランダムに実行
+        modernAchievementEffects.triggerRandomEffect();
     }
 
     function renderNotesTable(allMonthData) {
