@@ -3049,10 +3049,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // テーブルモード切替ボタンの前に挿入
+        // テーブルモード切替ボタンの後に挿入
         const tableModeButton = accordionContent.querySelector('#table-mode-toggle-btn');
         if (tableModeButton) {
-            tableModeButton.parentNode.insertBefore(reportButton, tableModeButton);
+            tableModeButton.parentNode.insertBefore(reportButton, tableModeButton.nextSibling);
         } else {
             // フォールバック: ユーザー情報セクションの前に挿入
             const userInfoSection = accordionContent.querySelector('.user-info-section');
