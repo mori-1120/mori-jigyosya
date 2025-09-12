@@ -85,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let originalAppLinksState = [];
     let currentEditingAppLinks = [];
     let sortableUrlList = null;
+    let isInitialized = false; // アプリの初期化状態を追跡するフラグ
 
     // --- Local Storage Helper Functions ---
     function getConfettiEffectSetting() {
@@ -196,6 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             showAuthStatus('ログアウト中...', 'warning');
             await SupabaseAPI.signOut();
+            isInitialized = false; // ログアウト時に初期化フラグをリセット
             showAuthStatus('✅ ログアウトしました', 'success');
             
             // Show auth modal again
@@ -299,6 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     await initializeAuthenticatedApp();
                 } else if (event === 'SIGNED_OUT') {
                     updateUserDisplay(null);
+                    isInitialized = false; // ログアウト時に初期化フラグをリセット
                 }
             });
         }
@@ -327,6 +330,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize app when authenticated
     async function initializeAuthenticatedApp() {
+        if (isInitialized) {
+            console.log('Initialization already in progress or completed, skipping.');
+            return;
+        }
+        isInitialized = true;
+        console.log('Starting authenticated app initialization...');
+
         try {
             const authCheckToast = toast.loading('ユーザー権限を確認中...');
 
@@ -421,6 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof authCheckToast !== 'undefined') toast.hide(authCheckToast);
             console.error("Error initializing app:", error);
             alert("アプリケーションの初期化に失敗しました: " + handleSupabaseError(error));
+            isInitialized = false; // エラー発生時にフラグをリセットして再試行を許可
         }
     }
 
@@ -1706,11 +1717,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getFilteredClients() {
-        
+        const personalSettings = loadPersonalSettings(); // フィルターの外で設定を一度だけ読み込む
+
         return clients.filter(client => {
             // Search filter
             const searchTerm = searchInput.value.toLowerCase();
-            const matchesSearch = !searchTerm || 
+            const matchesSearch = !searchTerm ||
                 client.name.toLowerCase().includes(searchTerm) ||
                 client.staff_name?.toLowerCase().includes(searchTerm);
 
@@ -1723,10 +1735,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const matchesMonth = !monthFilterValue || client.fiscal_month?.toString() === monthFilterValue;
 
             // Hide inactive filter (個別設定から取得)
-            const personalSettings = loadPersonalSettings();
             const showInactive = !personalSettings.hideInactiveClients;
             const matchesStatus = client.status === 'active' || (showInactive && (client.status === 'inactive' || client.status === 'deleted'));
-            
 
             return matchesSearch && matchesStaff && matchesMonth && matchesStatus;
         });
