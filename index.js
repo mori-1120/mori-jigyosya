@@ -3049,15 +3049,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // ユーザー情報セクションの前に挿入
-        const userInfoSection = accordionContent.querySelector('.user-info-section');
-        if (userInfoSection) {
-            userInfoSection.parentNode.insertBefore(reportButton, userInfoSection);
+        // テーブルモード切替ボタンの前に挿入
+        const tableModeButton = accordionContent.querySelector('#table-mode-toggle-btn');
+        if (tableModeButton) {
+            tableModeButton.parentNode.insertBefore(reportButton, tableModeButton);
         } else {
-            // フォールバック: テーブルモード切替ボタンの後に追加
-            const tableModeButton = accordionContent.querySelector('#table-mode-toggle-btn');
-            if (tableModeButton) {
-                tableModeButton.parentNode.insertBefore(reportButton, tableModeButton.nextSibling);
+            // フォールバック: ユーザー情報セクションの前に挿入
+            const userInfoSection = accordionContent.querySelector('.user-info-section');
+            if (userInfoSection) {
+                userInfoSection.parentNode.insertBefore(reportButton, userInfoSection);
             } else {
                 accordionContent.appendChild(reportButton);
             }
