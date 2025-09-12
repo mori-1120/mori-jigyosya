@@ -532,11 +532,12 @@ export class SupabaseAPI {
     }
     
     // 認証関連（後で実装）
-    static async signInWithGoogle() {
+    static async signInWithGoogle(signInOptions = {}) {
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.origin
+                redirectTo: window.location.origin,
+                ...signInOptions
             }
         });
         

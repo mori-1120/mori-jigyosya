@@ -354,15 +354,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const accessDeniedModal = document.getElementById('access-denied-modal');
                 if (accessDeniedModal) accessDeniedModal.style.display = 'flex';
 
-                // Set up the button to sign out and reload
                 const okButton = document.getElementById('access-denied-ok-button');
                 if (okButton) {
                     okButton.onclick = async () => {
-                        // To prevent multiple clicks, disable the button
                         okButton.disabled = true;
-                        okButton.textContent = '処理中...';
+                        okButton.textContent = 'アカウント選択へ移動...';
                         await SupabaseAPI.signOut();
-                        window.location.reload();
+                        // アカウント選択を強制して再ログイン
+                        await SupabaseAPI.signInWithGoogle({ 
+                            queryParams: { 
+                                prompt: 'select_account' 
+                            } 
+                        });
                     };
                 }
 
