@@ -2058,16 +2058,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     // PC環境では横向きメッセージを非表示にする
     function hideRotateMessageOnDesktop() {
         if (!isMobileDevice()) {
+            // CSSスタイルを動的に追加
+            const style = document.createElement('style');
+            style.textContent = `
+                .rotate-message {
+                    display: none !important;
+                    visibility: hidden !important;
+                    opacity: 0 !important;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // DOM要素も削除
             const rotateMessage = document.querySelector('.rotate-message');
             if (rotateMessage) {
-                rotateMessage.style.display = 'none !important';
-                console.log('PC環境のため横向きメッセージを非表示にしました');
+                rotateMessage.remove();
+                console.log('PC環境のため横向きメッセージを削除しました');
+            } else {
+                console.log('横向きメッセージ要素が見つかりません');
             }
         }
     }
 
-    // 初期化処理
-    hideRotateMessageOnDesktop();
+    // 初期化処理（DOMが完全に読み込まれてから実行）
+    setTimeout(() => {
+        hideRotateMessageOnDesktop();
+    }, 100);
     initialize();
     
     // レスポンシブ詳細テーブル機能を初期化
