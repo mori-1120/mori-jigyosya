@@ -2679,7 +2679,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateBackupHistory() {
-        // 最終バックアップ日時
+        // 最終クラウドバックアップ日時
+        const lastCloudBackup = localStorage.getItem('lastCloudBackupDate');
+        const lastCloudBackupDateSpan = document.getElementById('last-cloud-backup-date');
+        if (lastCloudBackupDateSpan) {
+            if (lastCloudBackup) {
+                const date = new Date(lastCloudBackup);
+                lastCloudBackupDateSpan.textContent = date.toLocaleString('ja-JP');
+            } else {
+                lastCloudBackupDateSpan.textContent = '未実行';
+            }
+        }
+
+        // 最終ローカルバックアップ日時
         const lastBackup = localStorage.getItem('lastBackupDate');
         if (lastBackup) {
             const date = new Date(lastBackup);

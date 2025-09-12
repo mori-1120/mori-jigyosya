@@ -2049,6 +2049,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         accordionContent.appendChild(toggleButton);
     }
 
+    // モバイルデバイス判定関数
+    function isMobileDevice() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+            || (window.innerWidth <= 480 && 'ontouchstart' in window);
+    }
+
+    // PC環境では横向きメッセージを非表示にする
+    function hideRotateMessageOnDesktop() {
+        if (!isMobileDevice()) {
+            const rotateMessage = document.querySelector('.rotate-message');
+            if (rotateMessage) {
+                rotateMessage.style.display = 'none !important';
+                console.log('PC環境のため横向きメッセージを非表示にしました');
+            }
+        }
+    }
+
+    // 初期化処理
+    hideRotateMessageOnDesktop();
     initialize();
     
     // レスポンシブ詳細テーブル機能を初期化
