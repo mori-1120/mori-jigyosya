@@ -3049,10 +3049,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // テーブルモード切替ボタンの後に挿入
-        const tableModeButton = accordionContent.querySelector('#table-mode-toggle-btn');
-        if (tableModeButton) {
-            tableModeButton.parentNode.insertBefore(reportButton, tableModeButton.nextSibling);
+        // 列幅リセットボタンの前に挿入（「バックアップレポート表示」「列幅リセット」「スクロールモード」の順序）
+        const resetColumnButton = accordionContent.querySelector('#reset-column-widths-button');
+        if (resetColumnButton) {
+            resetColumnButton.parentNode.insertBefore(reportButton, resetColumnButton);
         } else {
             // フォールバック: ユーザー情報セクションの前に挿入
             const userInfoSection = accordionContent.querySelector('.user-info-section');
