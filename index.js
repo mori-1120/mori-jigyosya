@@ -1,4 +1,4 @@
-import { SupabaseAPI, handleSupabaseError } from './supabase-client.js';
+import { SupabaseAPI, handleSupabaseError, supabase } from './supabase-client.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Authentication Elements ---
@@ -3011,7 +3011,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const backupDate = new Date(latestBackup.uploadedAt).toISOString().split('T')[0];
                 const reportFileName = `reports/backup-report-${backupDate}.json`;
                 
-                const { data, error } = await SupabaseAPI.supabase.storage
+                const { data, error } = await supabase.storage
                     .from('backups')
                     .download(reportFileName);
 
