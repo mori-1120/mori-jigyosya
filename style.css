@@ -1446,9 +1446,9 @@ th[data-sort-key].active-sort {
 .details-table td:first-child,
 #notes-table th:first-child,
 #notes-table td:first-child {
-    width: 120px !important;
-    min-width: 120px !important;
-    max-width: 120px !important;
+    width: 95px !important;
+    min-width: 90px !important;
+    max-width: 100px !important;
 }
 
 /* 年月列の幅も統一（2024年4月などの文字列に対応） */
