@@ -185,26 +185,18 @@ class AnalyticsPage {
         const debouncedAnalysis = () => {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(async () => {
-                console.log('Debounced analysis triggered');
-                
                 // バリデーション
                 const startPeriod = document.getElementById('start-period').value;
                 const endPeriod = document.getElementById('end-period').value;
-                const businessName = document.getElementById('business-name-filter').value;
-                
-                console.log('Current filter values:', { startPeriod, endPeriod, businessName });
                 
                 if (startPeriod && endPeriod) {
                     if (startPeriod <= endPeriod) {
-                        console.log('Calling performAnalysis...');
                         await this.performAnalysis();
                     } else {
                         // 期間が逆転している場合はサマリーを非表示
                         document.getElementById('summary-dashboard').style.display = 'none';
                         showToast('開始年月は終了年月より前に設定してください', 'warning');
                     }
-                } else {
-                    console.log('Period validation failed');
                 }
             }, 300); // 300ms のデバウンス
         };
@@ -215,17 +207,10 @@ class AnalyticsPage {
             if (element) {
                 if (filterId === 'business-name-filter') {
                     // 事業者名検索は input イベントを使用
-                    console.log('Adding input event listener to business-name-filter');
-                    element.addEventListener('input', (e) => {
-                        console.log('Business name input detected:', e.target.value);
-                        debouncedAnalysis();
-                    });
+                    element.addEventListener('input', debouncedAnalysis);
                 } else {
-                    console.log(`Adding change event listener to ${filterId}`);
                     element.addEventListener('change', debouncedAnalysis);
                 }
-            } else {
-                console.warn(`Element not found: ${filterId}`);
             }
         });
     }
@@ -448,10 +433,7 @@ class AnalyticsPage {
     }
 
     getFilteredClients() {
-        console.log('Filtering clients with filters:', this.currentFilters);
-        console.log('Total clients before filtering:', this.clients.length);
-        
-        const filteredClients = this.clients.filter(client => {
+        return this.clients.filter(client => {
             // 担当者フィルター
             if (this.currentFilters.staffId && client.staff_id != this.currentFilters.staffId) {
                 return false;
@@ -466,20 +448,13 @@ class AnalyticsPage {
             if (this.currentFilters.businessName && this.currentFilters.businessName.trim() !== '') {
                 const searchTerm = this.currentFilters.businessName.trim().toLowerCase();
                 const clientName = client.name.toLowerCase();
-                console.log(`Comparing "${clientName}" with search term "${searchTerm}"`);
                 if (!clientName.includes(searchTerm)) {
-                    console.log(`Client "${client.name}" filtered out`);
                     return false;
                 }
             }
             
             return true;
         });
-        
-        console.log('Filtered clients count:', filteredClients.length);
-        console.log('Filtered client names:', filteredClients.map(c => c.name));
-        
-        return filteredClients;
     }
 
     getPeriodTasks(clients) {

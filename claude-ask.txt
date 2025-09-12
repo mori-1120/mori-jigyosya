@@ -1,63 +1,27 @@
-eader "編集" is not sortable, skipping sort icon
-supabase-client.js:1666 自動バックアップが有効です
-supabase-client.js:1709 次回自動バックアップ: 2025/9/12 0:00:00
-index.js:1453 Loading personal settings: Object
-index.js:1469 Final personal settings: Object
-supabase-client.js:1279 🔄 バックアップ作成開始...
-supabase-client.js:1294 📊 バックアップ中: clients
-supabase-client.js:1310 ✅ clients: 90 件取得完了
-supabase-client.js:1314 📄 clients サンプルデータ: Array(2)
-supabase-client.js:1294 📊 バックアップ中: staffs
-supabase-client.js:1310 ✅ staffs: 9 件取得完了
-supabase-client.js:1314 📄 staffs サンプルデータ: Array(2)
-supabase-client.js:1294 📊 バックアップ中: monthly_tasks
-supabase-client.js:1310 ✅ monthly_tasks: 468 件取得完了
-supabase-client.js:1314 📄 monthly_tasks サンプルデータ: Array(2)
-supabase-client.js:1294 📊 バックアップ中: editing_sessions
-supabase-client.js:1310 ✅ editing_sessions: 0 件取得完了
-supabase-client.js:1294 📊 バックアップ中: settings
-supabase-client.js:1310 ✅ settings: 6 件取得完了
-supabase-client.js:1314 📄 settings サンプルデータ: Array(2)
-supabase-client.js:1294 📊 バックアップ中: default_tasks
-supabase-client.js:1310 ✅ default_tasks: 2 件取得完了
-supabase-client.js:1314 📄 default_tasks サンプルデータ: Array(2)
-supabase-client.js:1294 📊 バックアップ中: app_links
-supabase-client.js:1310 ✅ app_links: 2 件取得完了
-supabase-client.js:1314 📄 app_links サンプルデータ: Array(2)
-supabase-client.js:1325 🎉 バックアップ作成完了: Object
-supabase-client.js:1334 📋 バックアップデータ構造: Object
-supabase-client.js:1747 ☁️ クラウドバックアップ開始...
-supabase-client.js:1758 📊 アップロード準備中のデータ詳細: Object
-supabase-client.js:1769 📄 JSON文字列サイズ: 268286 文字
-supabase-client.js:1770 💾 Blobサイズ: 296430 バイト (289 KB)
-supabase-client.js:1779 📤 Supabase Storageにアップロード中: weekly/Thursday/jigyosya-backup-Thursday.json
-supabase-client.js:1792 ✅ クラウドバックアップ完了: weekly/Thursday/jigyosya-backup-Thursday.json Object
-supabase-client.js:1279 🔄 バックアップ作成開始...
-supabase-client.js:1294 📊 バックアップ中: clients
-supabase-client.js:1310 ✅ clients: 90 件取得完了
-supabase-client.js:1314 📄 clients サンプルデータ: Array(2)
-supabase-client.js:1294 📊 バックアップ中: staffs
-supabase-client.js:1310 ✅ staffs: 9 件取得完了
-supabase-client.js:1314 📄 staffs サンプルデータ: Array(2)
-supabase-client.js:1294 📊 バックアップ中: monthly_tasks
-supabase-client.js:1310 ✅ monthly_tasks: 468 件取得完了
-supabase-client.js:1314 📄 monthly_tasks サンプルデータ: Array(2)
-supabase-client.js:1294 📊 バックアップ中: editing_sessions
-supabase-client.js:1310 ✅ editing_sessions: 0 件取得完了
-supabase-client.js:1294 📊 バックアップ中: settings
-supabase-client.js:1310 ✅ settings: 6 件取得完了
-supabase-client.js:1314 📄 settings サンプルデータ: Array(2)
-supabase-client.js:1294 📊 バックアップ中: default_tasks
-supabase-client.js:1310 ✅ default_tasks: 2 件取得完了
-supabase-client.js:1314 📄 default_tasks サンプルデータ: Array(2)
-supabase-client.js:1294 📊 バックアップ中: app_links
-supabase-client.js:1310 ✅ app_links: 2 件取得完了
-supabase-client.js:1314 📄 app_links サンプルデータ: Array(2)
-supabase-client.js:1325 🎉 バックアップ作成完了: Object
-supabase-client.js:1334 📋 バックアップデータ構造: Object
-supabase-client.js:1747 ☁️ クラウドバックアップ開始...
-supabase-client.js:1758 📊 アップロード準備中のデータ詳細: Object
-supabase-client.js:1769 📄 JSON文字列サイズ: 268286 文字
-supabase-client.js:1770 💾 Blobサイズ: 296430 バイト (289 KB)
-supabase-client.js:1779 📤 Supabase Storageにアップロード中: weekly/Thursday/jigyosya-backup-Thursday.json
-supabase-client.js:1792 ✅ クラウドバックアップ完了: weekly/Thursday/jigyosya-backup-Thursday.json Object
+omparing "f2株式会社" with search term "田村"
+analytics.js:471 Client "F2株式会社" filtered out
+analytics.js:469 Comparing "株式会社郷原" with search term "田村"
+analytics.js:471 Client "株式会社郷原" filtered out
+analytics.js:469 Comparing "合同会社いーとも" with search term "田村"
+analytics.js:471 Client "合同会社いーとも" filtered out
+analytics.js:469 Comparing "株式会社樋口造園" with search term "田村"
+analytics.js:471 Client "株式会社樋口造園" filtered out
+analytics.js:469 Comparing "株式会社salute" with search term "田村"
+analytics.js:471 Client "株式会社SALUTE" filtered out
+analytics.js:469 Comparing "株式会社knacks" with search term "田村"
+analytics.js:471 Client "株式会社KNACKS" filtered out
+analytics.js:469 Comparing "株式会社tkt　labo" with search term "田村"
+analytics.js:471 Client "株式会社TKT　LABO" filtered out
+analytics.js:469 Comparing "㈱大雅建設" with search term "田村"
+analytics.js:471 Client "㈱大雅建設" filtered out
+analytics.js:469 Comparing "株式会社　九大学研不動産" with search term "田村"
+analytics.js:471 Client "株式会社　九大学研不動産" filtered out
+analytics.js:469 Comparing "有限会社　アルス" with search term "田村"
+analytics.js:471 Client "有限会社　アルス" filtered out
+analytics.js:469 Comparing "株式会社竹次郎" with search term "田村"
+analytics.js:471 Client "株式会社竹次郎" filtered out
+analytics.js:479 Filtered clients count: 1
+analytics.js:480 Filtered client names: ['株式会社　田村工務店']
+analytics.js:436 Filtered clients: 1
+analytics.js:408 Previous sort state restored: fiscal asc
+analytics.js:276 Analysis results saved to localStorage with sort state
