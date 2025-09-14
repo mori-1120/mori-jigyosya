@@ -1286,11 +1286,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             toast.update(saveToast, '変更が保存されました', 'success');
             showNotification('変更が保存されました', 'success');
             
-            // 保存成功後、1秒待ってからメイン画面に遷移
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1000);
-            
         } catch (error) {
             toast.hide(saveToast);
             toast.error(`保存エラー: ${handleSupabaseError(error)}`);

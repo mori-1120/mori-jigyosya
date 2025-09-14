@@ -388,6 +388,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 populateFormFields(currentClient);
                 
                 toast.update(saveToast, '更新完了', 'success');
+                
+                // 更新成功後、1.5秒待ってからメイン画面に遷移
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
             }
 
         } catch (error) {
