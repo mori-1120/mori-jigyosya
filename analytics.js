@@ -164,6 +164,8 @@ class AnalyticsPage {
 
     async refreshAnalyticsData() {
         try {
+            console.log('🔄 Refreshing analytics data...');
+            
             // フィルター条件を保持したままデータを再読み込み
             await this.loadInitialData();
             
@@ -172,6 +174,7 @@ class AnalyticsPage {
             
             // ユーザーに更新を通知
             showToast('データを最新状態に更新しました', 'success', 2000);
+            console.log('✅ Analytics data refreshed successfully');
             
         } catch (error) {
             console.error('Analytics data refresh error:', error);

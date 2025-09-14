@@ -1,40 +1,21 @@
-Loading personal settings: {fontFamily: 'Noto Sans JP', hideInactiveClients: false, enableConfettiEffect: true}
-index.js:1511 Final personal settings: {fontFamily: 'Noto Sans JP', hideInactiveClients: false, enableConfettiEffect: true}
-supabase-client.js:1280 🔄 バックアップ作成開始...
-supabase-client.js:1295 📊 バックアップ中: clients
-supabase-client.js:1311 ✅ clients: 90 件取得完了
-supabase-client.js:1315 📄 clients サンプルデータ: (2) [{…}, {…}]
-supabase-client.js:1295 📊 バックアップ中: staffs
-supabase-client.js:1311 ✅ staffs: 9 件取得完了
-supabase-client.js:1315 📄 staffs サンプルデータ: (2) [{…}, {…}]
-supabase-client.js:1295 📊 バックアップ中: monthly_tasks
-supabase-client.js:1311 ✅ monthly_tasks: 504 件取得完了
-supabase-client.js:1315 📄 monthly_tasks サンプルデータ: (2) [{…}, {…}]
-supabase-client.js:1295 📊 バックアップ中: editing_sessions
-supabase-client.js:1311 ✅ editing_sessions: 0 件取得完了
-supabase-client.js:1295 📊 バックアップ中: settings
-supabase-client.js:1311 ✅ settings: 6 件取得完了
-supabase-client.js:1315 📄 settings サンプルデータ: (2) [{…}, {…}]
-supabase-client.js:1295 📊 バックアップ中: default_tasks
-supabase-client.js:1311 ✅ default_tasks: 2 件取得完了
-supabase-client.js:1315 📄 default_tasks サンプルデータ: (2) [{…}, {…}]
-supabase-client.js:1295 📊 バックアップ中: app_links
-supabase-client.js:1311 ✅ app_links: 2 件取得完了
-supabase-client.js:1315 📄 app_links サンプルデータ: (2) [{…}, {…}]
-supabase-client.js:1326 🎉 バックアップ作成完了: {totalTables: 7, totalRecords: 613, backupSizeBytes: 168431, backupSizeKB: 164, timestamp: '2025-09-14T07-39-06-412Z'}
-supabase-client.js:1335 📋 バックアップデータ構造: {hasTimestamp: true, hasVersion: true, hasDatabase: true, hasTablesObject: true, tableKeys: Array(7), …}
-supabase-client.js:1945 ☁️ クラウドバックアップ開始...
-supabase-client.js:1956 📊 アップロード準備中のデータ詳細: {timestamp: '2025-09-14T07-39-06-412Z', version: '1.0', database: 'jigyosya-management', tablesCount: 7, totalRecords: 613}
-supabase-client.js:1967 📄 JSON文字列サイズ: 285017 文字
-supabase-client.js:1968 💾 Blobサイズ: 314993 バイト (308 KB)
-supabase-client.js:1977 📤 Supabase Storageにアップロード中: weekly/Sunday/jigyosya-backup-Sunday.json
-supabase-client.js:1990 ✅ クラウドバックアップ完了: weekly/Sunday/jigyosya-backup-Sunday.json {path: 'weekly/Sunday/jigyosya-backup-Sunday.json', id: 'f8771673-1ad0-4cd9-9fef-6a03a98d76a6', fullPath: 'backups/weekly/Sunday/jigyosya-backup-Sunday.json'}
-supabase-client.js:2146 📋 バックアップレポート保存中...
-supabase-client.js:2168 ✅ バックアップレポート保存完了: reports/backup-report-2025-09-14.json
-supabase-client.js:2189 🎉 バックアップ完了！
+ // 正しい参照でテスト
+  console.log('Analytics instance:', window.analytics);
+  console.log('Current analysis data exists:', !!window.analytics?.lastAnalysisData);
 
-📊 事業者: 90件
-👥 担当者: 9件
-📋 月次タスク: 504件
-💾 総容量: 308 KB
-📅 2025/9/15 1:39:07
+  // 手動で refresh 関数をテスト
+  if (window.analytics?.refreshAnalyticsData) {
+      console.log('Testing manual refresh...');
+      window.analytics.refreshAnalyticsData();
+  } else {
+      console.log('refreshAnalyticsData method not found');
+  }
+VM2272:2 Analytics instance: AnalyticsPage {clients: Array(90), staffs: Array(9), monthlyTasks: Array(504), currentFilters: {…}, lastAnalysisData: {…}, …}
+VM2272:3 Current analysis data exists: true
+VM2272:7 Testing manual refresh...
+analytics.js:72 Loading initial data...
+Promise {<pending>}
+analytics.js:85 Loaded: 90 clients, 9 staffs, 504 tasks
+analytics.js:456 Calculating analytics with filters: {startPeriod: '2024-10', endPeriod: '2025-09', staffId: '7', fiscalMonth: '', businessName: ''}
+analytics.js:460 Filtered clients: 25
+analytics.js:432 Previous sort state restored: fiscal asc
+analytics.js:300 Analysis results saved to localStorage with sort state
