@@ -1,34 +1,112 @@
-supabase-client.js:2091 クラウドバックアップダウンロードエラー: TypeError: Cannot read properties of undefined (reading 'replace')
-    at vt._getFinalPath (index.js:1:1)
-    at vt.<anonymous> (index.js:1:1)
-    at Generator.next (<anonymous>)
-    at index.js:1:1
-    at new Promise (<anonymous>)
-    at pt (index.js:1:1)
-    at vt.download (index.js:1:1)
-    at SupabaseAPI.downloadBackupFromCloud (supabase-client.js:2080:18)
-    at HTMLButtonElement.<anonymous> (index.js:2567:54)
-downloadBackupFromCloud @ supabase-client.js:2091
-await in downloadBackupFromCloud
-(anonymous) @ index.js:2567Understand this error
-index.js:2592 Cloud restore error: TypeError: Cannot read properties of undefined (reading 'replace')
-    at vt._getFinalPath (index.js:1:1)
-    at vt.<anonymous> (index.js:1:1)
-    at Generator.next (<anonymous>)
-    at index.js:1:1
-    at new Promise (<anonymous>)
-    at pt (index.js:1:1)
-    at vt.download (index.js:1:1)
-    at SupabaseAPI.downloadBackupFromCloud (supabase-client.js:2080:18)
-    at HTMLButtonElement.<anonymous> (index.js:2567:54)
-(anonymous) @ index.js:2592Understand this error
-supabase-client.js:2507 Supabase error: TypeError: Cannot read properties of undefined (reading 'replace')
-    at vt._getFinalPath (index.js:1:1)
-    at vt.<anonymous> (index.js:1:1)
-    at Generator.next (<anonymous>)
-    at index.js:1:1
-    at new Promise (<anonymous>)
-    at pt (index.js:1:1)
-    at vt.download (index.js:1:1)
-    at SupabaseAPI.downloadBackupFromCloud (supabase-client.js:2080:18)
-    at HTMLButtonElement.<anonymous> (index.js:2567:54)
+Current orientation: 
+Object
+angle
+: 
+0
+height
+: 
+1920
+type
+: 
+"landscape-primary"
+width
+: 
+1920
+[[Prototype]]
+: 
+Object
+details.js:2467 PC環境のため横向きメッセージを削除しました
+details.js:1322 [Details] Overall memo loaded: 
+details.js:1482 Frontend state collected: 
+Object
+2024-09
+: 
+{tasks: {…}, memos: {…}}
+2024-10
+: 
+{tasks: {…}, memos: {…}}
+2024-11
+: 
+{tasks: {…}, memos: {…}}
+2024-12
+: 
+{tasks: {…}, memos: {…}}
+2025-01
+: 
+{tasks: {…}, memos: {…}}
+2025-02
+: 
+{tasks: {…}, memos: {…}}
+2025-03
+: 
+{tasks: {…}, memos: {…}}
+2025-04
+: 
+{tasks: {…}, memos: {…}}
+2025-05
+: 
+{tasks: {…}, memos: {…}}
+2025-06
+: 
+{tasks: {…}, memos: {…}}
+2025-07
+: 
+{tasks: {…}, memos: {…}}
+2025-08
+: 
+{tasks: {…}, memos: {…}}
+[[Prototype]]
+: 
+Object
+supabase-client.js:903 DB state retrieved: 
+Object
+2025-04
+: 
+status
+: 
+"pending"
+task_memos
+: 
+{}
+tasks
+: 
+{仕訳入力: true, 月次完了: true, 資料受付: true, 不明投げかけ: true, 担当チェック: true}
+[[Prototype]]
+: 
+Object
+2025-05
+: 
+{tasks: {…}, task_memos: {…}, status: 'pending'}
+2025-06
+: 
+{tasks: {…}, task_memos: {…}, status: 'pending'}
+2025-07
+: 
+{tasks: {…}, task_memos: {…}, status: 'pending'}
+2025-08
+: 
+{tasks: {…}, task_memos: {…}, status: 'pending'}
+[[Prototype]]
+: 
+Object
+
+
+
+
+
+不整合が検出されました
+クライアント: 株式会社郷原 (2025年度)
+
+不整合総数: 35件 (重要: 35件, 軽微: 0件)
+
+一致項目: 25件
+
+検出された問題:
+❌ 2024-09 "資料受付": チェック状態不一致 (画面:true ≠ DB:undefined)
+画面表示: "true" → データベース: "undefined"
+❌ 2024-09 "仕訳入力": チェック状態不一致 (画面:true ≠ DB:undefined)
+画面表示: "true" → データベース: "undefined"
+❌ 2024-09 "担当チェック": チェック状態不一致 (画面:true ≠ DB:undefined)
+画面表示: "true" → データベース: "undefined"
+❌ 2024-09 "不明投げかけ": チェック状態不一致 (画面:true ≠ DB:undefined)
+画面表示: "true" → データベース: "undefined"

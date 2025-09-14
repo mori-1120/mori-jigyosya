@@ -890,17 +890,36 @@ export class SupabaseAPI {
             
             if (error) throw error;
             
-            // 月をキーとした辞書形式に変換
+            // 年度内の全ての月を生成（4月-3月）
+            const allMonths = [];
+            for (let month = 4; month <= 15; month++) {
+                const actualMonth = month > 12 ? month - 12 : month;
+                const actualYear = month > 12 ? parseInt(year) + 1 : parseInt(year);
+                const monthKey = `${actualYear}-${actualMonth.toString().padStart(2, '0')}`;
+                allMonths.push(monthKey);
+            }
+            
+            // 月をキーとした辞書形式に変換（存在しない月は空のデータで初期化）
             const state = {};
-            (monthlyData || []).forEach(monthData => {
-                state[monthData.month] = {
-                    tasks: monthData.tasks || {},
-                    task_memos: monthData.task_memos || {},
-                    status: monthData.status
-                };
+            allMonths.forEach(monthKey => {
+                const foundData = monthlyData?.find(data => data.month === monthKey);
+                if (foundData) {
+                    state[monthKey] = {
+                        tasks: foundData.tasks || {},
+                        task_memos: foundData.task_memos || {},
+                        status: foundData.status
+                    };
+                } else {
+                    // データベースに存在しない月は空のオブジェクトで初期化
+                    state[monthKey] = {
+                        tasks: {},
+                        task_memos: {},
+                        status: null
+                    };
+                }
             });
             
-            console.log('DB state retrieved:', state);
+            console.log('DB state retrieved (with missing months initialized):', state);
             return state;
             
         } catch (error) {

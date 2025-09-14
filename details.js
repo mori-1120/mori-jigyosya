@@ -1516,18 +1516,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const frontendMemo = frontMonth.memos[task] || '';
                 const dbMemo = (dbMonth.task_memos || {})[task] || '';
                 
-                // チェックボックス状態の比較
-                if (frontendChecked !== dbChecked) {
-                    stats.inconsistentItems++;
-                    issues.push({
-                        type: 'checkbox_mismatch',
-                        severity: 'error',
-                        month: month,
-                        task: task,
-                        frontend: frontendChecked,
-                        database: dbChecked,
-                        message: `${month} "${task}": チェック状態不一致 (画面:${frontendChecked} ≠ DB:${dbChecked})`
-                    });
+                // チェックボックス状態の比較（より正確な判定）
+                const frontendBool = Boolean(frontendChecked);
+                const dbBool = Boolean(dbChecked);
+                
+                if (frontendBool !== dbBool) {
+                    // 画面でtrueなのにDBでfalse/undefined、またはその逆の場合のみ不整合と判定
+                    if ((frontendChecked === true && !dbChecked) || (!frontendChecked && dbChecked === true)) {
+                        stats.inconsistentItems++;
+                        issues.push({
+                            type: 'checkbox_mismatch',
+                            severity: 'error',
+                            month: month,
+                            task: task,
+                            frontend: frontendChecked,
+                            database: dbChecked,
+                            message: `${month} "${task}": チェック状態不一致 (画面:${frontendChecked} ≠ DB:${dbChecked || 'データなし'})`
+                        });
+                    } else {
+                        // false vs undefined は一致と見なす
+                        stats.consistentItems++;
+                        matches.push({
+                            month: month,
+                            task: task,
+                            type: 'checkbox',
+                            status: 'consistent'
+                        });
+                    }
                 } else {
                     stats.consistentItems++;
                     matches.push({
