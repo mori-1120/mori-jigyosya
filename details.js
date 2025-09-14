@@ -1433,17 +1433,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         const year = currentYearSelection || new Date().getFullYear();
         
         try {
-            // Loading状態の表示
-            toast.info('データ整合性をチェック中...');
+            const checkToast = toast.loading('データ整合性をチェック中...');
             
-            // API呼び出し
-            const result = await SupabaseAPI.checkDataConsistency(clientId, year);
+            // 1. フロントエンドの現在状態を収集
+            const frontendState = collectFrontendState();
             
-            if (result.success) {
-                displayConsistencyCheckResult(result);
-            } else {
-                toast.error('整合性チェックに失敗しました');
-            }
+            // 2. DBの状態を取得
+            const dbState = await SupabaseAPI.getMonthlyTasksState(clientId, year);
+            
+            // 3. 詳細な比較実行
+            const comparisonResult = compareStates(frontendState, dbState, year);
+            
+            toast.hide(checkToast);
+            
+            // 4. 結果を表示
+            displayDetailedConsistencyResult(comparisonResult);
             
         } catch (error) {
             console.error('Consistency check error:', error);
@@ -1451,7 +1455,319 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // 整合性チェック結果の表示
+    // フロントエンドの現在状態を収集
+    function collectFrontendState() {
+        const state = {};
+        
+        // 全てのチェックボックスの状態を収集
+        const checkboxes = document.querySelectorAll('#details-table input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            const month = checkbox.dataset.month;
+            const task = checkbox.dataset.task;
+            
+            if (!state[month]) state[month] = { tasks: {}, memos: {} };
+            state[month].tasks[task] = checkbox.checked;
+        });
+        
+        // 全てのメモの内容を収集
+        const memoInputs = document.querySelectorAll('.checkbox-memo-input');
+        memoInputs.forEach(memoInput => {
+            const month = memoInput.dataset.month;
+            const task = memoInput.dataset.task;
+            
+            if (!state[month]) state[month] = { tasks: {}, memos: {} };
+            state[month].memos[task] = memoInput.value || '';
+        });
+        
+        console.log('Frontend state collected:', state);
+        return state;
+    }
+
+    // フロントエンドとDBの状態を詳細比較
+    function compareStates(frontendState, dbState, year) {
+        const issues = [];
+        const matches = [];
+        const stats = {
+            totalChecked: 0,
+            consistentItems: 0,
+            inconsistentItems: 0,
+            missingInDb: 0,
+            missingInFrontend: 0
+        };
+
+        // 全ての月とタスクの組み合わせをチェック
+        const allMonths = new Set([...Object.keys(frontendState), ...Object.keys(dbState)]);
+        
+        allMonths.forEach(month => {
+            const frontMonth = frontendState[month] || { tasks: {}, memos: {} };
+            const dbMonth = dbState[month] || { tasks: {}, task_memos: {} };
+            
+            // タスクの比較
+            const allTasks = new Set([
+                ...Object.keys(frontMonth.tasks),
+                ...Object.keys(dbMonth.tasks || {})
+            ]);
+            
+            allTasks.forEach(task => {
+                stats.totalChecked++;
+                
+                const frontendChecked = frontMonth.tasks[task];
+                const dbChecked = (dbMonth.tasks || {})[task];
+                const frontendMemo = frontMonth.memos[task] || '';
+                const dbMemo = (dbMonth.task_memos || {})[task] || '';
+                
+                // チェックボックス状態の比較
+                if (frontendChecked !== dbChecked) {
+                    stats.inconsistentItems++;
+                    issues.push({
+                        type: 'checkbox_mismatch',
+                        severity: 'error',
+                        month: month,
+                        task: task,
+                        frontend: frontendChecked,
+                        database: dbChecked,
+                        message: `${month} "${task}": チェック状態不一致 (画面:${frontendChecked} ≠ DB:${dbChecked})`
+                    });
+                } else {
+                    stats.consistentItems++;
+                    matches.push({
+                        month: month,
+                        task: task,
+                        type: 'checkbox',
+                        status: 'consistent'
+                    });
+                }
+                
+                // メモ内容の比較
+                if (frontendMemo !== dbMemo) {
+                    stats.inconsistentItems++;
+                    issues.push({
+                        type: 'memo_mismatch',
+                        severity: 'warning',
+                        month: month,
+                        task: task,
+                        frontend: frontendMemo,
+                        database: dbMemo,
+                        message: `${month} "${task}": メモ内容不一致`
+                    });
+                } else if (frontendMemo || dbMemo) {
+                    matches.push({
+                        month: month,
+                        task: task,
+                        type: 'memo',
+                        status: 'consistent'
+                    });
+                }
+            });
+        });
+
+        const isConsistent = issues.length === 0;
+        
+        return {
+            is_consistent: isConsistent,
+            issues: issues,
+            matches: matches,
+            stats: stats,
+            client_name: clientDetails?.name || 'Unknown',
+            year: year,
+            summary: {
+                total_issues: issues.length,
+                critical_issues: issues.filter(i => i.severity === 'error').length,
+                warnings: issues.filter(i => i.severity === 'warning').length,
+                consistent_items: stats.consistentItems
+            }
+        };
+    }
+
+    // 詳細な整合性チェック結果の表示
+    function displayDetailedConsistencyResult(result) {
+        const { is_consistent, issues, matches, stats, client_name, year, summary } = result;
+        
+        // モーダルを作成
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 10000; display: flex;
+            justify-content: center; align-items: center; padding: 20px;
+        `;
+        
+        const modalContent = document.createElement('div');
+        modalContent.style.cssText = `
+            background: white; border-radius: 8px; padding: 20px; 
+            max-width: 90vw; max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        `;
+        
+        const title = document.createElement('h2');
+        title.style.cssText = 'margin-top: 0; display: flex; justify-content: space-between; align-items: center;';
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '×';
+        closeBtn.style.cssText = `
+            background: #6c757d; color: white; border: none; 
+            border-radius: 50%; width: 30px; height: 30px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        `;
+        
+        closeBtn.addEventListener('click', () => modal.remove());
+        
+        if (is_consistent) {
+            title.innerHTML = '✅ データ整合性チェック結果';
+            title.style.color = '#28a745';
+            title.appendChild(closeBtn);
+            
+            modalContent.innerHTML = `
+                <h2 style="color: #28a745; margin-top: 0;">✅ データ整合性チェック結果</h2>
+                <div style="text-align: center; padding: 20px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 6px; margin: 20px 0;">
+                    <h3 style="color: #155724; margin-top: 0;">🎉 完全に一致しています！</h3>
+                    <p style="color: #155724; margin-bottom: 0;">
+                        <strong>${client_name}</strong>（${year}年度）<br>
+                        画面の表示とデータベースが完全に一致しています。
+                    </p>
+                </div>
+                <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 6px;">
+                    <h4 style="margin-top: 0;">統計情報</h4>
+                    <ul style="margin: 0;">
+                        <li>チェック済み項目: <strong>${stats.totalChecked}件</strong></li>
+                        <li>一致項目: <strong>${stats.consistentItems}件</strong></li>
+                        <li>一致データ: <strong>${matches.length}個</strong></li>
+                    </ul>
+                </div>
+            `;
+        } else {
+            title.innerHTML = '⚠️ データ整合性チェック結果';
+            title.style.color = '#dc3545';
+            title.appendChild(closeBtn);
+            
+            let contentHtml = `
+                <h2 style="color: #dc3545; margin-top: 0;">⚠️ データ整合性チェック結果</h2>
+                <div style="background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 6px; padding: 15px; margin: 20px 0;">
+                    <h3 style="color: #721c24; margin-top: 0;">不整合が検出されました</h3>
+                    <p><strong>クライアント:</strong> ${client_name} (${year}年度)</p>
+                    <p><strong>不整合総数:</strong> ${summary.total_issues}件 (重要: ${summary.critical_issues}件, 軽微: ${summary.warnings}件)</p>
+                    <p><strong>一致項目:</strong> ${summary.consistent_items}件</p>
+                </div>
+            `;
+            
+            if (issues.length > 0) {
+                contentHtml += '<div style="margin: 20px 0;"><h4>検出された問題:</h4>';
+                
+                issues.forEach((issue, index) => {
+                    const severityColor = issue.severity === 'error' ? '#dc3545' : '#ffc107';
+                    const severityIcon = issue.severity === 'error' ? '❌' : '⚠️';
+                    const bgColor = issue.severity === 'error' ? '#f8d7da' : '#fff3cd';
+                    
+                    contentHtml += `
+                        <div style="border-left: 4px solid ${severityColor}; padding: 12px; margin: 10px 0; background: ${bgColor}; border-radius: 4px;">
+                            <h5 style="margin: 0 0 8px 0; color: ${severityColor};">${severityIcon} ${issue.message}</h5>
+                            <div style="font-size: 14px; color: #6c757d;">
+                                <strong>画面表示:</strong> "${issue.frontend}" → <strong>データベース:</strong> "${issue.database}"
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                contentHtml += '</div>';
+                
+                // 自動修復ボタンを追加
+                contentHtml += `
+                    <div style="margin: 20px 0; padding: 15px; background: #e2e3e5; border-radius: 6px; text-align: center;">
+                        <h4 style="margin-top: 0;">自動修復</h4>
+                        <p>データベースを画面の状態に合わせて修正しますか？</p>
+                        <button id="auto-fix-btn" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px;">
+                            🔧 DBを画面に合わせて修復
+                        </button>
+                        <button id="refresh-frontend-btn" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px;">
+                            🔄 画面をDBに合わせて更新
+                        </button>
+                    </div>
+                `;
+            }
+            
+            modalContent.innerHTML = contentHtml;
+            
+            // 自動修復ボタンのイベントリスナー
+            setTimeout(() => {
+                const autoFixBtn = modalContent.querySelector('#auto-fix-btn');
+                const refreshBtn = modalContent.querySelector('#refresh-frontend-btn');
+                
+                if (autoFixBtn) {
+                    autoFixBtn.addEventListener('click', async () => {
+                        modal.remove();
+                        await fixDatabaseToMatchFrontend();
+                    });
+                }
+                
+                if (refreshBtn) {
+                    refreshBtn.addEventListener('click', async () => {
+                        modal.remove();
+                        await refreshFrontendFromDatabase();
+                    });
+                }
+            }, 100);
+        }
+        
+        modal.appendChild(modalContent);
+        document.body.appendChild(modal);
+        
+        // ESCキーで閉じる
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                modal.remove();
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+    }
+
+    // DBを画面の状態に合わせて修復
+    async function fixDatabaseToMatchFrontend() {
+        const fixToast = toast.loading('データベースを修復中...');
+        
+        try {
+            const frontendState = collectFrontendState();
+            
+            // フロントエンドの状態をDBに保存
+            for (const month of Object.keys(frontendState)) {
+                const monthData = frontendState[month];
+                
+                // 月次タスクを更新
+                await SupabaseAPI.updateMonthlyTasksByMonth(clientId, month, {
+                    tasks: monthData.tasks,
+                    task_memos: monthData.memos
+                });
+            }
+            
+            // クライアントの最終更新時刻を更新
+            await SupabaseAPI.updateClient(clientId, {
+                updated_at: getJapanTime()
+            });
+            
+            toast.update(fixToast, 'データベースの修復が完了しました', 'success');
+            
+        } catch (error) {
+            console.error('Database fix error:', error);
+            toast.update(fixToast, `修復エラー: ${handleSupabaseError(error)}`, 'error');
+        }
+    }
+
+    // 画面をDBの状態に合わせて更新
+    async function refreshFrontendFromDatabase() {
+        const refreshToast = toast.loading('画面を更新中...');
+        
+        try {
+            // 画面を再読み込みして最新のDB状態を反映
+            await renderAll();
+            
+            toast.update(refreshToast, '画面の更新が完了しました', 'success');
+            
+        } catch (error) {
+            console.error('Frontend refresh error:', error);
+            toast.update(refreshToast, `更新エラー: ${handleSupabaseError(error)}`, 'error');
+        }
+    }
+
+    // 整合性チェック結果の表示（旧版 - 互換性のため残す）
     function displayConsistencyCheckResult(result) {
         const { is_consistent, issues, stats, summary } = result;
         

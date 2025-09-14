@@ -873,7 +873,43 @@ export class SupabaseAPI {
         }
     }
 
-    // データ整合性チェック機能
+    // 月次タスクの状態を取得（新しい整合性チェック用）
+    static async getMonthlyTasksState(clientId, year) {
+        try {
+            // 該当年度の全月次データ取得（4月-3月）
+            const startMonth = `${year}-04`;
+            const endMonth = `${parseInt(year) + 1}-03`;
+            
+            const { data: monthlyData, error } = await supabase
+                .from('monthly_tasks')
+                .select('month, tasks, task_memos, status')
+                .eq('client_id', clientId)
+                .gte('month', startMonth)
+                .lte('month', endMonth)
+                .order('month');
+            
+            if (error) throw error;
+            
+            // 月をキーとした辞書形式に変換
+            const state = {};
+            (monthlyData || []).forEach(monthData => {
+                state[monthData.month] = {
+                    tasks: monthData.tasks || {},
+                    task_memos: monthData.task_memos || {},
+                    status: monthData.status
+                };
+            });
+            
+            console.log('DB state retrieved:', state);
+            return state;
+            
+        } catch (error) {
+            console.error('Error getting monthly tasks state:', error);
+            throw error;
+        }
+    }
+
+    // データ整合性チェック機能（旧版）
     static async checkDataConsistency(clientId, year) {
         try {
             // 1. クライアントのカスタムタスク取得
