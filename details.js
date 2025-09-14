@@ -403,7 +403,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             clientDetails.custom_tasks_by_year[currentYearSelection] = newTasks;
             propagateTasksToFutureYears(currentYearSelection, newTasks);
-            await SupabaseAPI.updateClient(clientId, { custom_tasks_by_year: clientDetails.custom_tasks_by_year });
+            await SupabaseAPI.updateClient(clientId, { 
+                custom_tasks_by_year: clientDetails.custom_tasks_by_year,
+                updated_at: new Date().toISOString()
+            });
             toast.update(saveTaskToast, 'タスクが保存されました', 'success');
             showNotification('タスクが保存されました', 'success');
             return true;
@@ -1265,6 +1268,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const updatedResults = await Promise.all(savePromises);
 
+            // クライアントの最終更新時刻を更新
+            await SupabaseAPI.updateClient(clientId, {
+                updated_at: new Date().toISOString()
+            });
+
             // 全体メモの保存
             await saveOverallMemo();
 
@@ -1287,7 +1295,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (generalMemoField && clientId) {
             const memoValue = generalMemoField.value.trim();
             await SupabaseAPI.updateClient(clientId, { 
-                overall_memo: memoValue 
+                overall_memo: memoValue,
+                updated_at: new Date().toISOString()
             });
             console.log('[Details] Overall memo saved:', memoValue);
         }
