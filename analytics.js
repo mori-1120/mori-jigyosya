@@ -195,15 +195,24 @@ class AnalyticsPage {
             
             // データ再読み込み（サイレント）
             await this.loadInitialData();
-            await this.performAnalysis();
             
-            // データ変更があった場合のみ通知
-            const afterData = this.getDataSnapshot();
-            if (this.hasDataChanged(beforeData, afterData)) {
-                showToast('データを更新しました', 'success', 1500);
-                console.log('✅ Data changes detected and refreshed');
+            // 検索欄と同じバリデーション処理を適用
+            const startPeriod = document.getElementById('start-period').value;
+            const endPeriod = document.getElementById('end-period').value;
+            
+            if (startPeriod && endPeriod && startPeriod <= endPeriod) {
+                await this.performAnalysis();
+                
+                // データ変更があった場合のみ通知
+                const afterData = this.getDataSnapshot();
+                if (this.hasDataChanged(beforeData, afterData)) {
+                    showToast('データを更新しました', 'success', 1500);
+                    console.log('✅ Data changes detected and refreshed');
+                } else {
+                    console.log('ℹ️ Data refresh completed (no changes)');
+                }
             } else {
-                console.log('ℹ️ Data refresh completed (no changes)');
+                console.log('ℹ️ Transparent refresh skipped (invalid period settings)');
             }
             
         } catch (error) {
