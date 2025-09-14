@@ -941,7 +941,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const staffName = client.staff_name || '-';
         const accountingMethod = client.accounting_method || '-';
         const updatedAt = client.updated_at ? 
-            new Date(client.updated_at).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : '-';
+            new Date(client.updated_at).toLocaleString('ja-JP', { 
+                timeZone: 'Asia/Tokyo',
+                month: 'numeric', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                hour12: false 
+            }) : '-';
 
         // 進捗データの計算
         const progressData = calculateProgress(client);
@@ -1044,7 +1051,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const staffName = client.staff_name || '-';
         const accountingMethod = client.accounting_method || '-';
         const updatedAt = client.updated_at ? 
-            new Date(client.updated_at).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : '-';
+            new Date(client.updated_at).toLocaleString('ja-JP', { 
+                timeZone: 'Asia/Tokyo',
+                month: 'numeric', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                hour12: false 
+            }) : '-';
 
         row.innerHTML = `
             <td>${client.id}</td>

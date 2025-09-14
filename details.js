@@ -6,6 +6,11 @@ function getCurrentFontSize() {
     return savedFontSize ? parseInt(savedFontSize) : 100;
 }
 
+// 日本時間取得関数
+function getJapanTime() {
+    return new Date(new Date().getTime() + (9 * 60 * 60 * 1000)).toISOString();
+}
+
 // URL自動リンク化機能
 function autoLinkifyText(text) {
     const urlRegex = /(https?:\/\/[^\s\n]+)/g;
@@ -405,7 +410,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             propagateTasksToFutureYears(currentYearSelection, newTasks);
             await SupabaseAPI.updateClient(clientId, { 
                 custom_tasks_by_year: clientDetails.custom_tasks_by_year,
-                updated_at: new Date().toISOString()
+                updated_at: getJapanTime()
             });
             toast.update(saveTaskToast, 'タスクが保存されました', 'success');
             showNotification('タスクが保存されました', 'success');
@@ -1268,9 +1273,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const updatedResults = await Promise.all(savePromises);
 
-            // クライアントの最終更新時刻を更新
+            // クライアントの最終更新時刻を更新（日本時間）
             await SupabaseAPI.updateClient(clientId, {
-                updated_at: new Date().toISOString()
+                updated_at: getJapanTime()
             });
 
             // 全体メモの保存
@@ -1296,7 +1301,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const memoValue = generalMemoField.value.trim();
             await SupabaseAPI.updateClient(clientId, { 
                 overall_memo: memoValue,
-                updated_at: new Date().toISOString()
+                updated_at: getJapanTime()
             });
             console.log('[Details] Overall memo saved:', memoValue);
         }
