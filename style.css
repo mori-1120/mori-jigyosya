@@ -603,8 +603,8 @@ th[data-sort-key].active-sort {
 
 /* Modern Staff Modal Styles */
 .staff-modal-content {
-    max-width: 700px;
-    max-height: 85vh;
+    max-width: 723px;
+    max-height: 100vh;
     background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     border-radius: 16px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.06);
