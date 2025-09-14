@@ -2101,8 +2101,10 @@ export class SupabaseAPI {
 
     // バックアップレポート生成
     static generateBackupReport(backupData, fileSize, filePath) {
-        const now = new Date();
-        const jstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000)); // JST
+        // バックアップデータのタイムスタンプから正しい日本時間を計算
+        const backupTime = backupData.timestamp ? new Date(backupData.timestamp) : new Date();
+        // toLocaleString を使って正確な日本時間を取得
+        const jstDate = new Date(backupTime.toLocaleString("en-US", {timeZone: "Asia/Tokyo"}));
         
         const tableBreakdown = {};
         let totalRecords = 0;
@@ -2120,7 +2122,11 @@ export class SupabaseAPI {
             };
         });
         
-        const summary = `📊 バックアップレポート ${jstDate.toLocaleDateString('ja-JP')} ${jstDate.toLocaleTimeString('ja-JP')}\n\n` +
+        // 日本時間で正確な日付と時刻を取得
+        const jstDateString = backupTime.toLocaleDateString('ja-JP', {timeZone: 'Asia/Tokyo'});
+        const jstTimeString = backupTime.toLocaleTimeString('ja-JP', {timeZone: 'Asia/Tokyo'});
+        
+        const summary = `📊 バックアップレポート ${jstDateString} ${jstTimeString}\n\n` +
             `🗂️ 総テーブル数: ${Object.keys(tableBreakdown).length}テーブル\n` +
             `📋 総レコード数: ${totalRecords.toLocaleString()}件\n` +
             `💾 ファイルサイズ: ${Math.round(fileSize / 1024).toLocaleString()} KB\n` +
@@ -2133,7 +2139,7 @@ export class SupabaseAPI {
                 ).join('\n');
         
         return {
-            timestamp: jstDate.toISOString(),
+            timestamp: backupTime.toISOString(),
             backupTimestamp: backupData.timestamp,
             totalTables: Object.keys(tableBreakdown).length,
             totalRecords,
@@ -2141,8 +2147,8 @@ export class SupabaseAPI {
             filePath,
             tableBreakdown,
             summary,
-            reportDate: jstDate.toLocaleDateString('ja-JP'),
-            reportTime: jstDate.toLocaleTimeString('ja-JP')
+            reportDate: jstDateString,
+            reportTime: jstTimeString
         };
     }
 
