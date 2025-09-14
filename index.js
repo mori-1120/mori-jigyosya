@@ -3055,20 +3055,55 @@ document.addEventListener('DOMContentLoaded', () => {
         async function showBackupSelectionModal() {
             try {
                 // Supabase Storageから利用可能なバックアップファイルを取得
-                const { data: backupFiles, error: listError } = await supabase.storage
+                console.log('🔍 バックアップファイル取得開始...');
+                
+                // まずweeklyフォルダの曜日フォルダ一覧を取得
+                const { data: dayFolders, error: listError } = await supabase.storage
                     .from('backups')
-                    .list('weekly', { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
+                    .list('weekly', { limit: 100 });
 
+                console.log('📁 weeklyフォルダの曜日フォルダ:', dayFolders);
                 if (listError) {
                     console.error('バックアップファイル一覧取得エラー:', listError);
                     throw new Error('バックアップファイル一覧の取得に失敗しました');
                 }
+
+                // 各曜日フォルダからJSONファイルを取得
+                let allBackupFiles = [];
+                for (const folder of dayFolders || []) {
+                    if (folder.name && !folder.name.includes('.')) { // フォルダのみ（ファイルは除外）
+                        try {
+                            const { data: filesInFolder, error: folderError } = await supabase.storage
+                                .from('backups')
+                                .list(`weekly/${folder.name}`, { limit: 10 });
+                            
+                            if (!folderError && filesInFolder) {
+                                // フォルダ名をファイル名に追加
+                                filesInFolder.forEach(file => {
+                                    if (file.name.endsWith('.json')) {
+                                        allBackupFiles.push({
+                                            ...file,
+                                            name: `${folder.name}/${file.name}`,
+                                            created_at: file.created_at || folder.created_at
+                                        });
+                                    }
+                                });
+                            }
+                        } catch (e) {
+                            console.warn(`フォルダ ${folder.name} の読み込みをスキップ:`, e);
+                        }
+                    }
+                }
+                
+                const backupFiles = allBackupFiles;
+                console.log('📊 取得されたバックアップファイル:', backupFiles);
 
                 // レポートファイルも取得
                 const { data: reportFiles, error: reportListError } = await supabase.storage
                     .from('backups')
                     .list('reports', { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
 
+                console.log('📋 reportsフォルダの内容:', reportFiles);
                 if (reportListError) {
                     console.warn('レポートファイル一覧取得エラー:', reportListError);
                 }
