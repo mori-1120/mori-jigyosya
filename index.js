@@ -3098,7 +3098,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                         allBackupFiles.push({
                                             ...file,
                                             name: `${folder.name}/${file.name}`,
-                                            created_at: file.created_at || folder.created_at
+                                            created_at: file.created_at || folder.created_at,
+                                            updated_at: file.updated_at || folder.updated_at
                                         });
                                     }
                                 });
@@ -3165,6 +3166,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         size: size,
                         fileSize: file.metadata?.size || 0,
                         created_at: file.created_at,
+                        updated_at: file.updated_at,
                         path: filePath
                     });
                 }
@@ -3182,16 +3184,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         size: size,
                         fileSize: file.metadata?.size || 0,
                         created_at: file.created_at,
+                        updated_at: file.updated_at,
                         path: `reports/${file.name}`
                     });
                 }
             });
 
-            // 作成日時でソート（新しい順）
-            combinedList.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            // 更新日時でソート（新しい順）- 最新のバックアップを上に表示
+            combinedList.sort((a, b) => {
+                const dateA = new Date(a.updated_at || a.created_at);
+                const dateB = new Date(b.updated_at || b.created_at);
+                return dateB - dateA;
+            });
 
             combinedList.forEach(item => {
-                const createdDate = new Date(item.created_at).toLocaleString('ja-JP');
+                // 更新日時を優先、なければ作成日時を使用
+                const displayDate = new Date(item.updated_at || item.created_at).toLocaleString('ja-JP');
                 const badgeColor = item.type === 'backup' ? '#007bff' : '#28a745';
                 const badgeText = item.type === 'backup' ? 'データ' : 'レポート';
                 
@@ -3201,7 +3209,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <div style="font-weight: 500; margin-bottom: 4px;">${item.displayName}</div>
-                            <div style="font-size: 12px; color: #6c757d;">作成: ${createdDate} | サイズ: ${item.size}</div>
+                            <div style="font-size: 12px; color: #6c757d;">更新: ${displayDate} | サイズ: ${item.size}</div>
                         </div>
                         <div style="background: ${badgeColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
                             ${badgeText}
