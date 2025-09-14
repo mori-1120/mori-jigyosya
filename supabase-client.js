@@ -2233,10 +2233,12 @@ export class SupabaseAPI {
         // レポートデータからファイルサイズを取得（実際のバックアップファイルサイズ）
         const fileSizeKB = reportData.fileSizeKB || Math.round(fileSize / 1024);
         
-        // 最終バックアップ時刻を表示（既に日本時間なのでそのまま使用）
+        // 最終バックアップ時刻を表示（日本時間で統一）
         const backupDateTime = reportData.reportDate && reportData.reportTime 
             ? `${reportData.reportDate} ${reportData.reportTime}`
-            : reportData.timestamp || new Date().toLocaleString('ja-JP');
+            : reportData.timestamp 
+                ? new Date(reportData.timestamp).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })
+                : new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
 
         // 前回バックアップとの比較データを取得
         const previousReportData = await this.getPreviousReportData(reportData.reportDate);
