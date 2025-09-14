@@ -3103,7 +3103,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (file.name.endsWith('.json')) {
                     const date = extractDateFromFileName(file.name);
                     const size = formatFileSize(file.metadata?.size || 0);
-                    const folder = file.name.split('/')[0];
+                    
+                    // Supabaseのフォルダ構造: weekly/Friday/jigyosya-backup-Friday.json
+                    // list('weekly')から返される file.name = 'Friday/jigyosya-backup-Friday.json'
+                    const folder = file.name.includes('/') ? file.name.split('/')[0] : 'weekly';
+                    const filePath = `weekly/${file.name}`;
+                    
                     combinedList.push({
                         type: 'backup',
                         name: file.name,
@@ -3111,7 +3116,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         size: size,
                         fileSize: file.metadata?.size || 0,
                         created_at: file.created_at,
-                        path: `weekly/${file.name}`
+                        path: filePath
                     });
                 }
             });
@@ -3229,10 +3234,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (matches) {
                 return new Date(matches[1]).toLocaleDateString('ja-JP');
             }
-            // 曜日名から推測
+            
+            // 週次バックアップの場合（Friday/jigyosya-backup-Friday.json形式）
             const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            const dayMatch = dayNames.find(day => fileName.includes(day));
-            return dayMatch ? `最新 (${dayMatch})` : fileName;
+            const dayNamesJp = ['日曜日', '月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日'];
+            
+            for (let i = 0; i < dayNames.length; i++) {
+                if (fileName.includes(dayNames[i])) {
+                    return `最新 (${dayNamesJp[i]})`;
+                }
+            }
+            
+            return fileName;
         }
 
         function formatFileSize(bytes) {
@@ -3262,9 +3275,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (type === 'report') {
                     // レポートファイルの場合は既存のレポート表示機能を使用
+                    console.log('📋 レポートファイルを表示:', path);
                     SupabaseAPI.showAdminBackupReport(contentData, data.size, path);
                 } else {
                     // データファイルの場合は新しい詳細表示機能を使用
+                    console.log('📊 データバックアップファイルを表示:', path, 'サイズ:', data.size);
                     showBackupDataModal(contentData, data.size, path);
                 }
 

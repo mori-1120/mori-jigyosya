@@ -2210,14 +2210,13 @@ export class SupabaseAPI {
             justify-content: center; align-items: center;
         `;
 
-        const fileSizeKB = Math.round(fileSize / 1024);
-        // 最終バックアップ時刻を表示（レポートデータから取得）
+        // レポートデータからファイルサイズを取得（実際のバックアップファイルサイズ）
+        const fileSizeKB = reportData.fileSizeKB || Math.round(fileSize / 1024);
+        
+        // 最終バックアップ時刻を表示（既に日本時間なのでそのまま使用）
         const backupDateTime = reportData.reportDate && reportData.reportTime 
             ? `${reportData.reportDate} ${reportData.reportTime}`
-            : new Date().toLocaleString('ja-JP', {
-                year: 'numeric', month: '2-digit', day: '2-digit', 
-                hour: '2-digit', minute: '2-digit', second: '2-digit'
-              });
+            : reportData.timestamp || new Date().toLocaleString('ja-JP');
 
         // 前回バックアップとの比較データを取得
         const previousReportData = await this.getPreviousReportData(reportData.reportDate);
