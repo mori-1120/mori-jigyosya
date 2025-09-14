@@ -250,6 +250,28 @@ tr:hover {
     background-color: white; /* 背景色を確実に設定 */
 }
 
+/* 全体メモの幅をテーブルと合わせる */
+.memo-section {
+    padding: 20px;
+    margin-top: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.memo-textarea {
+    width: 100%;
+    min-height: 150px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.4;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
 /* レスポンシブテーブル幅調整システム */
 .responsive-table-container {
     position: relative;

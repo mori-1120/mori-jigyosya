@@ -476,6 +476,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateFinalizeButtonState();
         updateEditingInterface();
         hideLoading();
+        
+        // テーブル幅に合わせて全体メモの幅を調整
+        setTimeout(() => {
+            adjustMemoWidth();
+        }, 100);
     }
 
     async function renderClientInfo() {
@@ -2029,13 +2034,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         // ウィンドウリサイズイベント
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(adjustDetailsTableLayout, 150);
+            resizeTimeout = setTimeout(() => {
+                adjustDetailsTableLayout();
+                adjustMemoWidth(); // リサイズ時にメモ幅も調整
+            }, 150);
         });
         
         // 初期調整と保存された設定の適用
         setTimeout(() => {
             applyStoredDetailsTableMode();
             adjustDetailsTableLayout();
+            adjustMemoWidth(); // メモ幅も初期調整
         }, 1000);
     }
     
@@ -2048,6 +2057,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             toggleButton.innerHTML = '📏 フィットモード <small>(→スクロール)</small>';
         } else {
             toggleButton.innerHTML = '📏 スクロールモード <small>(→フィット)</small>';
+        }
+    }
+    
+    // 全体メモの幅をテーブル幅に合わせる関数
+    function adjustMemoWidth() {
+        const detailsTable = document.querySelector('#details-table');
+        const memoSection = document.querySelector('.memo-section');
+        const memoTextarea = document.querySelector('#general-memo');
+        
+        if (detailsTable && memoSection && memoTextarea) {
+            // テーブルの実際の幅を取得
+            const tableWidth = detailsTable.offsetWidth;
+            
+            // メモセクション全体とテキストエリアの幅を調整
+            memoSection.style.width = `${tableWidth}px`;
+            memoSection.style.maxWidth = `${tableWidth}px`;
         }
     }
     
