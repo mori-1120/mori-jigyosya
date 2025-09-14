@@ -666,6 +666,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cancelStaffButton) {
             cancelStaffButton.addEventListener('click', closeStaffModal);
         }
+        
+        // CSV export button
+        const exportStaffCsvButton = document.getElementById('export-staff-csv-button');
+        if (exportStaffCsvButton) {
+            exportStaffCsvButton.addEventListener('click', exportStaffToCSV);
+        }
 
         // Default Tasks modal
         // openDefaultTasksModalButton.addEventListener('click', openDefaultTasksModal); // 削除されたボタン
@@ -1393,6 +1399,92 @@ document.addEventListener('DOMContentLoaded', () => {
         if(newStaffNameInput) newStaffNameInput.value = '';
         if(newStaffEmailInput) newStaffEmailInput.value = '';
         if(newStaffRoleSelect) newStaffRoleSelect.value = 'staff';
+    }
+
+    // CSV抽出機能
+    async function exportStaffToCSV() {
+        try {
+            const exportToast = toast.loading('担当者データをCSV形式で抽出中...');
+            
+            // 担当クライアント数を計算
+            const staffClientCounts = {};
+            const staffAssignedClients = {};
+            
+            for (const client of clients) {
+                if (client.staff_id) {
+                    if (!staffClientCounts[client.staff_id]) {
+                        staffClientCounts[client.staff_id] = 0;
+                        staffAssignedClients[client.staff_id] = [];
+                    }
+                    staffClientCounts[client.staff_id]++;
+                    staffAssignedClients[client.staff_id].push(client);
+                }
+            }
+            
+            // CSVヘッダー
+            const headers = [
+                'ID',
+                '担当者名',
+                'メール',
+                '権限', 
+                '担当クライアント数',
+                '担当クライアント名一覧',
+                '作成日時',
+                '更新日時'
+            ];
+            
+            // CSVデータ作成
+            const csvData = staffs.map(staff => {
+                const clientCount = staffClientCounts[staff.id] || 0;
+                const assignedClients = staffAssignedClients[staff.id] || [];
+                const clientNames = assignedClients.map(client => client.name).join('；');
+                
+                // 権限の日本語変換
+                const roleText = staff.role === 'admin' ? '管理者' : 
+                                staff.role === 'staff' ? '担当者' : 
+                                staff.role || '';
+                
+                return [
+                    staff.id,
+                    staff.name,
+                    staff.email || '',
+                    roleText,
+                    clientCount,
+                    clientNames,
+                    staff.created_at ? new Date(staff.created_at).toLocaleString('ja-JP') : '',
+                    staff.updated_at ? new Date(staff.updated_at).toLocaleString('ja-JP') : ''
+                ];
+            });
+            
+            // CSVコンテンツ生成
+            const csvContent = [headers, ...csvData]
+                .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+                .join('\n');
+            
+            // BOM付きUTF-8でBlob作成（Excel対応）
+            const bom = '\uFEFF';
+            const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+            
+            // ダウンロード実行
+            const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+            const filename = `担当者一覧_${timestamp}.csv`;
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(link.href);
+            
+            toast.update(exportToast, `CSV抽出完了: ${filename}`, 'success');
+            console.log(`Staff CSV exported: ${filename}, ${staffs.length} records`);
+            
+        } catch (error) {
+            console.error('Staff CSV export error:', error);
+            toast.error('CSV抽出に失敗しました: ' + error.message);
+        }
     }
 
     // --- Settings Management ---

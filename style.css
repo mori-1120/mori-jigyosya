@@ -603,12 +603,13 @@ th[data-sort-key].active-sort {
 
 /* Modern Staff Modal Styles */
 .staff-modal-content {
-    max-width: 850px;
+    max-width: 700px;
+    max-height: 85vh;
     background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     border-radius: 16px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.06);
     padding: 0;
-    overflow: hidden;
+    overflow-y: auto;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
@@ -793,7 +794,7 @@ th[data-sort-key].active-sort {
     justify-content: flex-end;
 }
 
-.modern-save-button, .modern-cancel-button {
+.modern-save-button, .modern-cancel-button, .modern-export-button {
     padding: 14px 28px;
     border: none;
     border-radius: 10px;
@@ -830,6 +831,19 @@ th[data-sort-key].active-sort {
     background: linear-gradient(135deg, #a4a4a5 0%, #6d7072be 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+}
+
+.modern-export-button {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+    margin-right: auto;
+}
+
+.modern-export-button:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #007bff 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
 }
 
 .button-icon {
