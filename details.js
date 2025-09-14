@@ -1648,6 +1648,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <li>一致データ: <strong>${matches.length}個</strong></li>
                     </ul>
                 </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button id="close-consistency-modal" style="
+                        background: #28a745; color: white; border: none; 
+                        padding: 12px 24px; border-radius: 6px; cursor: pointer; 
+                        font-size: 16px; font-weight: 500;
+                    ">✅ 完了</button>
+                </div>
             `;
         } else {
             title.innerHTML = '⚠️ データ整合性チェック結果';
@@ -1699,6 +1706,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `;
             }
             
+            // 完了ボタンを追加
+            contentHtml += `
+                <div style="text-align: center; margin-top: 20px; border-top: 1px solid #dee2e6; padding-top: 15px;">
+                    <button id="close-consistency-modal" style="
+                        background: #6c757d; color: white; border: none; 
+                        padding: 12px 24px; border-radius: 6px; cursor: pointer; 
+                        font-size: 16px; font-weight: 500;
+                    ">完了</button>
+                </div>
+            `;
+            
             modalContent.innerHTML = contentHtml;
             
             // 自動修復ボタンのイベントリスナー
@@ -1724,6 +1742,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         modal.appendChild(modalContent);
         document.body.appendChild(modal);
+        
+        // 完了ボタンのイベントリスナー
+        setTimeout(() => {
+            const closeModalBtn = modalContent.querySelector('#close-consistency-modal');
+            if (closeModalBtn) {
+                closeModalBtn.addEventListener('click', () => modal.remove());
+            }
+        }, 100);
         
         // ESCキーで閉じる
         const escHandler = (e) => {
