@@ -2101,10 +2101,9 @@ export class SupabaseAPI {
 
     // バックアップレポート生成
     static generateBackupReport(backupData, fileSize, filePath) {
-        // バックアップデータのタイムスタンプから正しい日本時間を計算
-        const backupTime = backupData.timestamp ? new Date(backupData.timestamp) : new Date();
-        // toLocaleString を使って正確な日本時間を取得
-        const jstDate = new Date(backupTime.toLocaleString("en-US", {timeZone: "Asia/Tokyo"}));
+        // 現在時刻から正しい日本時間を計算
+        const now = new Date();
+        // 日本時間のタイムスタンプを直接取得
         
         const tableBreakdown = {};
         let totalRecords = 0;
@@ -2123,8 +2122,8 @@ export class SupabaseAPI {
         });
         
         // 日本時間で正確な日付と時刻を取得
-        const jstDateString = backupTime.toLocaleDateString('ja-JP', {timeZone: 'Asia/Tokyo'});
-        const jstTimeString = backupTime.toLocaleTimeString('ja-JP', {timeZone: 'Asia/Tokyo'});
+        const jstDateString = now.toLocaleDateString('ja-JP', {timeZone: 'Asia/Tokyo'});
+        const jstTimeString = now.toLocaleTimeString('ja-JP', {timeZone: 'Asia/Tokyo'});
         
         const summary = `📊 バックアップレポート ${jstDateString} ${jstTimeString}\n\n` +
             `🗂️ 総テーブル数: ${Object.keys(tableBreakdown).length}テーブル\n` +
@@ -2139,7 +2138,7 @@ export class SupabaseAPI {
                 ).join('\n');
         
         return {
-            timestamp: backupTime.toISOString(),
+            timestamp: now.toISOString(),
             backupTimestamp: backupData.timestamp,
             totalTables: Object.keys(tableBreakdown).length,
             totalRecords,
@@ -2239,11 +2238,11 @@ export class SupabaseAPI {
         // レポートデータからファイルサイズを取得（実際のバックアップファイルサイズ）
         const fileSizeKB = reportData.fileSizeKB || Math.round(fileSize / 1024);
         
-        // 最終バックアップ時刻を表示（日本時間で統一）
-        const backupDateTime = reportData.reportDate && reportData.reportTime 
-            ? `${reportData.reportDate} ${reportData.reportTime}`
-            : reportData.timestamp 
-                ? new Date(reportData.timestamp).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })
+        // 最終バックアップ時刻を表示（timestampを優先して日本時間で統一）
+        const backupDateTime = reportData.timestamp 
+            ? new Date(reportData.timestamp).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })
+            : reportData.reportDate && reportData.reportTime 
+                ? `${reportData.reportDate} ${reportData.reportTime}`
                 : new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
 
         // 前回バックアップとの比較データを取得

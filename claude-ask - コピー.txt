@@ -1,83 +1,19 @@
-{
-  "timestamp": "2025-09-14T22:00:34.928Z",
-  "backupTimestamp": "2025-09-14T13-00-33-342Z",
-  "totalTables": 7,
-  "totalRecords": 613,
-  "fileSizeKB": 308,
-  "filePath": "weekly/Sunday/jigyosya-backup-Sunday.json",
-  "tableBreakdown": {
-    "clients": {
-      "recordCount": 90,
-      "tableNameJP": "事業者",
-      "sampleData": [
-        "id",
-        "name",
-        "fiscal_month",
-        "staff_id",
-        "accounting_method"
-      ]
-    },
-    "staffs": {
-      "recordCount": 9,
-      "tableNameJP": "担当者",
-      "sampleData": [
-        "id",
-        "name",
-        "email",
-        "role",
-        "created_at"
-      ]
-    },
-    "monthly_tasks": {
-      "recordCount": 504,
-      "tableNameJP": "月次タスク",
-      "sampleData": [
-        "id",
-        "client_id",
-        "month",
-        "tasks",
-        "status"
-      ]
-    },
-    "editing_sessions": {
-      "recordCount": 0,
-      "tableNameJP": "編集セッション",
-      "sampleData": []
-    },
-    "settings": {
-      "recordCount": 6,
-      "tableNameJP": "システム設定",
-      "sampleData": [
-        "key",
-        "value",
-        "created_at",
-        "updated_at"
-      ]
-    },
-    "default_tasks": {
-      "recordCount": 2,
-      "tableNameJP": "デフォルトタスク",
-      "sampleData": [
-        "id",
-        "task_name",
-        "accounting_method",
-        "tasks",
-        "display_order"
-      ]
-    },
-    "app_links": {
-      "recordCount": 2,
-      "tableNameJP": "アプリリンク",
-      "sampleData": [
-        "id",
-        "name",
-        "url",
-        "display_order",
-        "created_at"
-      ]
-    }
-  },
-  "summary": "📊 バックアップレポート 2025/9/15 7:00:34\n\n🗂️ 総テーブル数: 7テーブル\n📋 総レコード数: 613件\n💾 ファイルサイズ: 308 KB\n☁️ 保存場所: weekly/Sunday/jigyosya-backup-Sunday.json\n\n📈 テーブル別詳細:\n  • 月次タスク (monthly_tasks): 504件\n  • 事業者 (clients): 90件\n  • 担当者 (staffs): 9件\n  • システム設定 (settings): 6件\n  • デフォルトタスク (default_tasks): 2件\n  • アプリリンク (app_links): 2件\n  • 編集セッション (editing_sessions): 0件",
-  "reportDate": "2025/9/15",
-  "reportTime": "7:00:34"
-}
+supabase-client.js:2045 クラウドバックアップエラー: RangeError: Invalid time value
+    at Date.toISOString (<anonymous>)
+    at SupabaseAPI.generateBackupReport (supabase-client.js:2142:35)
+    at SupabaseAPI.uploadBackupToCloud (supabase-client.js:1993:37)
+    at async HTMLButtonElement.<anonymous> (index.js:2496:26)
+uploadBackupToCloud @ supabase-client.js:2045
+await in uploadBackupToCloud
+(anonymous) @ index.js:2496Understand this error
+index.js:2515 Manual backup error: RangeError: Invalid time value
+    at Date.toISOString (<anonymous>)
+    at SupabaseAPI.generateBackupReport (supabase-client.js:2142:35)
+    at SupabaseAPI.uploadBackupToCloud (supabase-client.js:1993:37)
+    at async HTMLButtonElement.<anonymous> (index.js:2496:26)
+(anonymous) @ index.js:2515Understand this error
+supabase-client.js:2508 Supabase error: RangeError: Invalid time value
+    at Date.toISOString (<anonymous>)
+    at SupabaseAPI.generateBackupReport (supabase-client.js:2142:35)
+    at SupabaseAPI.uploadBackupToCloud (supabase-client.js:1993:37)
+    at async HTMLButtonElement.<anonymous> (index.js:2496:26)
