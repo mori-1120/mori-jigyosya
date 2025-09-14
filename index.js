@@ -3336,11 +3336,14 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
 
             const fileSizeKB = Math.round(fileSize / 1024);
-            const totalRecords = Object.values(backupData).reduce((sum, table) => 
+            
+            // バックアップデータの構造確認とレコード数計算の修正
+            const tablesData = backupData.tables || backupData;
+            const totalRecords = Object.values(tablesData).reduce((sum, table) => 
                 sum + (Array.isArray(table) ? table.length : 0), 0);
 
             let tableStatsHTML = '';
-            for (const [tableName, records] of Object.entries(backupData)) {
+            for (const [tableName, records] of Object.entries(tablesData)) {
                 if (Array.isArray(records)) {
                     const count = records.length;
                     const percentage = totalRecords > 0 ? ((count / totalRecords) * 100).toFixed(1) : '0.0';
@@ -3380,7 +3383,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <div style="color: #6c757d; font-size: 14px;">ファイルサイズ</div>
                             </div>
                             <div style="text-align: center;">
-                                <div style="font-size: 24px; font-weight: bold; color: #17a2b8;">${Object.keys(backupData).length}</div>
+                                <div style="font-size: 24px; font-weight: bold; color: #17a2b8;">${Object.keys(tablesData).length}</div>
                                 <div style="color: #6c757d; font-size: 14px;">テーブル数</div>
                             </div>
                         </div>
