@@ -17,6 +17,7 @@ class AnalyticsPage {
         this.lastAnalysisData = null; // 最後の分析結果を保持
         this.currentSort = null; // 現在のソート列
         this.sortDirection = 'asc'; // ソート方向
+        this.refreshTimeout = null; // 透明リフレッシュ用タイマー
     }
 
     async initialize() {
@@ -144,22 +145,92 @@ class AnalyticsPage {
     }
 
     setupPageVisibilityListener() {
+        // デバウンス用タイマー
+        let refreshTimeout = null;
+        
         // ページの表示/非表示状態を監視
-        document.addEventListener('visibilitychange', async () => {
+        document.addEventListener('visibilitychange', () => {
             if (!document.hidden && this.lastAnalysisData) {
-                // ページが表示状態になった時に、既に分析データがある場合は再計算
-                console.log('📊 Page became visible, refreshing analytics data...');
-                await this.refreshAnalyticsData();
+                console.log('🔄 Page became visible, scheduling transparent refresh...');
+                this.scheduleTransparentRefresh();
             }
         });
 
         // ページフォーカス時にも更新（ブラウザタブ切り替えで戻った場合）
-        window.addEventListener('focus', async () => {
+        window.addEventListener('focus', () => {
             if (this.lastAnalysisData) {
-                console.log('🔍 Window focused, checking for data updates...');
-                await this.refreshAnalyticsData();
+                console.log('🔄 Page gained focus, scheduling transparent refresh...');
+                this.scheduleTransparentRefresh();
             }
         });
+
+        // popstate イベント（戻るボタンで戻った場合）
+        window.addEventListener('popstate', () => {
+            if (this.lastAnalysisData) {
+                console.log('🔄 Browser back detected, scheduling transparent refresh...');
+                this.scheduleTransparentRefresh();
+            }
+        });
+        
+        console.log('✅ Page visibility listeners set up for transparent auto-refresh');
+    }
+
+    scheduleTransparentRefresh() {
+        // 既存のタイマーがあればクリア
+        if (this.refreshTimeout) {
+            clearTimeout(this.refreshTimeout);
+        }
+        
+        // 500ms後に透明な更新を実行（検索と同じデバウンス感覚）
+        this.refreshTimeout = setTimeout(async () => {
+            console.log('🔄 Transparent data refresh triggered...');
+            await this.performTransparentRefresh();
+        }, 500);
+    }
+
+    async performTransparentRefresh() {
+        try {
+            // 現在のデータのスナップショット
+            const beforeData = this.getDataSnapshot();
+            
+            // データ再読み込み（サイレント）
+            await this.loadInitialData();
+            await this.performAnalysis();
+            
+            // データ変更があった場合のみ通知
+            const afterData = this.getDataSnapshot();
+            if (this.hasDataChanged(beforeData, afterData)) {
+                showToast('データを更新しました', 'success', 1500);
+                console.log('✅ Data changes detected and refreshed');
+            } else {
+                console.log('ℹ️ Data refresh completed (no changes)');
+            }
+            
+        } catch (error) {
+            console.warn('Transparent refresh error (silent):', error);
+            // エラーは通知しない（透明な更新のため）
+        }
+    }
+
+    getDataSnapshot() {
+        // データの状態をハッシュ化して比較用スナップショット作成
+        const clientUpdates = this.clients?.map(c => c.updated_at).sort().join(',') || '';
+        const taskCounts = this.monthlyTasks?.reduce((acc, task) => {
+            const completedTasks = Object.values(task.tasks || {}).filter(t => t.completed).length;
+            return acc + completedTasks;
+        }, 0) || 0;
+        
+        return {
+            clientsCount: this.clients?.length || 0,
+            tasksCount: this.monthlyTasks?.length || 0,
+            clientUpdates: clientUpdates,
+            completedTasksTotal: taskCounts,
+            dataTimestamp: Date.now()
+        };
+    }
+
+    hasDataChanged(before, after) {
+        return JSON.stringify(before) !== JSON.stringify(after);
     }
 
     async refreshAnalyticsData() {
@@ -192,11 +263,6 @@ class AnalyticsPage {
             window.location.href = 'performance.html';
         });
 
-
-        // データ更新ボタン
-        document.getElementById('refresh-analytics-button').addEventListener('click', async () => {
-            await this.refreshAnalyticsData();
-        });
 
         // クリアフィルターボタン
         document.getElementById('clear-analytics-filters-button').addEventListener('click', async () => {
@@ -2226,7 +2292,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // デバッグ用: グローバル登録確認
     console.log('📊 Analytics instance created:', window.analytics);
     
-    await window.analytics.initialize();
-    
-    console.log('✅ Analytics instance fully initialized');
+    try {
+        await window.analytics.initialize();
+        console.log('✅ Analytics instance fully initialized');
+    } catch (error) {
+        console.error('❌ Analytics initialization error:', error);
+        showToast('分析機能の初期化に失敗しました', 'error');
+        
+        // 最低限のUIは動作するようにする
+        window.analytics.setupEventListeners();
+    }
 });

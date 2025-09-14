@@ -1,14 +1,33 @@
-console.log('Analytics instance:', window.analytics);
-  console.log('Current analysis data exists:', !!window.analytics?.lastAnalysisData);
-
-  // 手動で refresh 関数をテスト
-  if (window.analytics?.refreshAnalyticsData) {
-      console.log('Testing manual refresh...');
-      window.analytics.refreshAnalyticsData();
-  } else {
-      console.log('refreshAnalyticsData method not found');
-  }
-VM87:1 Analytics instance: undefined
-VM87:2 Current analysis data exists: false
-VM87:9 refreshAnalyticsData method not found
-undefined
+📝 Manual backup history recorded successfully
+supabase-client.js:2091 クラウドバックアップダウンロードエラー: TypeError: Cannot read properties of undefined (reading 'replace')
+    at vt._getFinalPath (index.js:1:1)
+    at vt.<anonymous> (index.js:1:1)
+    at Generator.next (<anonymous>)
+    at index.js:1:1
+    at new Promise (<anonymous>)
+    at pt (index.js:1:1)
+    at vt.download (index.js:1:1)
+    at SupabaseAPI.downloadBackupFromCloud (supabase-client.js:2080:18)
+    at HTMLButtonElement.<anonymous> (index.js:2567:54)
+downloadBackupFromCloud @ supabase-client.js:2091Understand this error
+index.js:2592 Cloud restore error: TypeError: Cannot read properties of undefined (reading 'replace')
+    at vt._getFinalPath (index.js:1:1)
+    at vt.<anonymous> (index.js:1:1)
+    at Generator.next (<anonymous>)
+    at index.js:1:1
+    at new Promise (<anonymous>)
+    at pt (index.js:1:1)
+    at vt.download (index.js:1:1)
+    at SupabaseAPI.downloadBackupFromCloud (supabase-client.js:2080:18)
+    at HTMLButtonElement.<anonymous> (index.js:2567:54)
+(anonymous) @ index.js:2592Understand this error
+supabase-client.js:2500 Supabase error: TypeError: Cannot read properties of undefined (reading 'replace')
+    at vt._getFinalPath (index.js:1:1)
+    at vt.<anonymous> (index.js:1:1)
+    at Generator.next (<anonymous>)
+    at index.js:1:1
+    at new Promise (<anonymous>)
+    at pt (index.js:1:1)
+    at vt.download (index.js:1:1)
+    at SupabaseAPI.downloadBackupFromCloud (supabase-client.js:2080:18)
+    at HTMLButtonElement.<anonymous> (index.js:2567:54)
