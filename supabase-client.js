@@ -904,9 +904,31 @@ export class SupabaseAPI {
             allMonths.forEach(monthKey => {
                 const foundData = monthlyData?.find(data => data.month === monthKey);
                 if (foundData) {
+                    // JSON文字列として保存されている場合のパース処理
+                    let tasks = foundData.tasks || {};
+                    let taskMemos = foundData.task_memos || {};
+                    
+                    if (typeof tasks === 'string') {
+                        try {
+                            tasks = JSON.parse(tasks);
+                        } catch (e) {
+                            console.warn('Failed to parse tasks JSON:', tasks);
+                            tasks = {};
+                        }
+                    }
+                    
+                    if (typeof taskMemos === 'string') {
+                        try {
+                            taskMemos = JSON.parse(taskMemos);
+                        } catch (e) {
+                            console.warn('Failed to parse task_memos JSON:', taskMemos);
+                            taskMemos = {};
+                        }
+                    }
+                    
                     state[monthKey] = {
-                        tasks: foundData.tasks || {},
-                        task_memos: foundData.task_memos || {},
+                        tasks: tasks,
+                        task_memos: taskMemos,
                         status: foundData.status
                     };
                 } else {
