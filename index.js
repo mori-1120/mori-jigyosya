@@ -2468,52 +2468,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Manual backup
     manualBackupButton.addEventListener('click', async () => {
-        const settings = SupabaseAPI.getBackupSettings();
-        const destination = settings.destination || 'local';
-        
-        let loadingMessage, successMessage;
-        switch (destination) {
-            case 'cloud':
-                loadingMessage = 'クラウドバックアップを作成中...';
-                successMessage = 'クラウドバックアップが正常に完了しました';
-                break;
-            case 'both':
-                loadingMessage = 'フルバックアップを実行中...';
-                successMessage = 'フルバックアップ（クラウド+ローカル）が正常に完了しました';
-                break;
-            default:
-                loadingMessage = 'バックアップを作成中...';
-                successMessage = 'バックアップが正常に完了しました';
-        }
-        
-        const loadingToast = toast.show(loadingMessage, 'info', 0);
+        // 「ローカルバックアップを実行」ボタンは常にダウンロードフォルダに保存
+        const loadingToast = toast.show('ローカルバックアップを作成中...', 'info', 0);
         
         try {
-            let result;
+            // 設定に関係なく常にローカルダウンロードを実行
+            const result = await SupabaseAPI.downloadBackup();
             
-            if (destination === 'cloud') {
-                const backupData = await SupabaseAPI.createFullBackup();
-                result = await SupabaseAPI.uploadBackupToCloud(backupData);
-            } else if (destination === 'both') {
-                result = await SupabaseAPI.executeFullBackup();
-            } else {
-                // local
-                if (settings.directoryHandle && window.showDirectoryPicker) {
-                    // フォルダ選択済みの場合は高度なバックアップ
-                    result = await SupabaseAPI.downloadBackupWithFolder();
-                } else {
-                    // 通常のダウンロードフォルダバックアップ
-                    result = await SupabaseAPI.downloadBackup();
-                }
-            }
-            
-            const method = settings.method === 'weekly-rotation' ? '週次ローテーション' : 'シンプル';
-            const displayMessage = destination === 'local' ? `${successMessage} (${method})` : successMessage;
-            toast.update(loadingToast, displayMessage, 'success');
+            toast.update(loadingToast, 'ローカルバックアップが正常に完了しました（ダウンロードフォルダに保存）', 'success');
             updateBackupHistory();
         } catch (error) {
             console.error('Manual backup error:', error);
-            toast.update(loadingToast, `バックアップエラー: ${handleSupabaseError(error)}`, 'error');
+            toast.update(loadingToast, `ローカルバックアップエラー: ${handleSupabaseError(error)}`, 'error');
         }
     });
 
