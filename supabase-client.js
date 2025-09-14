@@ -1797,6 +1797,42 @@ export class SupabaseAPI {
         return status;
     }
     
+    // 前回のレポートデータを取得
+    static async getPreviousReportData(currentReportDate) {
+        try {
+            // 現在のレポート日付より前の日付を取得
+            const currentDate = new Date(currentReportDate);
+            
+            // 最大7日前まで遡って検索
+            for (let i = 1; i <= 7; i++) {
+                const searchDate = new Date(currentDate);
+                searchDate.setDate(searchDate.getDate() - i);
+                const dateString = searchDate.toISOString().split('T')[0];
+                
+                try {
+                    const reportFileName = `reports/backup-report-${dateString}.json`;
+                    const { data, error } = await supabase.storage
+                        .from('backups')
+                        .download(reportFileName);
+                    
+                    if (!error && data) {
+                        const reportText = await data.text();
+                        return JSON.parse(reportText);
+                    }
+                } catch (e) {
+                    // このファイルが見つからない場合は次の日を試す
+                    continue;
+                }
+            }
+            
+            console.log('前回のレポートデータが見つかりませんでした');
+            return null;
+        } catch (error) {
+            console.error('前回レポートデータ取得エラー:', error);
+            return null;
+        }
+    }
+    
     // デバッグ用：手動バックアップテスト
     static async testBackupNow() {
         console.log('🔬 バックアップテストを開始します...');
@@ -2164,7 +2200,7 @@ export class SupabaseAPI {
     }
 
     // 管理者向け詳細レポートを表示（モーダル形式）
-    static showAdminBackupReport(reportData, fileSize, filePath) {
+    static async showAdminBackupReport(reportData, fileSize, filePath) {
         // モーダルHTML作成
         const modal = document.createElement('div');
         modal.id = 'admin-backup-report-modal';
@@ -2183,7 +2219,10 @@ export class SupabaseAPI {
                 hour: '2-digit', minute: '2-digit', second: '2-digit'
               });
 
-        // テーブル詳細の表示用HTML生成
+        // 前回バックアップとの比較データを取得
+        const previousReportData = await this.getPreviousReportData(reportData.reportDate);
+        
+        // テーブル詳細の表示用HTML生成（差分表示付き）
         let tableDetailsHTML = '';
         const tableBreakdown = reportData.tableBreakdown || {};
         const totalRecords = reportData.totalRecords || 0;
@@ -2194,11 +2233,24 @@ export class SupabaseAPI {
             const statusColor = count > 0 ? '#28a745' : '#dc3545';
             const japaneseName = data.japaneseName || tableName;
             
+            // 前回との差分を計算
+            let diffHTML = '';
+            if (previousReportData && previousReportData.tableBreakdown && previousReportData.tableBreakdown[tableName]) {
+                const previousCount = previousReportData.tableBreakdown[tableName].recordCount || 0;
+                const diff = count - previousCount;
+                
+                if (diff !== 0) {
+                    const diffColor = diff > 0 ? '#28a745' : '#dc3545';
+                    const diffSymbol = diff > 0 ? '+' : '';
+                    diffHTML = `<span style="color: ${diffColor}; font-size: 11px; margin-left: 5px;">(${diffSymbol}${diff})</span>`;
+                }
+            }
+            
             tableDetailsHTML += `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee;">
                     <span style="font-weight: 500;">${japaneseName}</span>
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="color: ${statusColor}; font-weight: bold;">${count} 件</span>
+                        <span style="color: ${statusColor}; font-weight: bold;">${count} 件${diffHTML}</span>
                         <span style="color: #6c757d; font-size: 12px;">(${percentage}%)</span>
                     </div>
                 </div>
@@ -2254,7 +2306,22 @@ export class SupabaseAPI {
                     </div>
                 </div>
 
-                <div style="text-align: center;">
+                ${previousReportData ? `
+                    <div style="background: #d1ecf1; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #0c5460;">
+                        <h4 style="margin: 0 0 10px 0; color: #0c5460; font-size: 14px;">🔍 前回比較</h4>
+                        <div style="font-size: 13px; color: #0c5460;">
+                            前回レポート: ${new Date(previousReportData.reportDate).toLocaleDateString('ja-JP')}<br>
+                            増減がある項目には (+増加数) または (-減少数) が表示されています
+                        </div>
+                    </div>
+                ` : ''}
+                
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="download-report-btn" style="
+                        background: #28a745; color: white; border: none; 
+                        padding: 10px 20px; border-radius: 6px; cursor: pointer;
+                        font-size: 14px; font-weight: 500;
+                    ">📥 ダウンロード</button>
                     <button id="confirm-report-modal" style="
                         background: #007bff; color: white; border: none; 
                         padding: 10px 30px; border-radius: 6px; cursor: pointer;
@@ -2275,6 +2342,33 @@ export class SupabaseAPI {
 
         document.getElementById('close-report-modal').addEventListener('click', closeModal);
         document.getElementById('confirm-report-modal').addEventListener('click', closeModal);
+        
+        // ダウンロードボタンのイベントリスナー
+        document.getElementById('download-report-btn').addEventListener('click', () => {
+            try {
+                // レポートデータをJSONファイルとしてダウンロード
+                const fileName = `backup-report-${reportData.reportDate || new Date().toISOString().split('T')[0]}.json`;
+                const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                if (window.showToast) {
+                    window.showToast(`レポートファイル "${fileName}" をダウンロードしました`, 'success', 3000);
+                }
+            } catch (error) {
+                console.error('ダウンロードエラー:', error);
+                if (window.showToast) {
+                    window.showToast('ダウンロードに失敗しました', 'error', 3000);
+                }
+            }
+        });
         
         // モーダル外クリックで閉じる
         modal.addEventListener('click', (e) => {

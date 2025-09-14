@@ -3109,6 +3109,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         name: file.name,
                         displayName: `📊 ${date} (${folder}) - データバックアップ`,
                         size: size,
+                        fileSize: file.metadata?.size || 0,
                         created_at: file.created_at,
                         path: `weekly/${file.name}`
                     });
@@ -3125,6 +3126,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         name: file.name,
                         displayName: `📋 ${date} - バックアップレポート`,
                         size: size,
+                        fileSize: file.metadata?.size || 0,
                         created_at: file.created_at,
                         path: `reports/${file.name}`
                     });
@@ -3358,16 +3360,57 @@ document.addEventListener('DOMContentLoaded', () => {
                             レポートファイルではバックアップ実行時の統計情報を確認できます。
                         </p>
                     </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                        <button id="download-data-btn" style="
+                            background: #28a745; color: white; border: none; 
+                            padding: 10px 20px; border-radius: 6px; cursor: pointer;
+                            font-size: 14px; font-weight: 500;
+                        ">📥 データダウンロード</button>
+                        <button id="close-data-modal-btn" style="
+                            background: #007bff; color: white; border: none; 
+                            padding: 10px 30px; border-radius: 6px; cursor: pointer;
+                            font-size: 16px; font-weight: 500;
+                        ">閉じる</button>
+                    </div>
                 </div>
             `;
 
-            modal.querySelector('#close-data-modal').addEventListener('click', () => {
-                modal.remove();
+            // イベントリスナーを追加
+            const closeDataModal = () => modal.remove();
+            
+            modal.querySelector('#close-data-modal').addEventListener('click', closeDataModal);
+            modal.querySelector('#close-data-modal-btn').addEventListener('click', closeDataModal);
+            
+            // ダウンロードボタンのイベントリスナー
+            modal.querySelector('#download-data-btn').addEventListener('click', () => {
+                try {
+                    const fileName = `backup-data-${new Date().toISOString().split('T')[0]}.json`;
+                    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    if (window.showToast) {
+                        window.showToast(`バックアップデータ "${fileName}" をダウンロードしました`, 'success', 3000);
+                    }
+                } catch (error) {
+                    console.error('データダウンロードエラー:', error);
+                    if (window.showToast) {
+                        window.showToast('データダウンロードに失敗しました', 'error', 3000);
+                    }
+                }
             });
 
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
-                    modal.remove();
+                    closeDataModal();
                 }
             });
 
