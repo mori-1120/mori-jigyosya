@@ -2232,7 +2232,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const containerWidth = detailsWrapper.offsetWidth;
             
             // フィットモードの場合のみ横スクロールを無効化
-            detailsWrapper.style.overflowX = 'hidden';
+            detailsWrapper.style.overflowX = 'visible';
             
             // ウィンドウ幅に基づくフォントサイズ調整（ユーザー設定を考慮）
             const userFontSize = getCurrentFontSize() / 100; // パーセンテージを倍率に変換
@@ -2336,7 +2336,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 newModeText = 'スクロールモード';
             } else {
                 // スクロールモード→フィットモードに切り替え
-                detailsWrapper.style.overflowX = 'hidden';
+                detailsWrapper.style.overflowX = 'visible';
                 adjustDetailsTableLayout();
                 newMode = 'fit';
                 newModeText = 'フィットモード';
