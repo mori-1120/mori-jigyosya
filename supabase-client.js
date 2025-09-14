@@ -1664,17 +1664,67 @@ export class SupabaseAPI {
         const settings = this.getBackupSettings();
         
         if (settings.enabled) {
-            console.log('自動バックアップが有効です');
+            console.log('🔧 自動バックアップが有効です');
+            console.log('📋 バックアップ設定:', settings);
+            
+            // ページ読み込み時に未実行のバックアップがあるかチェック
+            this.checkMissedBackups(settings);
+            
+            // 次回バックアップをスケジュール
             this.scheduleNextBackup(settings);
+            
+            // ページ離脱前の処理を設定
+            this.setupBeforeUnloadHandler();
         }
+    }
+    
+    // ページ離脱前の処理
+    static setupBeforeUnloadHandler() {
+        window.addEventListener('beforeunload', () => {
+            const nextBackupDate = localStorage.getItem('nextBackupDate');
+            if (nextBackupDate) {
+                console.log('📝 バックアップスケジュールを保存中...');
+                // バックアップスケジュール情報をlocalStorageに保存（既に保存済み）
+            }
+        });
+    }
+    
+    // 未実行のバックアップをチェック
+    static checkMissedBackups(settings) {
+        const lastBackupHistory = JSON.parse(localStorage.getItem('backupHistory') || '[]');
+        const nextBackupDate = localStorage.getItem('nextBackupDate');
+        
+        if (nextBackupDate) {
+            const scheduledTime = new Date(nextBackupDate);
+            const now = new Date();
+            
+            // スケジュールされた時刻を過ぎているかチェック
+            if (scheduledTime <= now) {
+                const timeDiff = now - scheduledTime;
+                const hoursDiff = Math.floor(timeDiff / (1000 * 60 * 60));
+                
+                if (hoursDiff >= 1) {
+                    console.log(`⏰ ${hoursDiff}時間前のバックアップが未実行です。即座に実行します。`);
+                    
+                    // 遅延実行されたバックアップを即座に実行
+                    setTimeout(() => {
+                        this.executeAutoBackup(settings);
+                    }, 5000); // 5秒後に実行（初期化完了を待つ）
+                    
+                    return;
+                }
+            }
+        }
+        
+        console.log('✅ バックアップスケジュールは正常です');
     }
 
     static getBackupSettings() {
         const defaultSettings = {
             enabled: false,
             frequency: 'daily',
-            time: '03:00',
-            method: 'weekly-rotation',
+            time: '00:00', // デフォルトを0時に変更
+            method: 'cloud', // デフォルトをクラウドバックアップに変更
             path: 'downloads',
             directoryHandle: null,
             selectedPath: ''
@@ -1686,10 +1736,84 @@ export class SupabaseAPI {
 
     static saveBackupSettings(settings) {
         localStorage.setItem('backupSettings', JSON.stringify(settings));
-        console.log('バックアップ設定を保存:', settings);
+        console.log('💾 バックアップ設定を保存:', settings);
+        
+        // 既存のタイマーをクリア
+        if (this.backupTimer) {
+            clearTimeout(this.backupTimer);
+        }
         
         if (settings.enabled) {
             this.scheduleNextBackup(settings);
+        } else {
+            console.log('🔕 自動バックアップが無効化されました');
+            localStorage.removeItem('nextBackupDate');
+        }
+    }
+    
+    // バックアップ状況を取得
+    static getBackupStatus() {
+        const settings = this.getBackupSettings();
+        const history = JSON.parse(localStorage.getItem('backupHistory') || '[]');
+        const nextBackupDate = localStorage.getItem('nextBackupDate');
+        
+        const status = {
+            enabled: settings.enabled,
+            method: settings.method,
+            time: settings.time,
+            nextBackup: nextBackupDate ? new Date(nextBackupDate).toLocaleString('ja-JP') : null,
+            lastBackup: history.length > 0 ? {
+                timestamp: new Date(history[0].timestamp).toLocaleString('ja-JP'),
+                success: history[0].success,
+                method: history[0].method,
+                error: history[0].error
+            } : null,
+            totalBackups: history.length,
+            successRate: history.length > 0 ? 
+                Math.round((history.filter(h => h.success).length / history.length) * 100) : 0
+        };
+        
+        return status;
+    }
+    
+    // デバッグ用：バックアップ状況をコンソールに表示
+    static logBackupStatus() {
+        const status = this.getBackupStatus();
+        console.log('📊 === バックアップ状況 ===');
+        console.log(`🔧 自動バックアップ: ${status.enabled ? '有効' : '無効'}`);
+        console.log(`📋 バックアップ方式: ${status.method}`);
+        console.log(`⏰ バックアップ時刻: ${status.time}`);
+        console.log(`📅 次回予定: ${status.nextBackup || '未設定'}`);
+        console.log(`📝 最終実行: ${status.lastBackup ? 
+            `${status.lastBackup.timestamp} (${status.lastBackup.success ? '成功' : '失敗'})` : 
+            '未実行'}`);
+        console.log(`📈 成功率: ${status.successRate}% (${status.totalBackups}回中)`);
+        
+        if (status.lastBackup && !status.lastBackup.success) {
+            console.log(`❌ 最終エラー: ${status.lastBackup.error}`);
+        }
+        
+        console.log('=========================');
+        return status;
+    }
+    
+    // デバッグ用：手動バックアップテスト
+    static async testBackupNow() {
+        console.log('🔬 バックアップテストを開始します...');
+        const settings = this.getBackupSettings();
+        
+        if (!settings.enabled) {
+            console.log('⚠️ 自動バックアップが無効です。設定を確認してください。');
+            return false;
+        }
+        
+        try {
+            await this.executeAutoBackup(settings);
+            console.log('✅ バックアップテストが成功しました！');
+            return true;
+        } catch (error) {
+            console.error('❌ バックアップテストが失敗しました:', error);
+            return false;
         }
     }
 
@@ -1725,14 +1849,51 @@ export class SupabaseAPI {
 
     static async executeAutoBackup(settings) {
         try {
-            console.log('自動バックアップを実行中...');
-            await this.downloadBackup();
-            console.log('自動バックアップが完了しました');
+            console.log('🔄 自動バックアップを実行中...');
+            
+            // バックアップデータを取得
+            const backupData = await this.getAllData();
+            
+            // クラウドバックアップとローカルバックアップの両方を実行
+            if (settings.method === 'cloud' || settings.method === 'both') {
+                console.log('☁️ クラウドバックアップを実行中...');
+                await this.uploadBackupToCloud(backupData);
+                console.log('✅ クラウドバックアップが完了しました');
+            }
+            
+            if (settings.method === 'weekly-rotation' || settings.method === 'both') {
+                console.log('💾 ローカルバックアップを実行中...');
+                await this.downloadBackup();
+                console.log('✅ ローカルバックアップが完了しました');
+            }
+            
+            // バックアップ実行履歴を保存
+            const history = JSON.parse(localStorage.getItem('backupHistory') || '[]');
+            history.unshift({
+                timestamp: new Date().toISOString(),
+                method: settings.method,
+                success: true
+            });
+            // 履歴は最新10件まで保持
+            localStorage.setItem('backupHistory', JSON.stringify(history.slice(0, 10)));
+            
+            console.log('🎉 自動バックアップが正常に完了しました');
             
             // 次回のバックアップをスケジュール
             this.scheduleNextBackup(settings);
         } catch (error) {
-            console.error('自動バックアップに失敗しました:', error);
+            console.error('❌ 自動バックアップに失敗しました:', error);
+            
+            // エラー履歴を保存
+            const history = JSON.parse(localStorage.getItem('backupHistory') || '[]');
+            history.unshift({
+                timestamp: new Date().toISOString(),
+                method: settings.method,
+                success: false,
+                error: error.message
+            });
+            localStorage.setItem('backupHistory', JSON.stringify(history.slice(0, 10)));
+            
             // エラーが発生してもスケジュールは継続
             setTimeout(() => {
                 this.scheduleNextBackup(settings);

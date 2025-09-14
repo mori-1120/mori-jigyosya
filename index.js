@@ -2745,6 +2745,26 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         initializeBackupSystem();
     }, 1000);
+    
+    // グローバルバックアップデバッグ機能をウィンドウに追加
+    window.debugBackup = {
+        status: () => SupabaseAPI.logBackupStatus(),
+        test: () => SupabaseAPI.testBackupNow(),
+        enable: (time = '00:00') => {
+            const settings = SupabaseAPI.getBackupSettings();
+            settings.enabled = true;
+            settings.time = time;
+            settings.method = 'cloud';
+            SupabaseAPI.saveBackupSettings(settings);
+            console.log('✅ 自動バックアップが有効化されました');
+        },
+        disable: () => {
+            const settings = SupabaseAPI.getBackupSettings();
+            settings.enabled = false;
+            SupabaseAPI.saveBackupSettings(settings);
+            console.log('❌ 自動バックアップが無効化されました');
+        }
+    };
 
     // レスポンシブテーブル幅調整機能
     function initResponsiveTable() {
