@@ -1,27 +1,40 @@
-omparing "f2株式会社" with search term "田村"
-analytics.js:471 Client "F2株式会社" filtered out
-analytics.js:469 Comparing "株式会社郷原" with search term "田村"
-analytics.js:471 Client "株式会社郷原" filtered out
-analytics.js:469 Comparing "合同会社いーとも" with search term "田村"
-analytics.js:471 Client "合同会社いーとも" filtered out
-analytics.js:469 Comparing "株式会社樋口造園" with search term "田村"
-analytics.js:471 Client "株式会社樋口造園" filtered out
-analytics.js:469 Comparing "株式会社salute" with search term "田村"
-analytics.js:471 Client "株式会社SALUTE" filtered out
-analytics.js:469 Comparing "株式会社knacks" with search term "田村"
-analytics.js:471 Client "株式会社KNACKS" filtered out
-analytics.js:469 Comparing "株式会社tkt　labo" with search term "田村"
-analytics.js:471 Client "株式会社TKT　LABO" filtered out
-analytics.js:469 Comparing "㈱大雅建設" with search term "田村"
-analytics.js:471 Client "㈱大雅建設" filtered out
-analytics.js:469 Comparing "株式会社　九大学研不動産" with search term "田村"
-analytics.js:471 Client "株式会社　九大学研不動産" filtered out
-analytics.js:469 Comparing "有限会社　アルス" with search term "田村"
-analytics.js:471 Client "有限会社　アルス" filtered out
-analytics.js:469 Comparing "株式会社竹次郎" with search term "田村"
-analytics.js:471 Client "株式会社竹次郎" filtered out
-analytics.js:479 Filtered clients count: 1
-analytics.js:480 Filtered client names: ['株式会社　田村工務店']
-analytics.js:436 Filtered clients: 1
-analytics.js:408 Previous sort state restored: fiscal asc
-analytics.js:276 Analysis results saved to localStorage with sort state
+Loading personal settings: {fontFamily: 'Noto Sans JP', hideInactiveClients: false, enableConfettiEffect: true}
+index.js:1511 Final personal settings: {fontFamily: 'Noto Sans JP', hideInactiveClients: false, enableConfettiEffect: true}
+supabase-client.js:1280 🔄 バックアップ作成開始...
+supabase-client.js:1295 📊 バックアップ中: clients
+supabase-client.js:1311 ✅ clients: 90 件取得完了
+supabase-client.js:1315 📄 clients サンプルデータ: (2) [{…}, {…}]
+supabase-client.js:1295 📊 バックアップ中: staffs
+supabase-client.js:1311 ✅ staffs: 9 件取得完了
+supabase-client.js:1315 📄 staffs サンプルデータ: (2) [{…}, {…}]
+supabase-client.js:1295 📊 バックアップ中: monthly_tasks
+supabase-client.js:1311 ✅ monthly_tasks: 504 件取得完了
+supabase-client.js:1315 📄 monthly_tasks サンプルデータ: (2) [{…}, {…}]
+supabase-client.js:1295 📊 バックアップ中: editing_sessions
+supabase-client.js:1311 ✅ editing_sessions: 0 件取得完了
+supabase-client.js:1295 📊 バックアップ中: settings
+supabase-client.js:1311 ✅ settings: 6 件取得完了
+supabase-client.js:1315 📄 settings サンプルデータ: (2) [{…}, {…}]
+supabase-client.js:1295 📊 バックアップ中: default_tasks
+supabase-client.js:1311 ✅ default_tasks: 2 件取得完了
+supabase-client.js:1315 📄 default_tasks サンプルデータ: (2) [{…}, {…}]
+supabase-client.js:1295 📊 バックアップ中: app_links
+supabase-client.js:1311 ✅ app_links: 2 件取得完了
+supabase-client.js:1315 📄 app_links サンプルデータ: (2) [{…}, {…}]
+supabase-client.js:1326 🎉 バックアップ作成完了: {totalTables: 7, totalRecords: 613, backupSizeBytes: 168431, backupSizeKB: 164, timestamp: '2025-09-14T07-39-06-412Z'}
+supabase-client.js:1335 📋 バックアップデータ構造: {hasTimestamp: true, hasVersion: true, hasDatabase: true, hasTablesObject: true, tableKeys: Array(7), …}
+supabase-client.js:1945 ☁️ クラウドバックアップ開始...
+supabase-client.js:1956 📊 アップロード準備中のデータ詳細: {timestamp: '2025-09-14T07-39-06-412Z', version: '1.0', database: 'jigyosya-management', tablesCount: 7, totalRecords: 613}
+supabase-client.js:1967 📄 JSON文字列サイズ: 285017 文字
+supabase-client.js:1968 💾 Blobサイズ: 314993 バイト (308 KB)
+supabase-client.js:1977 📤 Supabase Storageにアップロード中: weekly/Sunday/jigyosya-backup-Sunday.json
+supabase-client.js:1990 ✅ クラウドバックアップ完了: weekly/Sunday/jigyosya-backup-Sunday.json {path: 'weekly/Sunday/jigyosya-backup-Sunday.json', id: 'f8771673-1ad0-4cd9-9fef-6a03a98d76a6', fullPath: 'backups/weekly/Sunday/jigyosya-backup-Sunday.json'}
+supabase-client.js:2146 📋 バックアップレポート保存中...
+supabase-client.js:2168 ✅ バックアップレポート保存完了: reports/backup-report-2025-09-14.json
+supabase-client.js:2189 🎉 バックアップ完了！
+
+📊 事業者: 90件
+👥 担当者: 9件
+📋 月次タスク: 504件
+💾 総容量: 308 KB
+📅 2025/9/15 1:39:07

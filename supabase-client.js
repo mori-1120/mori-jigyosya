@@ -2015,6 +2015,26 @@ export class SupabaseAPI {
             localStorage.setItem('cloudBackupHistory', JSON.stringify(backupHistory));
             localStorage.setItem('lastCloudBackupDate', new Date().toISOString());
 
+            // backup_history テーブルに手動バックアップを記録
+            try {
+                const japanTime = new Date(new Date().getTime() + (9 * 60 * 60 * 1000)).toISOString();
+                await supabase
+                    .from('backup_history')
+                    .insert({
+                        backup_date: japanTime,
+                        backup_type: 'manual',
+                        status: 'completed',
+                        file_name: fileName,
+                        file_size_kb: Math.round(blob.size / 1024),
+                        total_records: reportData.totalRecords,
+                        error_message: null
+                    });
+                console.log('📝 Manual backup history recorded successfully');
+            } catch (historyError) {
+                console.warn('⚠️ Manual backup history insert warning:', historyError);
+                // Don't fail the backup for history issues
+            }
+
             return {
                 success: true,
                 path: data.path,
