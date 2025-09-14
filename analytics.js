@@ -193,6 +193,11 @@ class AnalyticsPage {
         });
 
 
+        // データ更新ボタン
+        document.getElementById('refresh-analytics-button').addEventListener('click', async () => {
+            await this.refreshAnalyticsData();
+        });
+
         // クリアフィルターボタン
         document.getElementById('clear-analytics-filters-button').addEventListener('click', async () => {
             await this.clearAllFilters();
@@ -2215,6 +2220,13 @@ class AnalyticsPage {
 
 // ページ読み込み時に初期化
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🚀 Creating Analytics instance...');
     window.analytics = new AnalyticsPage();
+    
+    // デバッグ用: グローバル登録確認
+    console.log('📊 Analytics instance created:', window.analytics);
+    
     await window.analytics.initialize();
+    
+    console.log('✅ Analytics instance fully initialized');
 });

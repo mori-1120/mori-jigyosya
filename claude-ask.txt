@@ -1,5 +1,4 @@
- // 正しい参照でテスト
-  console.log('Analytics instance:', window.analytics);
+console.log('Analytics instance:', window.analytics);
   console.log('Current analysis data exists:', !!window.analytics?.lastAnalysisData);
 
   // 手動で refresh 関数をテスト
@@ -9,13 +8,7 @@
   } else {
       console.log('refreshAnalyticsData method not found');
   }
-VM2272:2 Analytics instance: AnalyticsPage {clients: Array(90), staffs: Array(9), monthlyTasks: Array(504), currentFilters: {…}, lastAnalysisData: {…}, …}
-VM2272:3 Current analysis data exists: true
-VM2272:7 Testing manual refresh...
-analytics.js:72 Loading initial data...
-Promise {<pending>}
-analytics.js:85 Loaded: 90 clients, 9 staffs, 504 tasks
-analytics.js:456 Calculating analytics with filters: {startPeriod: '2024-10', endPeriod: '2025-09', staffId: '7', fiscalMonth: '', businessName: ''}
-analytics.js:460 Filtered clients: 25
-analytics.js:432 Previous sort state restored: fiscal asc
-analytics.js:300 Analysis results saved to localStorage with sort state
+VM87:1 Analytics instance: undefined
+VM87:2 Current analysis data exists: false
+VM87:9 refreshAnalyticsData method not found
+undefined
