@@ -1,4 +1,3 @@
-📝 Manual backup history recorded successfully
 supabase-client.js:2091 クラウドバックアップダウンロードエラー: TypeError: Cannot read properties of undefined (reading 'replace')
     at vt._getFinalPath (index.js:1:1)
     at vt.<anonymous> (index.js:1:1)
@@ -9,7 +8,9 @@ supabase-client.js:2091 クラウドバックアップダウンロードエラ�
     at vt.download (index.js:1:1)
     at SupabaseAPI.downloadBackupFromCloud (supabase-client.js:2080:18)
     at HTMLButtonElement.<anonymous> (index.js:2567:54)
-downloadBackupFromCloud @ supabase-client.js:2091Understand this error
+downloadBackupFromCloud @ supabase-client.js:2091
+await in downloadBackupFromCloud
+(anonymous) @ index.js:2567Understand this error
 index.js:2592 Cloud restore error: TypeError: Cannot read properties of undefined (reading 'replace')
     at vt._getFinalPath (index.js:1:1)
     at vt.<anonymous> (index.js:1:1)
@@ -21,7 +22,7 @@ index.js:2592 Cloud restore error: TypeError: Cannot read properties of undefine
     at SupabaseAPI.downloadBackupFromCloud (supabase-client.js:2080:18)
     at HTMLButtonElement.<anonymous> (index.js:2567:54)
 (anonymous) @ index.js:2592Understand this error
-supabase-client.js:2500 Supabase error: TypeError: Cannot read properties of undefined (reading 'replace')
+supabase-client.js:2507 Supabase error: TypeError: Cannot read properties of undefined (reading 'replace')
     at vt._getFinalPath (index.js:1:1)
     at vt.<anonymous> (index.js:1:1)
     at Generator.next (<anonymous>)

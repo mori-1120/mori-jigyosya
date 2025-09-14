@@ -2075,6 +2075,52 @@ export class SupabaseAPI {
     // クラウドからバックアップデータをダウンロード
     static async downloadBackupFromCloud(fileName) {
         try {
+            // ファイル名が指定されていない場合は最新のバックアップを取得
+            if (!fileName) {
+                console.log('ファイル名が指定されていないため、最新のバックアップを検索中...');
+                
+                // 週次ローテーションフォルダから最新ファイルを検索
+                const { data: folders, error: folderError } = await supabase.storage
+                    .from('backups')
+                    .list('weekly', { limit: 10 });
+
+                if (folderError) throw folderError;
+
+                let latestFile = null;
+                let latestDate = null;
+
+                // 各曜日フォルダから最新ファイルを検索
+                const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                
+                for (const day of dayNames) {
+                    try {
+                        const { data: files, error } = await supabase.storage
+                            .from('backups')
+                            .list(`weekly/${day}`, { limit: 1, sortBy: { column: 'updated_at', order: 'desc' } });
+
+                        if (!error && files && files.length > 0) {
+                            const file = files[0];
+                            if (file.name.endsWith('.json')) {
+                                const fileDate = new Date(file.updated_at);
+                                if (!latestDate || fileDate > latestDate) {
+                                    latestDate = fileDate;
+                                    latestFile = `weekly/${day}/${file.name}`;
+                                }
+                            }
+                        }
+                    } catch (e) {
+                        console.warn(`フォルダ ${day} の検索をスキップ:`, e);
+                    }
+                }
+
+                if (!latestFile) {
+                    throw new Error('復元可能なバックアップファイルが見つかりません');
+                }
+
+                fileName = latestFile;
+                console.log(`最新のバックアップファイルを選択: ${fileName}`);
+            }
+
             const { data, error } = await supabase.storage
                 .from('backups')
                 .download(fileName);
