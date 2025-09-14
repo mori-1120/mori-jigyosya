@@ -876,9 +876,17 @@ export class SupabaseAPI {
     // 月次タスクの状態を取得（新しい整合性チェック用）
     static async getMonthlyTasksState(clientId, year) {
         try {
-            // 該当年度の全月次データ取得（4月-3月）
-            const startMonth = `${year}-04`;
-            const endMonth = `${parseInt(year) + 1}-03`;
+            // クライアント情報を取得して決算月を確認
+            const client = await this.getClient(clientId);
+            const fiscalMonth = client.fiscal_month || 3; // デフォルト3月決算
+            
+            // 決算月を終点とする12ヶ月の期間を計算
+            // 例：決算月3月、2026年度 → 2025年4月～2026年3月
+            // 例：決算月7月、2026年度 → 2025年8月～2026年7月
+            const startMonth = fiscalMonth === 12 ? 
+                `${year}-01` : 
+                `${parseInt(year) - 1}-${(fiscalMonth + 1).toString().padStart(2, '0')}`;
+            const endMonth = `${year}-${fiscalMonth.toString().padStart(2, '0')}`;
             
             const { data: monthlyData, error } = await supabase
                 .from('monthly_tasks')
@@ -890,12 +898,30 @@ export class SupabaseAPI {
             
             if (error) throw error;
             
-            // 年度内の全ての月を生成（4月-3月）
+            // 決算月を基準に年度内の全ての月を生成
             const allMonths = [];
-            for (let month = 4; month <= 15; month++) {
-                const actualMonth = month > 12 ? month - 12 : month;
-                const actualYear = month > 12 ? parseInt(year) + 1 : parseInt(year);
-                const monthKey = `${actualYear}-${actualMonth.toString().padStart(2, '0')}`;
+            for (let i = 0; i < 12; i++) {
+                let targetMonth, targetYear;
+                
+                if (fiscalMonth === 12) {
+                    // 12月決算の場合：1月～12月
+                    targetMonth = i + 1;
+                    targetYear = parseInt(year);
+                } else {
+                    // その他の決算月の場合：(決算月+1)月から始まって決算月で終わる
+                    const startMonthNum = fiscalMonth + 1;
+                    const currentMonthNum = startMonthNum + i;
+                    
+                    if (currentMonthNum <= 12) {
+                        targetMonth = currentMonthNum;
+                        targetYear = parseInt(year) - 1;
+                    } else {
+                        targetMonth = currentMonthNum - 12;
+                        targetYear = parseInt(year);
+                    }
+                }
+                
+                const monthKey = `${targetYear}-${targetMonth.toString().padStart(2, '0')}`;
                 allMonths.push(monthKey);
             }
             
