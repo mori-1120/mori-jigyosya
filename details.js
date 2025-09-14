@@ -1323,6 +1323,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const analyticsButton = document.getElementById('analytics-button');
         if (analyticsButton) {
             analyticsButton.addEventListener('click', () => {
+                // 分析画面に戻ることをフラグ設定
+                sessionStorage.setItem('returnFromDetails', 'true');
                 window.location.href = 'analytics.html';
             });
         }

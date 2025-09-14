@@ -1,0 +1,19 @@
+Supabase config loaded: Object
+analytics.js:2298 🚀 Creating Analytics instance...
+analytics.js:2302 📊 Analytics instance created: AnalyticsPage
+analytics.js:24 Analytics page initializing...
+analytics.js:175 ✅ Page visibility listeners set up for transparent auto-refresh
+analytics.js:73 Loading initial data...
+analytics.js:86 Loaded: 90 clients, 9 staffs, 504 tasks
+analytics.js:433 Sort state restored: fiscal asc
+analytics.js:444 Analysis results restored from localStorage
+analytics.js:63 Analytics page initialized successfully
+analytics.js:2306 ✅ Analytics instance fully initialized
+analytics.js:539 Calculating analytics with filters: Object
+analytics.js:543 Filtered clients: 0
+analytics.js:515 Previous sort state restored: fiscal asc
+analytics.js:383 Analysis results saved to localStorage with sort state
+analytics.js:539 Calculating analytics with filters: Object
+analytics.js:543 Filtered clients: 25
+analytics.js:515 Previous sort state restored: fiscal asc
+analytics.js:383 Analysis results saved to localStorage with sort state

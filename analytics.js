@@ -63,6 +63,25 @@ class AnalyticsPage {
             console.log('Analytics page initialized successfully');
             showToast('分析機能を読み込みました', 'success');
             
+            // 詳細画面から戻ってきた場合の透明リフレッシュ
+            const fromDetails = document.referrer && document.referrer.includes('details.html');
+            const sessionFlag = sessionStorage.getItem('returnFromDetails');
+            
+            if (fromDetails || sessionFlag) {
+                console.log('🔄 Detected return from details page, scheduling transparent refresh...');
+                console.log('Detection method:', fromDetails ? 'referrer' : 'sessionStorage');
+                
+                // セッション フラグをクリア
+                sessionStorage.removeItem('returnFromDetails');
+                
+                // 少し遅延させてからリフレッシュ（DOM安定のため）
+                setTimeout(() => {
+                    if (this.lastAnalysisData) {
+                        this.scheduleTransparentRefresh();
+                    }
+                }, 1000);
+            }
+            
         } catch (error) {
             console.error('Analytics initialization failed:', error);
             showToast('分析機能の初期化に失敗しました', 'error');
