@@ -2175,10 +2175,13 @@ export class SupabaseAPI {
         `;
 
         const fileSizeKB = Math.round(fileSize / 1024);
-        const currentDate = new Date().toLocaleString('ja-JP', {
-            year: 'numeric', month: '2-digit', day: '2-digit', 
-            hour: '2-digit', minute: '2-digit', second: '2-digit'
-        });
+        // 最終バックアップ時刻を表示（レポートデータから取得）
+        const backupDateTime = reportData.reportDate && reportData.reportTime 
+            ? `${reportData.reportDate} ${reportData.reportTime}`
+            : new Date().toLocaleString('ja-JP', {
+                year: 'numeric', month: '2-digit', day: '2-digit', 
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+              });
 
         // テーブル詳細の表示用HTML生成
         let tableDetailsHTML = '';
@@ -2220,7 +2223,7 @@ export class SupabaseAPI {
                 </div>
 
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                    <h3 style="margin: 0 0 15px 0; color: #495057; font-size: 16px;">📅 ${currentDate}</h3>
+                    <h3 style="margin: 0 0 15px 0; color: #495057; font-size: 16px;">📅 バックアップ実行時刻: ${backupDateTime}</h3>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                         <div style="text-align: center;">
                             <div style="font-size: 24px; font-weight: bold; color: #007bff;">${totalRecords}</div>

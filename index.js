@@ -3041,46 +3041,338 @@ document.addEventListener('DOMContentLoaded', () => {
         reportButton.addEventListener('click', async (e) => {
             e.preventDefault();
             try {
-                // 最新のバックアップ履歴を取得
-                const backupHistory = JSON.parse(localStorage.getItem('cloudBackupHistory') || '[]');
-                if (backupHistory.length === 0) {
-                    if (window.showToast) {
-                        window.showToast('表示可能なバックアップレポートがありません', 'warning', 3000);
-                    }
-                    return;
-                }
-
-                const latestBackup = backupHistory[0];
-                
-                // Supabase Storageから最新のレポートを取得
-                const backupDate = new Date(latestBackup.uploadedAt).toISOString().split('T')[0];
-                const reportFileName = `reports/backup-report-${backupDate}.json`;
-                
-                const { data, error } = await supabase.storage
-                    .from('backups')
-                    .download(reportFileName);
-
-                if (error) {
-                    console.error('レポート取得エラー:', error);
-                    if (window.showToast) {
-                        window.showToast('レポートファイルの取得に失敗しました', 'error', 3000);
-                    }
-                    return;
-                }
-
-                const reportText = await data.text();
-                const reportData = JSON.parse(reportText);
-                
-                // 管理者向けレポートを表示（日付制限を無視）
-                SupabaseAPI.showAdminBackupReport(reportData, latestBackup.size, latestBackup.fileName);
-                
+                // バックアップ選択モーダルを表示
+                await showBackupSelectionModal();
             } catch (error) {
-                console.error('管理者レポート手動表示エラー:', error);
+                console.error('バックアップ選択エラー:', error);
                 if (window.showToast) {
-                    window.showToast('レポート表示中にエラーが発生しました', 'error', 3000);
+                    window.showToast('バックアップ選択中にエラーが発生しました', 'error', 3000);
                 }
             }
         });
+        
+        // バックアップ選択モーダル機能を追加
+        async function showBackupSelectionModal() {
+            try {
+                // Supabase Storageから利用可能なバックアップファイルを取得
+                const { data: backupFiles, error: listError } = await supabase.storage
+                    .from('backups')
+                    .list('weekly', { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
+
+                if (listError) {
+                    console.error('バックアップファイル一覧取得エラー:', listError);
+                    throw new Error('バックアップファイル一覧の取得に失敗しました');
+                }
+
+                // レポートファイルも取得
+                const { data: reportFiles, error: reportListError } = await supabase.storage
+                    .from('backups')
+                    .list('reports', { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
+
+                if (reportListError) {
+                    console.warn('レポートファイル一覧取得エラー:', reportListError);
+                }
+
+                // バックアップ選択モーダルを作成
+                const modal = createBackupSelectionModal(backupFiles || [], reportFiles || []);
+                document.body.appendChild(modal);
+
+            } catch (error) {
+                console.error('バックアップ選択モーダル表示エラー:', error);
+                if (window.showToast) {
+                    window.showToast(error.message || 'バックアップ一覧の取得に失敗しました', 'error', 3000);
+                }
+            }
+        }
+
+        function createBackupSelectionModal(backupFiles, reportFiles) {
+            const modal = document.createElement('div');
+            modal.id = 'backup-selection-modal';
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                background: rgba(0,0,0,0.5); z-index: 10000; display: flex; 
+                justify-content: center; align-items: center;
+            `;
+
+            // バックアップリストを作成
+            let backupListHTML = '';
+            const combinedList = [];
+
+            // バックアップファイル（データファイル）
+            backupFiles.forEach(file => {
+                if (file.name.endsWith('.json')) {
+                    const date = extractDateFromFileName(file.name);
+                    const size = formatFileSize(file.metadata?.size || 0);
+                    const folder = file.name.split('/')[0];
+                    combinedList.push({
+                        type: 'backup',
+                        name: file.name,
+                        displayName: `📊 ${date} (${folder}) - データバックアップ`,
+                        size: size,
+                        created_at: file.created_at,
+                        path: `weekly/${file.name}`
+                    });
+                }
+            });
+
+            // レポートファイル
+            reportFiles.forEach(file => {
+                if (file.name.endsWith('.json')) {
+                    const date = extractDateFromFileName(file.name);
+                    const size = formatFileSize(file.metadata?.size || 0);
+                    combinedList.push({
+                        type: 'report',
+                        name: file.name,
+                        displayName: `📋 ${date} - バックアップレポート`,
+                        size: size,
+                        created_at: file.created_at,
+                        path: `reports/${file.name}`
+                    });
+                }
+            });
+
+            // 作成日時でソート（新しい順）
+            combinedList.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            combinedList.forEach(item => {
+                const createdDate = new Date(item.created_at).toLocaleString('ja-JP');
+                const badgeColor = item.type === 'backup' ? '#007bff' : '#28a745';
+                const badgeText = item.type === 'backup' ? 'データ' : 'レポート';
+                
+                backupListHTML += `
+                    <div class="backup-item" data-path="${item.path}" data-type="${item.type}" 
+                         style="padding: 12px; border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 8px; 
+                                cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 500; margin-bottom: 4px;">${item.displayName}</div>
+                            <div style="font-size: 12px; color: #6c757d;">作成: ${createdDate} | サイズ: ${item.size}</div>
+                        </div>
+                        <div style="background: ${badgeColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                            ${badgeText}
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (combinedList.length === 0) {
+                backupListHTML = '<p style="text-align: center; color: #6c757d; padding: 20px;">利用可能なバックアップがありません</p>';
+            }
+
+            modal.innerHTML = `
+                <div style="
+                    background: white; border-radius: 12px; padding: 30px; 
+                    max-width: 700px; width: 90%; max-height: 80vh; overflow-y: auto;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0; color: #343a40;">📁 バックアップ選択</h2>
+                        <button id="close-selection-modal" style="
+                            background: #6c757d; color: white; border: none; 
+                            border-radius: 50%; width: 30px; height: 30px; cursor: pointer;
+                            display: flex; align-items: center; justify-content: center;
+                        ">×</button>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <p style="color: #6c757d; margin: 0;">
+                            👆 閲覧したいバックアップまたはレポートを選択してください。<br>
+                            📊 データバックアップ: 実際のデータ内容を確認<br>
+                            📋 レポート: バックアップの統計情報を確認
+                        </p>
+                    </div>
+
+                    <div id="backup-list" style="max-height: 400px; overflow-y: auto;">
+                        ${backupListHTML}
+                    </div>
+                </div>
+            `;
+
+            // イベントリスナーを追加
+            modal.querySelector('#close-selection-modal').addEventListener('click', () => {
+                modal.remove();
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+
+            // バックアップアイテムのクリックイベント
+            modal.querySelectorAll('.backup-item').forEach(item => {
+                item.addEventListener('click', async () => {
+                    const path = item.dataset.path;
+                    const type = item.dataset.type;
+                    modal.remove();
+                    await loadAndDisplayBackup(path, type);
+                });
+
+                // ホバーエフェクト
+                item.addEventListener('mouseenter', () => {
+                    item.style.backgroundColor = '#f8f9fa';
+                    item.style.borderColor = '#007bff';
+                });
+                item.addEventListener('mouseleave', () => {
+                    item.style.backgroundColor = '';
+                    item.style.borderColor = '#dee2e6';
+                });
+            });
+
+            return modal;
+        }
+
+        function extractDateFromFileName(fileName) {
+            // ファイル名から日付を抽出
+            const matches = fileName.match(/(\d{4}-\d{2}-\d{2})/);
+            if (matches) {
+                return new Date(matches[1]).toLocaleDateString('ja-JP');
+            }
+            // 曜日名から推測
+            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const dayMatch = dayNames.find(day => fileName.includes(day));
+            return dayMatch ? `最新 (${dayMatch})` : fileName;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        async function loadAndDisplayBackup(path, type) {
+            try {
+                if (window.showToast) {
+                    window.showToast('バックアップを読み込み中...', 'info', 2000);
+                }
+
+                const { data, error } = await supabase.storage
+                    .from('backups')
+                    .download(path);
+
+                if (error) {
+                    throw new Error(`ファイルの取得に失敗しました: ${error.message}`);
+                }
+
+                const contentText = await data.text();
+                const contentData = JSON.parse(contentText);
+
+                if (type === 'report') {
+                    // レポートファイルの場合は既存のレポート表示機能を使用
+                    SupabaseAPI.showAdminBackupReport(contentData, data.size, path);
+                } else {
+                    // データファイルの場合は新しい詳細表示機能を使用
+                    showBackupDataModal(contentData, data.size, path);
+                }
+
+            } catch (error) {
+                console.error('バックアップ読み込みエラー:', error);
+                if (window.showToast) {
+                    window.showToast(error.message || 'バックアップの読み込みに失敗しました', 'error', 3000);
+                }
+            }
+        }
+
+        function showBackupDataModal(backupData, fileSize, filePath) {
+            // データファイル表示用のモーダル（簡単な統計情報）
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                background: rgba(0,0,0,0.5); z-index: 10000; display: flex; 
+                justify-content: center; align-items: center;
+            `;
+
+            const fileSizeKB = Math.round(fileSize / 1024);
+            const totalRecords = Object.values(backupData).reduce((sum, table) => 
+                sum + (Array.isArray(table) ? table.length : 0), 0);
+
+            let tableStatsHTML = '';
+            for (const [tableName, records] of Object.entries(backupData)) {
+                if (Array.isArray(records)) {
+                    const count = records.length;
+                    const percentage = totalRecords > 0 ? ((count / totalRecords) * 100).toFixed(1) : '0.0';
+                    tableStatsHTML += `
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee;">${tableName}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #007bff;">${count} 件</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right; color: #6c757d;">${percentage}%</td>
+                        </tr>
+                    `;
+                }
+            }
+
+            modal.innerHTML = `
+                <div style="
+                    background: white; border-radius: 12px; padding: 30px; 
+                    max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2 style="margin: 0; color: #343a40;">📊 バックアップデータ詳細</h2>
+                        <button id="close-data-modal" style="
+                            background: #6c757d; color: white; border: none; 
+                            border-radius: 50%; width: 30px; height: 30px; cursor: pointer;
+                        ">×</button>
+                    </div>
+
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <h3 style="margin: 0 0 10px 0; color: #495057; font-size: 16px;">📁 ${filePath}</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: bold; color: #007bff;">${totalRecords}</div>
+                                <div style="color: #6c757d; font-size: 14px;">総レコード数</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: bold; color: #28a745;">${fileSizeKB} KB</div>
+                                <div style="color: #6c757d; font-size: 14px;">ファイルサイズ</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: bold; color: #17a2b8;">${Object.keys(backupData).length}</div>
+                                <div style="color: #6c757d; font-size: 14px;">テーブル数</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 style="margin: 0 0 15px 0; color: #495057; font-size: 16px;">📋 テーブル別レコード数</h3>
+                        <div style="background: white; border: 1px solid #dee2e6; border-radius: 8px; overflow: hidden;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #f8f9fa;">
+                                        <th style="padding: 12px; text-align: left; font-weight: 600; color: #495057;">テーブル名</th>
+                                        <th style="padding: 12px; text-align: right; font-weight: 600; color: #495057;">レコード数</th>
+                                        <th style="padding: 12px; text-align: right; font-weight: 600; color: #495057;">比率</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tableStatsHTML}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; padding: 15px; background: #e7f3ff; border-radius: 8px; border-left: 4px solid #007bff;">
+                        <p style="margin: 0; color: #004085; font-size: 14px;">
+                            💡 <strong>ヒント:</strong> このデータファイルには実際のレコード内容が含まれています。
+                            レポートファイルではバックアップ実行時の統計情報を確認できます。
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            modal.querySelector('#close-data-modal').addEventListener('click', () => {
+                modal.remove();
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+
+            document.body.appendChild(modal);
+        }
         
         // 列幅リセットボタンの前に挿入（「バックアップレポート表示」「列幅リセット」「スクロールモード」の順序）
         const resetColumnButton = accordionContent.querySelector('#reset-column-widths-button');
