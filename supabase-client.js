@@ -909,6 +909,67 @@ export class SupabaseAPI {
         }
     }
 
+    // 月次タスクの状態を更新（新しい整合性チェックの自動修復用）
+    static async updateMonthlyTasksByMonth(clientId, month, updateData) {
+        try {
+            console.log('Updating monthly tasks for month:', month, 'with data:', updateData);
+            
+            // 既存のレコードを取得
+            const { data: existingData, error: selectError } = await supabase
+                .from('monthly_tasks')
+                .select('*')
+                .eq('client_id', clientId)
+                .eq('month', month)
+                .single();
+            
+            if (selectError && selectError.code !== 'PGRST116') {
+                throw selectError;
+            }
+            
+            if (existingData) {
+                // 既存レコードを更新
+                const updatedTasks = { ...existingData.tasks, ...updateData.tasks };
+                const updatedMemos = { ...existingData.task_memos, ...updateData.task_memos };
+                
+                const { data, error } = await supabase
+                    .from('monthly_tasks')
+                    .update({ 
+                        tasks: updatedTasks,
+                        task_memos: updatedMemos 
+                    })
+                    .eq('client_id', clientId)
+                    .eq('month', month)
+                    .select()
+                    .single();
+                
+                if (error) throw error;
+                console.log('Updated existing monthly task:', data);
+                return data;
+            } else {
+                // 新しいレコードを作成
+                const { data, error } = await supabase
+                    .from('monthly_tasks')
+                    .insert({
+                        client_id: clientId,
+                        month: month,
+                        tasks: updateData.tasks || {},
+                        task_memos: updateData.task_memos || {},
+                        status: 'in_progress'
+                    })
+                    .select()
+                    .single();
+                
+                if (error) throw error;
+                console.log('Created new monthly task:', data);
+                return data;
+            }
+            
+        } catch (error) {
+            console.error('Error updating monthly tasks by month:', error);
+            throw error;
+        }
+    }
+
     // データ整合性チェック機能（旧版）
     static async checkDataConsistency(clientId, year) {
         try {
