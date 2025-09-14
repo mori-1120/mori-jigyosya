@@ -24,6 +24,9 @@ class PerformancePage {
                 return;
             }
 
+            // ページ可視性変更の監視を設定（他ページからの戻り検出）
+            this.setupPageVisibilityListener();
+
             // 基本データ読み込み
             await this.loadInitialData();
             
@@ -60,6 +63,42 @@ class PerformancePage {
         this.monthlyTasks = tasksResult || [];
         
         console.log(`Loaded: ${this.clients.length} clients, ${this.staffs.length} staffs, ${this.monthlyTasks.length} tasks`);
+    }
+
+    setupPageVisibilityListener() {
+        // ページの表示/非表示状態を監視
+        document.addEventListener('visibilitychange', async () => {
+            if (!document.hidden && this.performanceData) {
+                // ページが表示状態になった時に、既に分析データがある場合は再計算
+                console.log('📊 Performance page became visible, refreshing data...');
+                await this.refreshPerformanceData();
+            }
+        });
+
+        // ページフォーカス時にも更新（ブラウザタブ切り替えで戻った場合）
+        window.addEventListener('focus', async () => {
+            if (this.performanceData) {
+                console.log('🔍 Performance window focused, checking for data updates...');
+                await this.refreshPerformanceData();
+            }
+        });
+    }
+
+    async refreshPerformanceData() {
+        try {
+            // 期間設定を保持したままデータを再読み込み
+            await this.loadInitialData();
+            
+            // 現在の期間設定で再分析実行
+            await this.performAnalysis();
+            
+            // ユーザーに更新を通知
+            showToast('データを最新状態に更新しました', 'success', 2000);
+            
+        } catch (error) {
+            console.error('Performance data refresh error:', error);
+            showToast('データ更新に失敗しました', 'error');
+        }
     }
 
     setupEventListeners() {

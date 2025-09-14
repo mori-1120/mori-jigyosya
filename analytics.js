@@ -31,6 +31,9 @@ class AnalyticsPage {
                 return;
             }
 
+            // ページ可視性変更の監視を設定（他ページからの戻り検出）
+            this.setupPageVisibilityListener();
+
             // 基本データ読み込み
             await this.loadInitialData();
             
@@ -138,6 +141,42 @@ class AnalyticsPage {
         
         document.getElementById('start-period').value = startValue;
         document.getElementById('end-period').value = endValue;
+    }
+
+    setupPageVisibilityListener() {
+        // ページの表示/非表示状態を監視
+        document.addEventListener('visibilitychange', async () => {
+            if (!document.hidden && this.lastAnalysisData) {
+                // ページが表示状態になった時に、既に分析データがある場合は再計算
+                console.log('📊 Page became visible, refreshing analytics data...');
+                await this.refreshAnalyticsData();
+            }
+        });
+
+        // ページフォーカス時にも更新（ブラウザタブ切り替えで戻った場合）
+        window.addEventListener('focus', async () => {
+            if (this.lastAnalysisData) {
+                console.log('🔍 Window focused, checking for data updates...');
+                await this.refreshAnalyticsData();
+            }
+        });
+    }
+
+    async refreshAnalyticsData() {
+        try {
+            // フィルター条件を保持したままデータを再読み込み
+            await this.loadInitialData();
+            
+            // 現在のフィルター条件で再分析実行
+            await this.performAnalysis();
+            
+            // ユーザーに更新を通知
+            showToast('データを最新状態に更新しました', 'success', 2000);
+            
+        } catch (error) {
+            console.error('Analytics data refresh error:', error);
+            showToast('データ更新に失敗しました', 'error');
+        }
     }
 
     setupEventListeners() {
