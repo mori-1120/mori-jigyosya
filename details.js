@@ -716,9 +716,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             this.elementPool = new Map();
             this.activeElements = new Set();
             
-            // リサイズイベントでモバイル最適化
+            // リサイズイベントでモバイル最適化（passive最適化）
             this.handleResize = this.debounce(this.optimizeForViewport.bind(this), 250);
-            window.addEventListener('resize', this.handleResize);
+            window.addEventListener('resize', this.handleResize, { passive: true });
             
             // 初期化時にビューポート最適化
             this.optimizeForViewport();
@@ -2409,14 +2409,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
         
-        // ウィンドウリサイズイベント
+        // ウィンドウリサイズイベント（passive最適化）
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(() => {
                 adjustDetailsTableLayout();
                 adjustMemoWidth(); // リサイズ時にメモ幅も調整
             }, 150);
-        });
+        }, { passive: true });
         
         // 初期調整と保存された設定の適用
         setTimeout(() => {

@@ -2918,17 +2918,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // ウィンドウリサイズイベント
+        // ウィンドウリサイズイベント（passive最適化）
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(adjustTableLayout, 150);
-        });
-        
-        // ズーム変更検出
+        }, { passive: true });
+
+        // ズーム変更検出（passive最適化）
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(adjustTableLayout, 150);
-        });
+        }, { passive: true });
         
         // 初期調整と保存された設定の適用
         setTimeout(() => {
