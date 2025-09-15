@@ -2217,8 +2217,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // URL自動リンク化初期化
     function initializeAutoLinkify() {
         // 全体メモ欄
-        if (generalMemoField) {
-            createLinkedTextDisplay(generalMemoField);
+        if (generalMemoFieldField) {
+            createLinkedTextDisplay(generalMemoFieldField);
         }
 
         // 月次メモ欄（動的に生成されるため、定期的にチェック）
