@@ -1729,9 +1729,9 @@ class AnalyticsPage {
 
                 /* 年月列の幅を統一 */
                 th:nth-child(n+5), td:nth-child(n+5) {
-                    width: 70px;
-                    min-width: 70px;
-                    max-width: 70px;
+                    width: 50px;
+                    min-width: 45px;
+                    max-width: 55px;
                 }
 
                 th {
