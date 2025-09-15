@@ -1727,6 +1727,13 @@ class AnalyticsPage {
                     vertical-align: middle;
                 }
 
+                /* 年月列の幅を統一 */
+                th:nth-child(n+5), td:nth-child(n+5) {
+                    width: 70px;
+                    min-width: 70px;
+                    max-width: 70px;
+                }
+
                 th {
                     background: #f8f9fa !important;
                     font-weight: bold;
@@ -1792,6 +1799,19 @@ class AnalyticsPage {
                     body {
                         -webkit-print-color-adjust: exact !important;
                         color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+
+                    /* 決算月の境界線を強制表示 */
+                    td[style*="border-right: 4px solid #dc3545"] {
+                        border-right: 4px solid #dc3545 !important;
+                        background-color: rgba(220, 53, 69, 0.05) !important;
+                    }
+
+                    /* 会計年度の境界線を強制表示 */
+                    td[style*="border-top: 2px solid #17a2b8"] {
+                        border-top: 2px solid #17a2b8 !important;
+                        border-bottom: 2px solid #17a2b8 !important;
                     }
                 }
             </style>
@@ -1911,7 +1931,7 @@ class AnalyticsPage {
 
                     // 決算月の視覚化
                     if (fiscalMonth && currentMonth === fiscalMonth) {
-                        cellStyle += ' border-right: 4px solid #dc3545; background-color: rgba(220, 53, 69, 0.05);';
+                        cellStyle += ' border-right: 4px solid #dc3545 !important; background-color: rgba(220, 53, 69, 0.05) !important;';
                     } else {
                         // 会計年度の判定
                         const fiscalYearStart = fiscalMonth === 12 ? 1 : fiscalMonth + 1;
@@ -1925,7 +1945,7 @@ class AnalyticsPage {
                         }
 
                         if (isInFiscalYear) {
-                            cellStyle += ' border-top: 2px solid #17a2b8; border-bottom: 2px solid #17a2b8;';
+                            cellStyle += ' border-top: 2px solid #17a2b8 !important; border-bottom: 2px solid #17a2b8 !important;';
                         }
                     }
 
