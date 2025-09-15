@@ -943,9 +943,16 @@ class AnalyticsPage {
             
             if (monthData.total > 0) {
                 const progressColor = this.getProgressColor(monthData.rate);
+
+                // 分子が1の場合（資料受付完了状態）に📋アイコンを追加
+                let progressText = `${monthData.completed}/${monthData.total}`;
+                if (monthData.completed === 1) {
+                    progressText = `📋 ${progressText}`;
+                }
+
                 td.innerHTML = `
                     <div style="background: ${progressColor}; color: white; padding: 4px 6px; border-radius: 4px; font-size: 12px; font-weight: bold;">
-                        ${monthData.completed}/${monthData.total}
+                        ${progressText}
                     </div>
                 `;
             } else {
@@ -1895,6 +1902,11 @@ class AnalyticsPage {
                             // 決算月の特別スタイル
                             let cellStyle = 'padding: 6px 4px; border: 1px solid #333; text-align: center; font-weight: bold;';
                             let cellContent = `${monthData.completed}/${monthData.total}`;
+
+                            // 分子が1の場合（資料受付完了状態）に📋アイコンを追加
+                            if (monthData.completed === 1) {
+                                cellContent = `📋 ${cellContent}`;
+                            }
                             
                             if (fiscalMonth && currentMonth === fiscalMonth) {
                                 // 決算月は赤色の太い境界線と背景色
