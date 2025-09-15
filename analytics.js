@@ -1753,36 +1753,13 @@ class AnalyticsPage {
                 .summary-section {
                     margin: 20px 0;
                     padding: 15px;
-                    border: 1px solid #dee2e6;
-                    border-radius: 8px;
                     background: #f8f9fa;
-                }
-
-                .summary-grid {
-                    display: grid;
-                    grid-template-columns: repeat(4, 1fr);
-                    gap: 15px;
-                    margin: 15px 0;
-                }
-
-                .summary-card {
-                    background: white;
-                    border: 1px solid #dee2e6;
                     border-radius: 8px;
-                    padding: 15px;
-                    text-align: center;
                 }
 
-                .summary-card h3 {
-                    font-size: 12px;
-                    color: #666;
-                    margin-bottom: 8px;
-                }
-
-                .summary-card .value {
-                    font-size: 18px;
-                    font-weight: bold;
-                    color: #007bff;
+                .summary-section h2 {
+                    margin-bottom: 10px;
+                    color: #333;
                 }
 
                 /* ヘッダー */
@@ -1835,23 +1812,11 @@ class AnalyticsPage {
 
             <div class="summary-section">
                 <h2>📈 集計結果サマリー</h2>
-                <div class="summary-grid">
-                    <div class="summary-card">
-                        <h3>全体進捗率</h3>
-                        <div class="value">${summary.progressRate}%</div>
-                    </div>
-                    <div class="summary-card">
-                        <h3>完了タスク</h3>
-                        <div class="value">${summary.completedTasks}</div>
-                    </div>
-                    <div class="summary-card">
-                        <h3>総タスク数</h3>
-                        <div class="value">${summary.totalTasks}</div>
-                    </div>
-                    <div class="summary-card">
-                        <h3>要注意クライアント</h3>
-                        <div class="value">${summary.attentionClients.length}件</div>
-                    </div>
+                <div style="margin: 15px 0; line-height: 1.8; font-size: 14px;">
+                    <span style="font-weight: bold;">全体進捗率:</span> ${summary.progressRate}% |
+                    <span style="font-weight: bold;">完了タスク:</span> ${summary.completedTasks} |
+                    <span style="font-weight: bold;">総タスク数:</span> ${summary.totalTasks} |
+                    <span style="font-weight: bold;">要注意クライアント:</span> ${summary.attentionClients.length}件
                 </div>
             </div>
 
