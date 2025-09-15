@@ -1662,181 +1662,208 @@ class AnalyticsPage {
     }
 
     generatePDFReport() {
-        // PDF用のレポート内容を生成
+        // 現在のダッシュボードと同じ見た目でPDF生成
         const { summary } = this.lastAnalysisData;
-        const matrix = this.getSortedMatrix(); // ソート済みデータを取得
-        
+        const matrix = this.getSortedMatrix();
+
         // 新しいウィンドウでPDF用のレポートページを開く
         const printWindow = window.open('', '_blank');
-        
+
+        // 現在のページのCSSを取得（外部CSSファイルの内容を含む）
+        const currentCSS = this.getCurrentPageCSS();
+
         const printContent = `
         <!DOCTYPE html>
         <html>
         <head>
-            <title>進捗分析結果レポート - ${this.getCurrentDateString()}</title>
+            <title>進捗管理ダッシュボード - ${this.getCurrentDateString()}</title>
+            <meta charset="UTF-8">
             <style>
-                @page { 
-                    size: A4 landscape; 
-                    margin: 15mm;
+                @page {
+                    size: A4 landscape;
+                    margin: 10mm;
                 }
-                * {
+
+                /* 現在のページのCSSをベースに */
+                ${currentCSS}
+
+                /* PDF印刷用の調整 */
+                body {
+                    background: white !important;
+                    color: black !important;
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                    font-size: 11px;
+                    line-height: 1.4;
                     margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
+                    padding: 20px;
                 }
-                body { 
-                    font-family: 'MS Gothic', monospace, sans-serif; 
-                    font-size: 12px; 
-                    line-height: 1.6;
-                    color: #333;
+
+                /* ナビゲーション要素を非表示 */
+                .navigation, .controls-section, .export-section, .sort-icon,
+                button, .btn, .filter-section {
+                    display: none !important;
                 }
-                .header {
+
+                /* テーブルスタイルを画面と同じに */
+                .table-container {
+                    overflow: visible !important;
+                    max-height: none !important;
+                    border: 1px solid #dee2e6;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 10px;
+                    background: white;
+                }
+
+                th, td {
+                    border: 1px solid #dee2e6 !important;
+                    padding: 6px 4px !important;
                     text-align: center;
-                    margin-bottom: 30px;
-                    padding-bottom: 15px;
-                    border-bottom: 2px solid #007bff;
+                    vertical-align: middle;
                 }
-                .header h1 {
-                    font-size: 24px;
-                    color: #007bff;
-                    margin-bottom: 10px;
+
+                th {
+                    background: #f8f9fa !important;
+                    font-weight: bold;
+                    color: black !important;
+                    position: static !important;
                 }
-                .header .date {
-                    font-size: 14px;
-                    color: #666;
+
+                /* 進捗率の色を維持 */
+                .progress-text-high { color: #28a745 !important; font-weight: bold; }
+                .progress-text-medium { color: #ffc107 !important; font-weight: bold; }
+                .progress-text-low { color: #dc3545 !important; font-weight: bold; }
+
+                /* 月別進捗セルの色を維持 */
+                td div[style*="background"] {
+                    color: white !important;
+                    font-weight: bold !important;
+                    padding: 4px 6px !important;
+                    border-radius: 4px !important;
+                    font-size: 10px !important;
+                    white-space: nowrap;
                 }
+
+                /* サマリーセクション */
                 .summary-section {
-                    margin-bottom: 30px;
+                    margin: 20px 0;
+                    padding: 15px;
+                    border: 1px solid #dee2e6;
+                    border-radius: 8px;
+                    background: #f8f9fa;
                 }
-                .summary-section h2 {
-                    font-size: 16px;
-                    color: #333;
-                    margin-bottom: 15px;
-                    padding-left: 10px;
-                    border-left: 4px solid #28a745;
-                }
+
                 .summary-grid {
                     display: grid;
-                    grid-template-columns: repeat(3, 1fr);
+                    grid-template-columns: repeat(4, 1fr);
                     gap: 15px;
-                    margin-bottom: 20px;
+                    margin: 15px 0;
                 }
+
                 .summary-card {
-                    border: 1px solid #999;
-                    border-radius: 4px;
+                    background: white;
+                    border: 1px solid #dee2e6;
+                    border-radius: 8px;
                     padding: 15px;
                     text-align: center;
                 }
-                .summary-card .label {
-                    font-size: 11px;
+
+                .summary-card h3 {
+                    font-size: 12px;
                     color: #666;
-                    margin-bottom: 5px;
+                    margin-bottom: 8px;
                 }
+
                 .summary-card .value {
                     font-size: 18px;
                     font-weight: bold;
                     color: #007bff;
                 }
-                .attention-clients {
-                    margin-top: 15px;
-                }
-                .attention-clients ul {
-                    list-style: none;
-                    background: #fff3cd;
-                    padding: 10px 15px;
-                    border-radius: 4px;
-                    border-left: 4px solid #ffc107;
-                }
-                .attention-clients li {
-                    padding: 2px 0;
-                    font-size: 11px;
-                }
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-top: 20px;
-                    font-size: 10px;
-                }
-                th, td {
-                    border: 1px solid #333;
-                    padding: 8px;
+
+                /* ヘッダー */
+                .pdf-header {
                     text-align: center;
+                    margin-bottom: 30px;
+                    padding-bottom: 15px;
+                    border-bottom: 2px solid #007bff;
                 }
-                th {
-                    background-color: #f8f9fa;
-                    font-weight: bold;
+
+                .pdf-header h1 {
+                    font-size: 24px;
+                    color: #007bff;
+                    margin-bottom: 10px;
                 }
-                .progress-high { 
-                    background-color: #d4edda !important; 
-                    color: #155724; 
-                    font-weight: bold; 
+
+                .pdf-header .info {
+                    font-size: 12px;
+                    color: #666;
+                    margin: 5px 0;
                 }
-                .progress-medium { 
-                    background-color: #fff3cd !important; 
-                    color: #856404; 
-                    font-weight: bold; 
+
+                /* 改ページ制御 */
+                .page-break {
+                    page-break-before: always;
                 }
-                .progress-low { 
-                    background-color: #f8d7da !important; 
-                    color: #721c24; 
-                    font-weight: bold; 
+
+                /* リンクスタイル */
+                a {
+                    color: #007bff !important;
+                    text-decoration: none !important;
                 }
-                .month-cell {
-                    font-size: 9px;
-                    white-space: nowrap;
+
+                @media print {
+                    body {
+                        -webkit-print-color-adjust: exact !important;
+                        color-adjust: exact !important;
+                    }
                 }
-                .page-break { page-break-before: always; }
             </style>
         </head>
         <body>
-            <div class="header">
-                <h1>📊 進捗分析結果レポート</h1>
-                <div class="date">作成日時: ${new Date().toLocaleString('ja-JP')}</div>
-                <div class="date">集計期間: ${this.currentFilters.startPeriod} ～ ${this.currentFilters.endPeriod}</div>
-                ${this.getFilterInfo().length > 0 ? `<div class="date">検索条件: ${this.getFilterInfo().join(' | ')}</div>` : ''}
-                ${this.getSortInfo() ? `<div class="date">並び順: ${this.getSortInfo()}</div>` : ''}
+            <div class="pdf-header">
+                <h1>📊 進捗管理ダッシュボード</h1>
+                <div class="info">作成日時: ${new Date().toLocaleString('ja-JP')}</div>
+                <div class="info">集計期間: ${this.currentFilters.startPeriod} ～ ${this.currentFilters.endPeriod}</div>
+                ${this.getFilterInfo().length > 0 ? `<div class="info">検索条件: ${this.getFilterInfo().join(' | ')}</div>` : ''}
+                ${this.getSortInfo() ? `<div class="info">並び順: ${this.getSortInfo()}</div>` : ''}
             </div>
-            
+
             <div class="summary-section">
                 <h2>📈 集計結果サマリー</h2>
                 <div class="summary-grid">
                     <div class="summary-card">
-                        <div class="label">全体進捗率</div>
+                        <h3>全体進捗率</h3>
                         <div class="value">${summary.progressRate}%</div>
                     </div>
                     <div class="summary-card">
-                        <div class="label">完了タスク</div>
-                        <div class="value">${summary.completedTasks} / ${summary.totalTasks}</div>
+                        <h3>完了タスク</h3>
+                        <div class="value">${summary.completedTasks}</div>
                     </div>
                     <div class="summary-card">
-                        <div class="label">要注意クライアント</div>
+                        <h3>総タスク数</h3>
+                        <div class="value">${summary.totalTasks}</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>要注意クライアント</h3>
                         <div class="value">${summary.attentionClients.length}件</div>
                     </div>
                 </div>
-                
-                ${summary.attentionClients.length > 0 ? `
-                <div class="attention-clients">
-                    <h3 style="margin-bottom: 10px;">⚠️ 要注意クライアント一覧</h3>
-                    <ul>
-                        ${summary.attentionClients.map(client => 
-                            `<li>${client.name} (${client.reason}: ${client.progressRate}%)</li>`
-                        ).join('')}
-                    </ul>
-                </div>` : ''}
             </div>
-            
-            <div class="page-break"></div>
-            
-            <div class="summary-section">
-                <h2>📋 進捗マトリクス表（月次進捗含む）</h2>
-                ${this.generateMonthlyProgressTable(matrix)}
+
+            <div class="table-container">
+                ${this.generateDashboardStyleTable(matrix)}
             </div>
         </body>
         </html>`;
         
         printWindow.document.write(printContent);
         printWindow.document.close();
-        
+
         // PDFとして印刷
         printWindow.onload = function() {
             printWindow.print();
@@ -1844,6 +1871,127 @@ class AnalyticsPage {
                 printWindow.close();
             };
         };
+    }
+
+    getCurrentPageCSS() {
+        // 基本的なCSSのみを返す（簡略化）
+        return `
+            /* 基本的なテーブルスタイル */
+            .table-responsive table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+            .table-responsive th,
+            .table-responsive td {
+                border: 1px solid #dee2e6;
+                padding: 8px;
+                text-align: center;
+            }
+            .table-responsive th {
+                background-color: #f8f9fa;
+                font-weight: bold;
+            }
+        `;
+    }
+
+    generateDashboardStyleTable(matrix) {
+        if (!matrix || matrix.length === 0) return '<p>データがありません</p>';
+
+        // 期間内の月を取得
+        const startDate = new Date(this.currentFilters.startPeriod + '-01');
+        const endDate = new Date(this.currentFilters.endPeriod + '-01');
+        const months = [];
+
+        for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
+            const monthKey = \`\${d.getFullYear()}-\${(d.getMonth() + 1).toString().padStart(2, '0')}\`;
+            const year = d.getFullYear();
+            const month = d.getMonth() + 1;
+            months.push({ key: monthKey, year, month });
+        }
+
+        // テーブルヘッダー
+        const headerHTML = \`
+        <thead>
+            <tr>
+                <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">事業者名</th>
+                <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">期間内平均進捗率</th>
+                <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">担当者</th>
+                <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">決算月</th>
+                \${months.map(month =>
+                    \`<th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">\${month.year}/\${month.month}</th>\`
+                ).join('')}
+            </tr>
+        </thead>\`;
+
+        // テーブルボディ
+        const bodyHTML = \`<tbody>\${matrix.map(row => {
+            const fiscalMonth = row.fiscalMonth;
+
+            return \`<tr>
+                <td style="border: 1px solid #dee2e6; padding: 8px;">
+                    <a href="details.html?id=\${row.clientId}" style="color: #007bff; text-decoration: none;">
+                        \${row.clientName}
+                    </a>
+                </td>
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
+                    <span style="font-weight: bold; color: \${this.getProgressColor(row.progressRate)};">
+                        \${row.progressRate}%
+                    </span>
+                </td>
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">\${row.staffName}</td>
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">\${row.fiscalMonth}月</td>
+                \${months.map(month => {
+                    const monthData = row.monthlyProgress[month.key] || { completed: 0, total: 0, rate: 0 };
+                    const currentMonth = month.month;
+
+                    let cellStyle = 'border: 1px solid #dee2e6; padding: 8px; text-align: center;';
+                    let cellContent = '';
+
+                    // 決算月の視覚化
+                    if (fiscalMonth && currentMonth === fiscalMonth) {
+                        cellStyle += ' border-right: 4px solid #dc3545; background-color: rgba(220, 53, 69, 0.05);';
+                    } else {
+                        // 会計年度の判定
+                        const fiscalYearStart = fiscalMonth === 12 ? 1 : fiscalMonth + 1;
+                        const fiscalYearEnd = fiscalMonth;
+                        let isInFiscalYear = false;
+
+                        if (fiscalYearStart <= fiscalYearEnd) {
+                            isInFiscalYear = currentMonth >= fiscalYearStart && currentMonth <= fiscalYearEnd;
+                        } else {
+                            isInFiscalYear = currentMonth >= fiscalYearStart || currentMonth <= fiscalYearEnd;
+                        }
+
+                        if (isInFiscalYear) {
+                            cellStyle += ' border-top: 2px solid #17a2b8; border-bottom: 2px solid #17a2b8;';
+                        }
+                    }
+
+                    if (monthData.total > 0) {
+                        const progressColor = this.getProgressColor(monthData.rate);
+
+                        // 分子が1の場合に📋アイコンを追加
+                        let progressText = \`\${monthData.completed}/\${monthData.total}\`;
+                        if (monthData.completed === 1) {
+                            progressText = \`📋 \${progressText}\`;
+                        }
+
+                        cellContent = \`<div style="background: \${progressColor}; color: white; padding: 4px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; white-space: nowrap;">\${progressText}</div>\`;
+
+                        // 決算月アイコン追加
+                        if (fiscalMonth && currentMonth === fiscalMonth) {
+                            cellContent += ' 📅';
+                        }
+                    } else {
+                        cellContent = '<span style="color: #999;">-</span>';
+                    }
+
+                    return \`<td style="\${cellStyle}">\${cellContent}</td>\`;
+                }).join('')}
+            </tr>\`;
+        }).join('')}</tbody>\`;
+
+        return \`<table style="width: 100%; border-collapse: collapse; font-size: 10px;">\${headerHTML}\${bodyHTML}</table>\`;
     }
 
     generateMonthlyProgressTable(matrix) {
