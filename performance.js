@@ -397,10 +397,11 @@ class PerformancePage {
     displayPerformanceResults(performanceData) {
         const tbody = document.getElementById('performance-table-body');
         tbody.innerHTML = '';
-        
-        // デフォルトソート（IDで昇順）
-        const sortedData = [...performanceData].sort((a, b) => a.staffId - b.staffId);
-        
+
+        // 担当クライアント数が0の担当者を除外し、デフォルトソート（IDで昇順）
+        const filteredData = performanceData.filter(staff => staff.clientCount > 0);
+        const sortedData = [...filteredData].sort((a, b) => a.staffId - b.staffId);
+
         sortedData.forEach(staff => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -459,8 +460,9 @@ class PerformancePage {
             this.sortDirection = 'desc'; // デフォルトは降順
         }
 
-        // ソート実行
-        let sortedData = [...this.performanceData];
+        // 担当クライアント数が0の担当者を除外してソート実行
+        const filteredData = this.performanceData.filter(staff => staff.clientCount > 0);
+        let sortedData = [...filteredData];
         
         sortedData.sort((a, b) => {
             let aValue, bValue;
@@ -521,8 +523,11 @@ class PerformancePage {
     displaySortedResults(sortedData) {
         const tbody = document.getElementById('performance-table-body');
         tbody.innerHTML = '';
-        
-        sortedData.forEach(staff => {
+
+        // 担当クライアント数が0の担当者を除外
+        const filteredData = sortedData.filter(staff => staff.clientCount > 0);
+
+        filteredData.forEach(staff => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="border: 1px solid #dee2e6; padding: 12px; text-align: center;">
