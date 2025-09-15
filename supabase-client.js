@@ -2629,24 +2629,27 @@ export class SupabaseAPI {
             for (const client of clients) {
                 if (client.status === 'inactive') continue; // 非活性クライアントはスキップ
 
-                // 現在年月を計算（決算年度ベース）
-                const now = new Date();
-                const currentYear = client.fiscal_month <= now.getMonth() + 1 ? now.getFullYear() : now.getFullYear() - 1;
-                const currentMonth = `${currentYear + (now.getMonth() + 1 >= client.fiscal_month ? 0 : 1)}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-
-                // 該当月のタスクを取得
-                const monthlyTask = monthlyTasks.find(task =>
-                    task.client_id === client.id && task.month === currentMonth
-                );
+                // 該当クライアントの全月次タスクを取得（期間累積方式）
+                const clientMonthlyTasks = monthlyTasks.filter(task => task.client_id === client.id);
 
                 let progressRate = 0;
                 let completedTasks = 0;
                 let totalTasks = 0;
 
-                if (monthlyTask && monthlyTask.tasks) {
-                    const tasks = monthlyTask.tasks;
-                    totalTasks = Object.keys(tasks).length;
-                    completedTasks = Object.values(tasks).filter(Boolean).length;
+                // 全期間のタスクを累積計算
+                if (clientMonthlyTasks && clientMonthlyTasks.length > 0) {
+                    for (const monthlyTask of clientMonthlyTasks) {
+                        if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
+                            const tasks = monthlyTask.tasks;
+                            const monthTotalTasks = Object.keys(tasks).length;
+                            const monthCompletedTasks = Object.values(tasks).filter(Boolean).length;
+
+                            totalTasks += monthTotalTasks;
+                            completedTasks += monthCompletedTasks;
+                        }
+                    }
+
+                    // 全期間累積の進捗率
                     progressRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
                 }
 

@@ -2603,11 +2603,15 @@ class AnalyticsPage {
             document.getElementById('weekly-trend-value').textContent = '--';
         }
 
-        // 最新記録日
+        // 最新記録日と詳細情報
         if (weeklyData.length > 0) {
             const latest = weeklyData[weeklyData.length - 1];
-            document.getElementById('weekly-latest-snapshot').textContent =
-                new Date(latest.week_date).toLocaleDateString('ja-JP');
+            const latestCompletedTasks = latest.snapshots.reduce((sum, s) => sum + s.completed_tasks, 0);
+            const latestTotalTasks = latest.snapshots.reduce((sum, s) => sum + s.total_tasks, 0);
+
+            document.getElementById('weekly-latest-snapshot').innerHTML =
+                `${new Date(latest.week_date).toLocaleDateString('ja-JP')}<br>` +
+                `<small style="color: #6c757d;">(${latestCompletedTasks}/${latestTotalTasks}タスク)</small>`;
         }
     }
 
@@ -2669,6 +2673,14 @@ class AnalyticsPage {
         const avgProgressData = this.weeklyChartData.map(trend => trend.average_progress);
         const completedData = this.weeklyChartData.map(trend => trend.completed_count);
 
+        // タスク完了数データの追加
+        const totalCompletedTasks = this.weeklyChartData.map(trend => {
+            return trend.snapshots.reduce((sum, snapshot) => sum + snapshot.completed_tasks, 0);
+        });
+        const totalTasks = this.weeklyChartData.map(trend => {
+            return trend.snapshots.reduce((sum, snapshot) => sum + snapshot.total_tasks, 0);
+        });
+
         // Chart.js設定
         const config = {
             type: 'line',
@@ -2685,13 +2697,23 @@ class AnalyticsPage {
                         fill: true
                     },
                     {
-                        label: '完了クライアント数',
-                        data: completedData,
+                        label: '完了タスク数',
+                        data: totalCompletedTasks,
                         borderColor: '#28a745',
                         backgroundColor: 'rgba(40, 167, 69, 0.1)',
                         yAxisID: 'y1',
                         tension: 0.4,
                         borderDash: [5, 5]
+                    },
+                    {
+                        label: '完了クライアント数',
+                        data: completedData,
+                        borderColor: '#ffc107',
+                        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                        yAxisID: 'y2',
+                        tension: 0.4,
+                        borderDash: [2, 2],
+                        pointRadius: 3
                     }
                 ]
             },
@@ -2727,11 +2749,20 @@ class AnalyticsPage {
                         position: 'right',
                         title: {
                             display: true,
-                            text: '完了クライアント数'
+                            text: '完了タスク数',
+                            color: '#28a745'
                         },
                         grid: {
                             drawOnChartArea: false,
                         },
+                        ticks: {
+                            color: '#28a745'
+                        }
+                    },
+                    y2: {
+                        type: 'linear',
+                        display: false,  // 3軸目は非表示（ツールチップで確認）
+                        position: 'right',
                     }
                 },
                 plugins: {
@@ -2743,9 +2774,14 @@ class AnalyticsPage {
                         callbacks: {
                             afterLabel: (context) => {
                                 const weekData = this.weeklyChartData[context.dataIndex];
+                                const completedTasks = weekData.snapshots.reduce((sum, s) => sum + s.completed_tasks, 0);
+                                const totalTasks = weekData.snapshots.reduce((sum, s) => sum + s.total_tasks, 0);
+
                                 return [
-                                    `総クライアント数: ${weekData.total_clients}`,
-                                    `要注意クライアント: ${weekData.low_progress_count}`,
+                                    `完了タスク: ${completedTasks} / ${totalTasks}`,
+                                    `完了クライアント: ${weekData.completed_count}件`,
+                                    `総クライアント: ${weekData.total_clients}件`,
+                                    `要注意: ${weekData.low_progress_count}件`,
                                     `前週比: ${weekData.week_over_week_change ?
                                         (weekData.week_over_week_change > 0 ? '+' : '') +
                                         weekData.week_over_week_change.toFixed(1) + '%' : 'N/A'}`
