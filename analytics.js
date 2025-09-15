@@ -2701,8 +2701,8 @@ class AnalyticsPage {
         });
 
         const avgProgressData = this.weeklyChartData.map(trend => trend.average_progress);
-        // 【修正】月次完了数データに変更
-        const monthlyCompletedData = this.weeklyChartData.map(trend => trend.monthly_completed || 0);
+        // 【修正】要注意クライアント数データに変更
+        const attentionData = this.weeklyChartData.map(trend => trend.low_progress_count || 0);
 
         // タスク完了数データの追加
         const totalCompletedTasks = this.weeklyChartData.map(trend => {
@@ -2737,10 +2737,10 @@ class AnalyticsPage {
                         borderDash: [5, 5]
                     },
                     {
-                        label: '月次完了数',
-                        data: monthlyCompletedData,
-                        borderColor: '#ffc107',
-                        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                        label: '要注意クライアント数',
+                        data: attentionData,
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
                         yAxisID: 'y2',
                         tension: 0.4,
                         borderDash: [2, 2],
@@ -2825,16 +2825,16 @@ class AnalyticsPage {
                                             weekData.week_over_week_change.toFixed(1) + '%' : 'N/A'}`
                                     ];
                                 }
-                                else if (datasetLabel === '月次完了数') {
-                                    // 【修正】正しい月次完了数を使用
-                                    const monthlyCompleted = weekData.monthly_completed || 0;
-                                    const monthlyTotal = weekData.monthly_total || 0;
-                                    const monthlyCompletionRate = monthlyTotal > 0 ? ((monthlyCompleted / monthlyTotal) * 100).toFixed(1) : 0;
+                                else if (datasetLabel === '要注意クライアント数') {
+                                    // 【修正】要注意クライアント数の詳細情報
+                                    const attentionCount = weekData.low_progress_count || 0;
+                                    const totalClients = weekData.total_clients || 0;
+                                    const attentionRate = totalClients > 0 ? ((attentionCount / totalClients) * 100).toFixed(1) : 0;
 
                                     return [
-                                        `月次完了: ${monthlyCompleted} / ${monthlyTotal}`,
-                                        `月次完了率: ${monthlyCompletionRate}%`,
-                                        `要注意: ${weekData.low_progress_count}件`
+                                        `要注意: ${attentionCount} / ${totalClients}件`,
+                                        `要注意率: ${attentionRate}%`,
+                                        `(進捗50%未満のクライアント)`
                                     ];
                                 }
 
