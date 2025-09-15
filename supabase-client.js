@@ -2601,10 +2601,29 @@ export class SupabaseAPI {
         }
     }
 
+    // 期間指定で月次タスクを取得
+    static async getMonthlyTasksByPeriod(startPeriod, endPeriod) {
+        try {
+            const { data, error } = await supabase
+                .from('monthly_tasks')
+                .select('*')
+                .gte('month', startPeriod)
+                .lte('month', endPeriod)
+                .order('month', { ascending: true });
+
+            if (error) throw error;
+            return data || [];
+
+        } catch (error) {
+            console.error('期間指定月次タスク取得エラー:', error);
+            throw error;
+        }
+    }
+
     // === 週次進捗スナップショット機能 ===
 
     // 現在の進捗状況をスナップショットとして保存
-    static async saveWeeklySnapshot(weekDate = null) {
+    static async saveWeeklySnapshot(weekDate = null, filters = {}) {
         try {
             if (!weekDate) {
                 // 現在週の月曜日を取得
@@ -2614,15 +2633,35 @@ export class SupabaseAPI {
                 weekDate = monday.toISOString().split('T')[0];
             }
 
-            // 既存のスナップショットをクリア（同じ週のデータは上書き）
-            await supabase
+            // 【修正】履歴保存方式：既存データはそのまま残す
+            // 同じ日に複数回記録した場合のみ最新データで更新
+            const { data: existingData } = await supabase
                 .from('weekly_progress_snapshots')
-                .delete()
-                .eq('week_date', weekDate);
+                .select('week_date')
+                .eq('week_date', weekDate)
+                .limit(1);
+
+            // 同じ日に既に記録がある場合は上書き、無い場合は新規作成
+            if (existingData && existingData.length > 0) {
+                await supabase
+                    .from('weekly_progress_snapshots')
+                    .delete()
+                    .eq('week_date', weekDate);
+            }
 
             // 現在の全クライアントと月次タスクを取得
             const clients = await this.getClients();
-            const monthlyTasks = await this.getMonthlyTasks();
+
+            // フィルター条件に基づいて月次タスクを取得
+            let monthlyTasks;
+            if (filters.startDate && filters.endDate) {
+                // 期間フィルターがある場合は該当期間のタスクのみ取得
+                const startPeriod = filters.startDate.substring(0, 7); // YYYY-MM形式
+                const endPeriod = filters.endDate.substring(0, 7);
+                monthlyTasks = await this.getMonthlyTasksByPeriod(startPeriod, endPeriod);
+            } else {
+                monthlyTasks = await this.getMonthlyTasks();
+            }
 
             const snapshots = [];
 

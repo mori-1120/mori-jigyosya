@@ -2496,7 +2496,9 @@ class AnalyticsPage {
             saveBtn.textContent = '📊 保存中...';
             saveBtn.disabled = true;
 
-            const result = await SupabaseAPI.saveWeeklySnapshot();
+            // 現在のフィルター条件を週次スナップショットに適用
+            const filters = this.buildWeeklyFilters();
+            const result = await SupabaseAPI.saveWeeklySnapshot(null, filters);
 
             if (result.success) {
                 showToast(
@@ -2552,20 +2554,28 @@ class AnalyticsPage {
     buildWeeklyFilters() {
         const filters = {};
 
-        // 期間フィルター（3ヶ月前から）
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setMonth(endDate.getMonth() - 3);
+        // 【修正】全体ダッシュボードと同じ期間フィルターを使用
+        // 現在選択されている期間を取得
+        const startPeriod = this.currentFilters.startPeriod;
+        const endPeriod = this.currentFilters.endPeriod;
 
-        // 週の開始日（月曜日）に調整
-        const startMonday = new Date(startDate);
-        startMonday.setDate(startDate.getDate() - (startDate.getDay() || 7) + 1);
+        if (startPeriod && endPeriod) {
+            // 期間が選択されている場合はそれを使用
+            const startDate = new Date(startPeriod + '-01');
+            const endDate = new Date(endPeriod + '-01');
+            endDate.setMonth(endDate.getMonth() + 1); // 月末まで含める
 
-        const endMonday = new Date(endDate);
-        endMonday.setDate(endDate.getDate() - (endDate.getDay() || 7) + 1);
+            filters.startDate = startDate.toISOString().split('T')[0];
+            filters.endDate = endDate.toISOString().split('T')[0];
+        } else {
+            // フォールバック: 過去3ヶ月
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setMonth(endDate.getMonth() - 3);
 
-        filters.startDate = startMonday.toISOString().split('T')[0];
-        filters.endDate = endMonday.toISOString().split('T')[0];
+            filters.startDate = startDate.toISOString().split('T')[0];
+            filters.endDate = endDate.toISOString().split('T')[0];
+        }
 
         // 他のフィルターも適用
         if (this.currentFilters.staffId) {
