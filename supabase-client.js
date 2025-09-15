@@ -2600,7 +2600,6 @@ export class SupabaseAPI {
             throw error;
         }
     }
-}
 
     // === 週次進捗スナップショット機能 ===
 
