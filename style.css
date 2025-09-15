@@ -2055,6 +2055,169 @@ button:active {
     box-shadow: none;
 }
 
+/* 危険な操作の区切りとスタイル */
+.danger-section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #dc3545, transparent);
+    margin: 20px 0;
+    position: relative;
+}
+
+.danger-section-divider::before {
+    content: "危険な操作";
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    color: #dc3545;
+    font-size: 12px;
+    padding: 0 10px;
+    font-weight: bold;
+}
+
+.danger-section {
+    background-color: #fff5f5;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid #dc3545;
+    margin-top: 10px;
+}
+
+/* データベース初期化確認モーダル */
+.danger-modal-content {
+    max-width: 500px;
+    border: 2px solid #dc3545;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.danger-warning-header {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+    padding: 25px;
+    text-align: center;
+    margin: -20px -20px 20px -20px;
+}
+
+.warning-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.danger-warning-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.danger-warning-content {
+    padding: 0 5px;
+}
+
+.danger-warning-content ul {
+    margin: 15px 0;
+    padding-left: 20px;
+}
+
+.danger-warning-content li {
+    margin: 8px 0;
+    color: #721c24;
+}
+
+.app-name-verification {
+    margin: 25px 0;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    border-left: 4px solid #dc3545;
+}
+
+.app-name-verification label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #721c24;
+}
+
+.app-name-verification input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.app-name-verification input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.app-name-verification input.valid {
+    border-color: #28a745;
+    background-color: #f8fff9;
+}
+
+.app-name-verification input.invalid {
+    border-color: #dc3545;
+    background-color: #fff5f5;
+}
+
+.verification-status {
+    margin-top: 8px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.verification-status.valid {
+    color: #28a745;
+}
+
+.verification-status.invalid {
+    color: #dc3545;
+}
+
+.danger-modal-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.danger-confirm-button {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.danger-confirm-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #c82333, #b21e2c);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.danger-confirm-button:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.danger-confirm-button:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
 /* レスポンシブデザイン（タブレット・スマホ対応） */
 @media screen and (max-width: 992px) {
     .settings-container {

@@ -772,7 +772,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('import-csv-button-modal').addEventListener('click', () => {
             document.getElementById('csv-file-input').click();
         });
-        document.getElementById('reset-database-button-modal').addEventListener('click', resetDatabase);
+        document.getElementById('reset-database-button-modal').addEventListener('click', openDatabaseResetModal);
         document.getElementById('default-tasks-settings-button-modal').addEventListener('click', () => {
             closeBasicSettingsModal();
             openDefaultTasksModal();
@@ -781,6 +781,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 管理者レポートボタンを追加（管理者権限の場合のみ）
         addAdminReportButton();
+
+        // データベース初期化モーダルのイベントリスナー
+        const appNameInput = document.getElementById('app-name-input');
+        const confirmResetButton = document.getElementById('confirm-reset-button');
+        const cancelResetButton = document.getElementById('cancel-reset-button');
+
+        if (appNameInput) {
+            appNameInput.addEventListener('input', validateAppName);
+            appNameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !confirmResetButton.disabled) {
+                    resetDatabase();
+                }
+            });
+        }
+
+        if (confirmResetButton) {
+            confirmResetButton.addEventListener('click', resetDatabase);
+        }
+
+        if (cancelResetButton) {
+            cancelResetButton.addEventListener('click', closeDatabaseResetModal);
+        }
+
+        // モーダル外クリックで閉じる
+        const databaseResetModal = document.getElementById('database-reset-modal');
+        if (databaseResetModal) {
+            databaseResetModal.addEventListener('click', (e) => {
+                if (e.target === databaseResetModal) {
+                    closeDatabaseResetModal();
+                }
+            });
+        }
     }
 
     // --- Client Management ---
@@ -2216,15 +2248,59 @@ document.addEventListener('DOMContentLoaded', () => {
         return result;
     }
     
+    // --- Database Reset Modal Functions ---
+    function openDatabaseResetModal() {
+        const modal = document.getElementById('database-reset-modal');
+        const input = document.getElementById('app-name-input');
+        const confirmButton = document.getElementById('confirm-reset-button');
+        const status = document.getElementById('verification-status');
+
+        // リセット処理
+        input.value = '';
+        input.className = '';
+        confirmButton.disabled = true;
+        status.textContent = '';
+        status.className = 'verification-status';
+
+        modal.style.display = 'flex';
+        input.focus();
+    }
+
+    function closeDatabaseResetModal() {
+        const modal = document.getElementById('database-reset-modal');
+        modal.style.display = 'none';
+    }
+
+    function validateAppName() {
+        const input = document.getElementById('app-name-input');
+        const confirmButton = document.getElementById('confirm-reset-button');
+        const status = document.getElementById('verification-status');
+        const expectedName = '事業者管理アプリ';
+
+        if (input.value === expectedName) {
+            input.classList.remove('invalid');
+            input.classList.add('valid');
+            confirmButton.disabled = false;
+            status.textContent = '✓ 正しく入力されました';
+            status.className = 'verification-status valid';
+        } else if (input.value.length > 0) {
+            input.classList.remove('valid');
+            input.classList.add('invalid');
+            confirmButton.disabled = true;
+            status.textContent = '✗ アプリ名が正しくありません';
+            status.className = 'verification-status invalid';
+        } else {
+            input.className = '';
+            confirmButton.disabled = true;
+            status.textContent = '';
+            status.className = 'verification-status';
+        }
+    }
+
     // --- Database Reset Function ---
     async function resetDatabase() {
-        const firstConfirm = confirm('⚠️ 危険な操作です ⚠️\n\nこの操作により以下が実行されます：\n• 全てのクライアントデータが削除されます\n• 全ての月次タスクデータが削除されます\n• サンプルデータで初期化されます\n\nこの操作は元に戻せません。続行しますか？');
-        
-        if (!firstConfirm) return;
-        
-        const secondConfirm = confirm('本当に実行しますか？\n\n全てのデータが失われます。\n「はい」をクリックすると実行されます。');
-        
-        if (!secondConfirm) return;
+        // モーダルを閉じる
+        closeDatabaseResetModal();
         
         try {
             const resetToast = toast.loading('データベースを初期化中... この処理には時間がかかります');

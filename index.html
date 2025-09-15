@@ -343,7 +343,11 @@
                         <div class="setting-item button-setting">
                             <button id="backup-settings-button-modal" class="settings-button admin-only">💾 バックアップ設定</button>
                         </div>
-                        <div class="setting-item button-setting">
+
+                        <!-- 危険な操作の区切り -->
+                        <div class="danger-section-divider"></div>
+
+                        <div class="setting-item button-setting danger-section">
                             <button id="reset-database-button-modal" class="settings-button admin-only danger-button">⚠️ データベース初期化</button>
                         </div>
                     </div>
@@ -535,6 +539,41 @@
             </button>
             <div id="auth-status" style="margin-top: 20px; padding: 10px; border-radius: 4px; display: none;">
                 <span id="auth-status-text"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Database Reset Confirmation Modal -->
+    <div id="database-reset-modal" class="modal" style="display:none;">
+        <div class="modal-content danger-modal-content">
+            <div class="danger-warning-header">
+                <div class="warning-icon">⚠️</div>
+                <h2>危険な操作: データベース初期化</h2>
+            </div>
+
+            <div class="danger-warning-content">
+                <p>この操作により以下が実行されます：</p>
+                <ul>
+                    <li>全てのクライアントデータが削除されます</li>
+                    <li>全ての月次タスクデータが削除されます</li>
+                    <li>サンプルデータで初期化されます</li>
+                </ul>
+                <p><strong>この操作は元に戻せません。</strong></p>
+
+                <div class="app-name-verification">
+                    <label>続行するには、アプリ名を正確に入力してください:</label>
+                    <input type="text" id="app-name-input" placeholder="事業者管理アプリ">
+                    <div class="verification-status" id="verification-status"></div>
+                </div>
+            </div>
+
+            <div class="danger-modal-actions">
+                <button id="confirm-reset-button" class="danger-confirm-button" disabled>
+                    データベースを初期化する
+                </button>
+                <button id="cancel-reset-button" class="cancel-button">
+                    キャンセル
+                </button>
             </div>
         </div>
     </div>
