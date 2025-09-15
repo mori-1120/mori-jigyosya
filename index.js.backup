@@ -173,14 +173,16 @@ document.addEventListener('DOMContentLoaded', () => {
     async function signInWithGoogle() {
         try {
             showAuthStatus('Googleでログイン中...', 'warning');
-
+            console.log('Starting Google sign in...');
+            
             const { data, error } = await SupabaseAPI.signInWithGoogle();
-
+            
             if (error) {
                 console.error('Sign in error:', error);
                 showAuthStatus('❌ ログインエラー: ' + error.message, 'error');
                 return false;
             } else {
+                console.log('Sign in success:', data);
                 showAuthStatus('✅ ログイン成功！リダイレクト中...', 'success');
                 return true;
             }
@@ -253,12 +255,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function checkAuthState() {
         try {
+            console.log('Checking authentication state...');
             const user = await SupabaseAPI.getCurrentUser();
-
+            
             if (user) {
+                console.log('User authenticated:', user.email);
                 updateUserDisplay(user);
                 return true;
             } else {
+                console.log('User not authenticated - showing auth modal');
                 authModal.style.display = 'flex';
                 return false;
             }
@@ -288,6 +293,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Listen for auth state changes
         if (SupabaseAPI.supabase && SupabaseAPI.supabase.auth) {
             SupabaseAPI.supabase.auth.onAuthStateChange(async (event, session) => {
+                console.log('Auth state changed:', event, session?.user?.email);
+                
                 if (event === 'SIGNED_IN' && session?.user) {
                     updateUserDisplay(session.user);
                     // Initialize app when user signs in
@@ -302,6 +309,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Initial Setup ---
     async function initializeApp() {
+        console.log('[Main] Starting application initialization...');
+        
         // Add auth event listeners first
         addAuthEventListeners();
         
@@ -310,6 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Only initialize app if authenticated
         if (!isAuthenticated) {
+            console.log('[Main] User not authenticated, showing auth modal');
             authModal.style.display = 'flex';
             hideStatus();
             return;
@@ -321,9 +331,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize app when authenticated
     async function initializeAuthenticatedApp() {
         if (isInitialized) {
+            console.log('Initialization already in progress or completed, skipping.');
             return;
         }
         isInitialized = true;
+        console.log('Starting authenticated app initialization...');
 
         try {
             const authCheckToast = toast.loading('ユーザー権限を確認中...');
@@ -370,6 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Disable admin buttons if user is not an admin
             if (userRole !== 'admin') {
+                console.log(`User role is '${userRole}'. Disabling admin buttons.`);
                 const manageStaffButton = document.getElementById('manage-staff-button');
                 // resetDatabaseButton は基本設定モーダル内に移動済み
                 
@@ -625,13 +638,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Staff modal - with debugging
+        console.log('Setting up staff modal event listeners...');
         const manageStaffBtn = document.getElementById('manage-staff-button');
+        console.log('manageStaffBtn found:', manageStaffBtn);
         if (manageStaffBtn) {
+            console.log('Adding click listener to manage-staff-button');
             manageStaffBtn.addEventListener('click', (e) => {
+                console.log('manage-staff-button clicked!', e);
                 e.preventDefault();
                 e.stopPropagation();
                 openStaffEditModal();
             });
+            console.log('Event listener added successfully');
         } else {
             console.error('manage-staff-button not found in DOM');
         }
@@ -697,12 +715,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // URL設定ボタンのイベントリスナー - with debugging
+        console.log('Setting up URL settings button event listener...');
+        console.log('urlSettingsButton found:', urlSettingsButton);
         if (urlSettingsButton) {
+            console.log('Adding click listener to url-settings-button');
             urlSettingsButton.addEventListener('click', (e) => {
+                console.log('url-settings-button clicked!', e);
                 e.preventDefault();
                 e.stopPropagation();
                 openUrlSettingsModal();
             });
+            console.log('URL settings event listener added successfully');
         } else {
             console.error('url-settings-button not found in DOM');
         }
@@ -721,8 +744,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Table header sorting
+        console.log('Adding sort event listener to:', clientsTableHeadRow);
         if (clientsTableHeadRow) {
             clientsTableHeadRow.addEventListener('click', handleSort);
+            console.log('Sort event listener added successfully');
         } else {
             console.error('clientsTableHeadRow not found!');
         }
@@ -731,15 +756,20 @@ document.addEventListener('DOMContentLoaded', () => {
         clientsTableBody.addEventListener('click', handleClientClick);
 
         // Add client button - with debugging
+        console.log('Setting up add client button event listener...');
         const addClientBtn = document.getElementById('add-client-button');
+        console.log('addClientBtn found:', addClientBtn);
         if (addClientBtn) {
+            console.log('Adding click listener to add-client-button');
             addClientBtn.addEventListener('click', (e) => {
+                console.log('add-client-button clicked!', e);
                 e.preventDefault();
                 e.stopPropagation();
                 // 新規作成画面でもスタッフデータをキャッシュ
                 sessionStorage.setItem('cached_staffs_data', JSON.stringify(staffs));
                 window.location.href = 'edit.html';
             });
+            console.log('Add client event listener added successfully');
         } else {
             console.error('add-client-button not found in DOM');
         }
@@ -843,6 +873,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 custom_tasks_by_year: customTasksByYear
             });
 
+            console.log('Initial tasks set up for client:', client.name, 'Method:', accountingMethod, 'Tasks:', defaultTaskList);
         } catch (error) {
             console.error('Error setting up initial tasks for client:', client.id, error);
         }
@@ -1120,6 +1151,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Staff Management ---
     function openStaffEditModal() {
         try {
+            console.log('Opening staff edit modal...');
+            console.log('staffEditModal element:', staffEditModal);
             
             // キャッシュされたstaffsデータを使用（DB問い合わせ不要）
             originalStaffsState = JSON.parse(JSON.stringify(staffs));
@@ -1129,6 +1162,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (staffEditModal) {
                 staffEditModal.style.display = 'block';
+                console.log('Modal display set to block');
+                console.log('Modal computed style:', window.getComputedStyle(staffEditModal));
             } else {
                 console.error('staffEditModal element not found!');
             }
@@ -1320,6 +1355,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const toDelete = originalStaffsState.filter(o => !currentEditingStaffs.some(c => c.id === o.id));
 
+            console.log('Staff operations:', { toDelete, toUpdate, toCreate });
 
             // --- Execute DB Operations ---
             const operations = [];
@@ -1443,6 +1479,7 @@ document.addEventListener('DOMContentLoaded', () => {
             URL.revokeObjectURL(link.href);
             
             toast.update(exportToast, `CSV抽出完了: ${filename}`, 'success');
+            console.log(`Staff CSV exported: ${filename}, ${staffs.length} records`);
             
         } catch (error) {
             console.error('Staff CSV export error:', error);
@@ -1547,7 +1584,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 個別設定のローカルストレージ管理 ---
     function loadPersonalSettings() {
         const savedSettings = JSON.parse(localStorage.getItem('personalSettings') || '{}');
-
+        console.log('Loading personal settings:', savedSettings);
+        
         // デフォルト値
         const defaults = {
             fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
@@ -1558,14 +1596,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // 既存の古い設定を移行（一度だけ）
         if (savedSettings.enableConfettiEffect === undefined && localStorage.getItem('enableConfettiEffect') !== null) {
             savedSettings.enableConfettiEffect = localStorage.getItem('enableConfettiEffect') === 'true';
+            console.log('Migrated old confetti setting:', savedSettings.enableConfettiEffect);
         }
         
         const mergedSettings = { ...defaults, ...savedSettings };
+        console.log('Final personal settings:', mergedSettings);
         return mergedSettings;
     }
 
     function savePersonalSettings(settings) {
+        console.log('Saving personal settings:', settings);
         localStorage.setItem('personalSettings', JSON.stringify(settings));
+        console.log('Saved to localStorage:', localStorage.getItem('personalSettings'));
     }
 
     function applyPersonalSettings(settings) {
@@ -1720,6 +1762,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function updateDefaultTask(accountingMethod, tasks) {
         try {
             await SupabaseAPI.upsertDefaultTasks(accountingMethod, tasks);
+            console.log('Updated default tasks for', accountingMethod, ':', tasks);
         } catch (error) {
             console.error('Error updating default tasks:', error);
             throw error;
@@ -1872,12 +1915,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Setup Functions ---
     function setupTableHeaders() {
+        console.log('Setting up table headers...');
+        console.log('clientsTableHeadRow:', clientsTableHeadRow);
         if (!clientsTableHeadRow) return;
 
         const headers = clientsTableHeadRow.querySelectorAll('th');
+        console.log('Found headers:', headers.length);
         headers.forEach((header, index) => {
             // 既にアイコンが追加されている場合は何もしない
             if (header.querySelector('.sort-icon')) {
+                console.log('Header already has sort icon:', header.textContent.trim());
                 return;
             }
 
@@ -1885,6 +1932,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // 「ドラッグして幅を調整」のテキストを除去して判定
             const cleanHeaderText = headerText.replace(/ドラッグして幅を調整$/, '');
             const sortKey = headerMap[cleanHeaderText] || headerMap[headerText];
+            console.log(`Header ${index}: "${headerText}" -> cleanText: "${cleanHeaderText}" -> sortKey: "${sortKey}"`);
             
             if (sortKey) {
                 header.style.cursor = 'pointer';
@@ -1895,26 +1943,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 icon.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5-5 5 5H7z"/><path d="M7 14l5 5 5-5H7z"/></svg>';
                 icon.style.cssText = 'margin-left: 8px; opacity: 0.4; transition: opacity 0.2s; vertical-align: middle;';
                 header.appendChild(icon);
+                console.log('Added sort icon to:', headerText);
             } else {
                 // ソートできない列（「編集」など）は通常のカーソルのままにする
                 header.style.cursor = 'default';
+                console.log(`Header "${cleanHeaderText}" is not sortable, skipping sort icon`);
             }
         });
     }
 
     function handleSort(e) {
+        console.log('Sort clicked:', e.target);
         const header = e.target.closest('th');
+        console.log('Header found:', header);
         if (!header) return;
 
         const sortKey = header.getAttribute('data-sort-key');
+        console.log('Sort key:', sortKey);
         if (!sortKey) return;
 
+        console.log('Current sort:', currentSortKey, currentSortDirection);
         if (currentSortKey === sortKey) {
             currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
         } else {
             currentSortKey = sortKey;
             currentSortDirection = 'asc';
         }
+        console.log('New sort:', currentSortKey, currentSortDirection);
 
         // 無限ループ防止フラグ
         window.isRenderingClients = true;
@@ -2300,6 +2355,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- URL Settings Modal Functions ---
     function openUrlSettingsModal() {
+        console.log('Opening URL settings modal...');
+        console.log('urlSettingsModal element:', urlSettingsModal);
         
         originalAppLinksState = JSON.parse(JSON.stringify(appLinks));
         currentEditingAppLinks = JSON.parse(JSON.stringify(appLinks));
@@ -2307,6 +2364,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (urlSettingsModal) {
             urlSettingsModal.style.display = 'block';
+            console.log('URL modal display set to block');
+            console.log('URL modal computed style:', window.getComputedStyle(urlSettingsModal));
         } else {
             console.error('urlSettingsModal element not found!');
         }
@@ -2769,11 +2828,13 @@ document.addEventListener('DOMContentLoaded', () => {
             settings.time = time;
             settings.method = 'cloud';
             SupabaseAPI.saveBackupSettings(settings);
+            console.log('✅ 自動バックアップが有効化されました');
         },
         disable: () => {
             const settings = SupabaseAPI.getBackupSettings();
             settings.enabled = false;
             SupabaseAPI.saveBackupSettings(settings);
+            console.log('❌ 自動バックアップが無効化されました');
         }
     };
 
@@ -3066,12 +3127,14 @@ document.addEventListener('DOMContentLoaded', () => {
         async function showBackupSelectionModal() {
             try {
                 // Supabase Storageから利用可能なバックアップファイルを取得
+                console.log('🔍 バックアップファイル取得開始...');
                 
                 // まずweeklyフォルダの曜日フォルダ一覧を取得
                 const { data: dayFolders, error: listError } = await supabase.storage
                     .from('backups')
                     .list('weekly', { limit: 100 });
 
+                console.log('📁 weeklyフォルダの曜日フォルダ:', dayFolders);
                 if (listError) {
                     console.error('バックアップファイル一覧取得エラー:', listError);
                     throw new Error('バックアップファイル一覧の取得に失敗しました');
@@ -3106,12 +3169,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 const backupFiles = allBackupFiles;
+                console.log('📊 取得されたバックアップファイル:', backupFiles);
 
                 // レポートファイルも取得
                 const { data: reportFiles, error: reportListError } = await supabase.storage
                     .from('backups')
                     .list('reports', { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
 
+                console.log('📋 reportsフォルダの内容:', reportFiles);
                 if (reportListError) {
                     console.warn('レポートファイル一覧取得エラー:', reportListError);
                 }
@@ -3325,9 +3390,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (type === 'report') {
                     // レポートファイルの場合は既存のレポート表示機能を使用
+                    console.log('📋 レポートファイルを表示:', path);
                     SupabaseAPI.showAdminBackupReport(contentData, data.size, path);
                 } else {
                     // データファイルの場合は新しい詳細表示機能を使用
+                    console.log('📊 データバックアップファイルを表示:', path, 'サイズ:', data.size);
                     showBackupDataModal(contentData, data.size, path);
                 }
 
