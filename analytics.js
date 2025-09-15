@@ -1722,9 +1722,10 @@ class AnalyticsPage {
 
                 th, td {
                     border: 1px solid #dee2e6 !important;
-                    padding: 6px 4px !important;
+                    padding: 3px 2px !important;
                     text-align: center;
                     vertical-align: middle;
+                    line-height: 1.2;
                 }
 
                 /* 年月列の幅を統一 */
@@ -1926,7 +1927,7 @@ class AnalyticsPage {
                     const monthData = row.monthlyProgress[month.key] || { completed: 0, total: 0, rate: 0 };
                     const currentMonth = month.month;
 
-                    let cellStyle = 'border: 1px solid #dee2e6; padding: 8px; text-align: center;';
+                    let cellStyle = 'border: 1px solid #dee2e6; padding: 4px; text-align: center;';
                     let cellContent = '';
 
                     // 決算月の視覚化
@@ -1958,7 +1959,7 @@ class AnalyticsPage {
                             progressText = `📋 ${progressText}`;
                         }
 
-                        cellContent = `<div style="background: ${progressColor}; color: white; padding: 4px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; white-space: nowrap;">${progressText}</div>`;
+                        cellContent = `<div style="background: ${progressColor}; color: white; padding: 2px 4px; border-radius: 3px; font-size: 9px; font-weight: bold; white-space: nowrap;">${progressText}</div>`;
                     } else {
                         cellContent = '<span style="color: #999;">-</span>';
                     }
@@ -1968,7 +1969,7 @@ class AnalyticsPage {
             </tr>`;
         }).join('')}</tbody>`;
 
-        return `<table style="width: 100%; border-collapse: collapse; font-size: 10px;">${headerHTML}${bodyHTML}</table>`;
+        return `<table style="width: 100%; border-collapse: collapse; font-size: 9px;">${headerHTML}${bodyHTML}</table>`;
     }
 
     generateMonthlyProgressTable(matrix) {
