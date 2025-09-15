@@ -2427,20 +2427,388 @@ class AnalyticsPage {
 
         return '';
     }
+
+    // === 週次進捗グラフ機能 ===
+
+    async initializeWeeklyChart() {
+        try {
+            // 週次グラフ関連のイベントリスナー設定
+            this.setupWeeklyChartEventListeners();
+
+            // 既存データがあるかチェック
+            await this.checkExistingWeeklyData();
+
+        } catch (error) {
+            console.error('週次グラフ初期化エラー:', error);
+        }
+    }
+
+    setupWeeklyChartEventListeners() {
+        // スナップショット保存ボタン
+        const saveSnapshotBtn = document.getElementById('save-snapshot-btn');
+        if (saveSnapshotBtn) {
+            saveSnapshotBtn.addEventListener('click', () => this.saveWeeklySnapshot());
+        }
+
+        // グラフ表示切替ボタン
+        const toggleChartBtn = document.getElementById('toggle-chart-btn');
+        if (toggleChartBtn) {
+            toggleChartBtn.addEventListener('click', () => this.toggleWeeklyChart());
+        }
+
+        // フィルター変更時にグラフも更新
+        const originalPerformAnalysis = this.performAnalysis.bind(this);
+        this.performAnalysis = async () => {
+            await originalPerformAnalysis();
+            if (this.weeklyChartInstance) {
+                await this.updateWeeklyChart();
+            }
+        };
+    }
+
+    async checkExistingWeeklyData() {
+        try {
+            // 最新のスナップショットがあるかチェック
+            const latestSnapshot = await SupabaseAPI.getLatestWeeklySnapshot();
+
+            if (latestSnapshot) {
+                document.getElementById('weekly-latest-snapshot').textContent =
+                    new Date(latestSnapshot).toLocaleDateString('ja-JP');
+
+                // グラフデータを読み込み
+                await this.loadWeeklyChartData();
+            } else {
+                // データがない状態を表示
+                this.showNoWeeklyData();
+            }
+
+        } catch (error) {
+            console.error('週次データチェックエラー:', error);
+            this.showNoWeeklyData();
+        }
+    }
+
+    async saveWeeklySnapshot() {
+        const saveBtn = document.getElementById('save-snapshot-btn');
+        const originalText = saveBtn.textContent;
+
+        try {
+            saveBtn.textContent = '📊 保存中...';
+            saveBtn.disabled = true;
+
+            const result = await SupabaseAPI.saveWeeklySnapshot();
+
+            if (result.success) {
+                showToast(
+                    `週次スナップショットを保存しました (${result.saved_count}件)`,
+                    'success',
+                    5000
+                );
+
+                // UI更新
+                document.getElementById('weekly-latest-snapshot').textContent =
+                    new Date(result.week_date).toLocaleDateString('ja-JP');
+
+                // グラフデータを再読み込み
+                await this.loadWeeklyChartData();
+
+            } else {
+                throw new Error(result.message || 'スナップショットの保存に失敗しました');
+            }
+
+        } catch (error) {
+            console.error('スナップショット保存エラー:', error);
+            showToast(`スナップショット保存に失敗: ${error.message}`, 'error');
+
+        } finally {
+            saveBtn.textContent = originalText;
+            saveBtn.disabled = false;
+        }
+    }
+
+    async loadWeeklyChartData() {
+        try {
+            // 現在のフィルターを適用して週次データを取得
+            const filters = this.buildWeeklyFilters();
+            const weeklyData = await SupabaseAPI.getWeeklyTrends(filters);
+
+            if (weeklyData && weeklyData.length > 0) {
+                this.weeklyChartData = weeklyData;
+                this.updateWeeklyInfoDisplay(weeklyData);
+
+                // 初期状態ではグラフは非表示
+                document.getElementById('no-weekly-data').style.display = 'none';
+
+            } else {
+                this.showNoWeeklyData();
+            }
+
+        } catch (error) {
+            console.error('週次データ読み込みエラー:', error);
+            this.showNoWeeklyData();
+        }
+    }
+
+    buildWeeklyFilters() {
+        const filters = {};
+
+        // 期間フィルター（3ヶ月前から）
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setMonth(endDate.getMonth() - 3);
+
+        // 週の開始日（月曜日）に調整
+        const startMonday = new Date(startDate);
+        startMonday.setDate(startDate.getDate() - (startDate.getDay() || 7) + 1);
+
+        const endMonday = new Date(endDate);
+        endMonday.setDate(endDate.getDate() - (endDate.getDay() || 7) + 1);
+
+        filters.startDate = startMonday.toISOString().split('T')[0];
+        filters.endDate = endMonday.toISOString().split('T')[0];
+
+        // 他のフィルターも適用
+        if (this.currentFilters.staffId) {
+            filters.staffId = this.currentFilters.staffId;
+        }
+        if (this.currentFilters.fiscalMonth) {
+            filters.fiscalMonth = parseInt(this.currentFilters.fiscalMonth);
+        }
+        if (this.currentFilters.businessName) {
+            filters.clientName = this.currentFilters.businessName;
+        }
+
+        return filters;
+    }
+
+    updateWeeklyInfoDisplay(weeklyData) {
+        // データポイント数
+        document.getElementById('weekly-data-points').textContent = `${weeklyData.length}週`;
+
+        // 前週比計算
+        if (weeklyData.length >= 2) {
+            const latest = weeklyData[weeklyData.length - 1];
+            const change = latest.week_over_week_change;
+
+            if (change !== null) {
+                const symbol = change > 0 ? '▲' : change < 0 ? '▼' : '→';
+                const color = change > 0 ? '#28a745' : change < 0 ? '#dc3545' : '#6c757d';
+
+                document.getElementById('weekly-trend-value').innerHTML =
+                    `<span style="color: ${color}">${symbol} ${Math.abs(change).toFixed(1)}%</span>`;
+            } else {
+                document.getElementById('weekly-trend-value').textContent = '--';
+            }
+        } else {
+            document.getElementById('weekly-trend-value').textContent = '--';
+        }
+
+        // 最新記録日
+        if (weeklyData.length > 0) {
+            const latest = weeklyData[weeklyData.length - 1];
+            document.getElementById('weekly-latest-snapshot').textContent =
+                new Date(latest.week_date).toLocaleDateString('ja-JP');
+        }
+    }
+
+    async toggleWeeklyChart() {
+        const toggleBtn = document.getElementById('toggle-chart-btn');
+        const chartArea = document.getElementById('weekly-chart-area');
+        const infoArea = document.getElementById('weekly-progress-info');
+
+        if (chartArea.style.display === 'none' || !chartArea.style.display) {
+            // グラフを表示
+            if (!this.weeklyChartData || this.weeklyChartData.length === 0) {
+                showToast('表示する週次データがありません', 'warning');
+                return;
+            }
+
+            await this.showWeeklyChart();
+            toggleBtn.textContent = '📈 グラフを隠す';
+
+        } else {
+            // グラフを非表示
+            chartArea.style.display = 'none';
+            infoArea.style.display = 'none';
+            toggleBtn.textContent = '📈 グラフを表示';
+        }
+    }
+
+    async showWeeklyChart() {
+        try {
+            const chartArea = document.getElementById('weekly-chart-area');
+            const infoArea = document.getElementById('weekly-progress-info');
+
+            chartArea.style.display = 'block';
+            infoArea.style.display = 'block';
+
+            // Chart.jsでグラフ作成
+            await this.createWeeklyChart();
+
+        } catch (error) {
+            console.error('週次グラフ表示エラー:', error);
+            showToast('グラフの表示に失敗しました', 'error');
+        }
+    }
+
+    async createWeeklyChart() {
+        const canvas = document.getElementById('weeklyProgressChart');
+        const ctx = canvas.getContext('2d');
+
+        // 既存のチャートを破棄
+        if (this.weeklyChartInstance) {
+            this.weeklyChartInstance.destroy();
+        }
+
+        // データ準備
+        const labels = this.weeklyChartData.map(trend => {
+            const date = new Date(trend.week_date);
+            return `${date.getMonth() + 1}/${date.getDate()}`;
+        });
+
+        const avgProgressData = this.weeklyChartData.map(trend => trend.average_progress);
+        const completedData = this.weeklyChartData.map(trend => trend.completed_count);
+
+        // Chart.js設定
+        const config = {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '平均進捗率 (%)',
+                        data: avgProgressData,
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        yAxisID: 'y',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: '完了クライアント数',
+                        data: completedData,
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        yAxisID: 'y1',
+                        tension: 0.4,
+                        borderDash: [5, 5]
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        title: {
+                            display: true,
+                            text: '週 (月曜日基準)'
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: '平均進捗率 (%)'
+                        },
+                        max: 100,
+                        min: 0
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: '完了クライアント数'
+                        },
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '週次進捗推移'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            afterLabel: (context) => {
+                                const weekData = this.weeklyChartData[context.dataIndex];
+                                return [
+                                    `総クライアント数: ${weekData.total_clients}`,
+                                    `要注意クライアント: ${weekData.low_progress_count}`,
+                                    `前週比: ${weekData.week_over_week_change ?
+                                        (weekData.week_over_week_change > 0 ? '+' : '') +
+                                        weekData.week_over_week_change.toFixed(1) + '%' : 'N/A'}`
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        // チャート作成
+        this.weeklyChartInstance = new Chart(ctx, config);
+    }
+
+    async updateWeeklyChart() {
+        if (!this.weeklyChartInstance) return;
+
+        try {
+            // 新しいデータでチャートを更新
+            await this.loadWeeklyChartData();
+
+            if (this.weeklyChartData && this.weeklyChartData.length > 0) {
+                await this.createWeeklyChart();
+            }
+
+        } catch (error) {
+            console.error('週次グラフ更新エラー:', error);
+        }
+    }
+
+    showNoWeeklyData() {
+        document.getElementById('no-weekly-data').style.display = 'block';
+        document.getElementById('weekly-chart-area').style.display = 'none';
+        document.getElementById('weekly-progress-info').style.display = 'none';
+
+        const toggleBtn = document.getElementById('toggle-chart-btn');
+        if (toggleBtn) {
+            toggleBtn.textContent = '📈 グラフを表示';
+        }
+
+        // 情報をクリア
+        document.getElementById('weekly-data-points').textContent = '--';
+        document.getElementById('weekly-trend-value').textContent = '--';
+    }
 }
 
 // ページ読み込み時に初期化
 document.addEventListener('DOMContentLoaded', async () => {
     window.analytics = new AnalyticsPage();
-    
+
     // デバッグ用: グローバル登録確認
-    
+
     try {
         await window.analytics.initialize();
+
+        // 週次グラフ初期化
+        await window.analytics.initializeWeeklyChart();
+
     } catch (error) {
         console.error('❌ Analytics initialization error:', error);
         showToast('分析機能の初期化に失敗しました', 'error');
-        
+
         // 最低限のUIは動作するようにする
         window.analytics.setupEventListeners();
     }

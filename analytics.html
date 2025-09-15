@@ -13,6 +13,9 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="custom-dropdown.css">
     <link rel="stylesheet" href="toast.css">
+
+    <!-- Chart.js CDN for weekly progress graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 </head>
 <body>
     <div class="container">
@@ -180,6 +183,68 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- 週次進捗グラフ -->
+        <div id="weekly-progress-chart-container" style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0;">📈 週次進捗推移</h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <!-- スナップショット保存ボタン -->
+                    <button id="save-snapshot-btn" style="
+                        background: linear-gradient(135deg, #28a745, #20c997);
+                        color: white;
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-weight: 500;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    ">📊 現在の進捗を記録</button>
+
+                    <!-- グラフ表示切替ボタン -->
+                    <button id="toggle-chart-btn" style="
+                        background: #6c757d;
+                        color: white;
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 14px;
+                    ">📈 グラフを表示</button>
+                </div>
+            </div>
+
+            <!-- グラフ情報表示エリア -->
+            <div id="weekly-progress-info" style="background: #e9f7ef; padding: 15px; border-radius: 6px; margin-bottom: 15px; display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 18px; font-weight: bold; color: #28a745;" id="weekly-trend-value">--</div>
+                        <div style="font-size: 12px; color: #6c757d;">前週比増減</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 18px; font-weight: bold; color: #007bff;" id="weekly-data-points">--</div>
+                        <div style="font-size: 12px; color: #6c757d;">データ週数</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 18px; font-weight: bold; color: #17a2b8;" id="weekly-latest-snapshot">--</div>
+                        <div style="font-size: 12px; color: #6c757d;">最新記録日</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- グラフエリア -->
+            <div id="weekly-chart-area" style="position: relative; height: 400px; display: none;">
+                <canvas id="weeklyProgressChart" style="width: 100%; height: 100%;"></canvas>
+            </div>
+
+            <!-- データなし表示 -->
+            <div id="no-weekly-data" style="text-align: center; padding: 40px; color: #6c757d;">
+                <div style="font-size: 48px; margin-bottom: 10px;">📈</div>
+                <div style="font-size: 16px; margin-bottom: 8px;">週次進捗データがありません</div>
+                <div style="font-size: 14px;">「現在の進捗を記録」ボタンを押してスナップショットを作成してください</div>
             </div>
         </div>
 

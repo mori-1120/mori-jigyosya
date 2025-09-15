@@ -2602,9 +2602,210 @@ export class SupabaseAPI {
     }
 }
 
+    // === 週次進捗スナップショット機能 ===
+
+    // 現在の進捗状況をスナップショットとして保存
+    static async saveWeeklySnapshot(weekDate = null) {
+        try {
+            if (!weekDate) {
+                // 現在週の月曜日を取得
+                const now = new Date();
+                const monday = new Date(now);
+                monday.setDate(now.getDate() - (now.getDay() || 7) + 1);
+                weekDate = monday.toISOString().split('T')[0];
+            }
+
+            // 既存のスナップショットをクリア（同じ週のデータは上書き）
+            await supabase
+                .from('weekly_progress_snapshots')
+                .delete()
+                .eq('week_date', weekDate);
+
+            // 現在の全クライアントと月次タスクを取得
+            const clients = await this.getClients();
+            const monthlyTasks = await this.getMonthlyTasks();
+
+            const snapshots = [];
+
+            for (const client of clients) {
+                if (client.status === 'inactive') continue; // 非活性クライアントはスキップ
+
+                // 現在年月を計算（決算年度ベース）
+                const now = new Date();
+                const currentYear = client.fiscal_month <= now.getMonth() + 1 ? now.getFullYear() : now.getFullYear() - 1;
+                const currentMonth = `${currentYear + (now.getMonth() + 1 >= client.fiscal_month ? 0 : 1)}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+                // 該当月のタスクを取得
+                const monthlyTask = monthlyTasks.find(task =>
+                    task.client_id === client.id && task.month === currentMonth
+                );
+
+                let progressRate = 0;
+                let completedTasks = 0;
+                let totalTasks = 0;
+
+                if (monthlyTask && monthlyTask.tasks) {
+                    const tasks = monthlyTask.tasks;
+                    totalTasks = Object.keys(tasks).length;
+                    completedTasks = Object.values(tasks).filter(Boolean).length;
+                    progressRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+                }
+
+                snapshots.push({
+                    week_date: weekDate,
+                    client_id: client.id,
+                    staff_id: client.staff_id,
+                    progress_rate: Math.round(progressRate * 100) / 100, // 小数点第2位まで
+                    completed_tasks: completedTasks,
+                    total_tasks: totalTasks,
+                    fiscal_month: client.fiscal_month,
+                    client_name: client.name,
+                    staff_name: client.staffs?.name || null
+                });
+            }
+
+            // バッチ挿入
+            if (snapshots.length > 0) {
+                const { data, error } = await supabase
+                    .from('weekly_progress_snapshots')
+                    .insert(snapshots)
+                    .select();
+
+                if (error) throw error;
+
+                return {
+                    success: true,
+                    saved_count: snapshots.length,
+                    week_date: weekDate,
+                    snapshots: data
+                };
+            }
+
+            return {
+                success: true,
+                saved_count: 0,
+                week_date: weekDate,
+                message: '保存対象のクライアントがありませんでした'
+            };
+
+        } catch (error) {
+            console.error('週次スナップショット保存エラー:', error);
+            throw error;
+        }
+    }
+
+    // 週次進捗データを取得（フィルター対応）
+    static async getWeeklyProgressData(filters = {}) {
+        try {
+            let query = supabase
+                .from('weekly_progress_snapshots')
+                .select('*')
+                .order('week_date', { ascending: true });
+
+            // フィルター適用
+            if (filters.startDate) {
+                query = query.gte('week_date', filters.startDate);
+            }
+            if (filters.endDate) {
+                query = query.lte('week_date', filters.endDate);
+            }
+            if (filters.staffId) {
+                query = query.eq('staff_id', filters.staffId);
+            }
+            if (filters.fiscalMonth) {
+                query = query.eq('fiscal_month', filters.fiscalMonth);
+            }
+            if (filters.clientName) {
+                query = query.ilike('client_name', `%${filters.clientName}%`);
+            }
+
+            const { data, error } = await query;
+
+            if (error) throw error;
+            return data || [];
+
+        } catch (error) {
+            console.error('週次進捗データ取得エラー:', error);
+            throw error;
+        }
+    }
+
+    // 週次進捗トレンド分析（前週比計算）
+    static async getWeeklyTrends(filters = {}) {
+        try {
+            const data = await this.getWeeklyProgressData(filters);
+
+            // 週ごとにグループ化
+            const weeklyData = {};
+            data.forEach(snapshot => {
+                if (!weeklyData[snapshot.week_date]) {
+                    weeklyData[snapshot.week_date] = [];
+                }
+                weeklyData[snapshot.week_date].push(snapshot);
+            });
+
+            // 週次統計を計算
+            const trends = [];
+            const sortedWeeks = Object.keys(weeklyData).sort();
+
+            for (let i = 0; i < sortedWeeks.length; i++) {
+                const weekDate = sortedWeeks[i];
+                const weekSnapshots = weeklyData[weekDate];
+
+                const totalClients = weekSnapshots.length;
+                const avgProgress = totalClients > 0
+                    ? weekSnapshots.reduce((sum, s) => sum + s.progress_rate, 0) / totalClients
+                    : 0;
+                const completedCount = weekSnapshots.filter(s => s.progress_rate >= 100).length;
+                const lowProgressCount = weekSnapshots.filter(s => s.progress_rate < 50).length;
+
+                let weekOverWeekChange = null;
+                if (i > 0) {
+                    const previousWeek = trends[i - 1];
+                    weekOverWeekChange = avgProgress - previousWeek.average_progress;
+                }
+
+                trends.push({
+                    week_date: weekDate,
+                    total_clients: totalClients,
+                    average_progress: Math.round(avgProgress * 100) / 100,
+                    completed_count: completedCount,
+                    low_progress_count: lowProgressCount,
+                    week_over_week_change: weekOverWeekChange ? Math.round(weekOverWeekChange * 100) / 100 : null,
+                    snapshots: weekSnapshots
+                });
+            }
+
+            return trends;
+
+        } catch (error) {
+            console.error('週次トレンド分析エラー:', error);
+            throw error;
+        }
+    }
+
+    // 最新の週次データを取得
+    static async getLatestWeeklySnapshot() {
+        try {
+            const { data, error } = await supabase
+                .from('weekly_progress_snapshots')
+                .select('week_date')
+                .order('week_date', { ascending: false })
+                .limit(1);
+
+            if (error) throw error;
+            return data && data.length > 0 ? data[0].week_date : null;
+
+        } catch (error) {
+            console.error('最新スナップショット取得エラー:', error);
+            throw error;
+        }
+    }
+}
+
 export const handleSupabaseError = (error) => {
     console.error('Supabase error:', error);
-    
+
     if (error.code === 'PGRST116') {
         return 'データが見つかりません';
     } else if (error.code === '23505') {
