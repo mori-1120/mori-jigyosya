@@ -1776,11 +1776,6 @@ class AnalyticsPage {
                     margin-bottom: 10px;
                 }
 
-                .pdf-header .info {
-                    font-size: 12px;
-                    color: #666;
-                    margin: 5px 0;
-                }
 
                 /* 改ページ制御 */
                 .page-break {
@@ -1804,10 +1799,12 @@ class AnalyticsPage {
         <body>
             <div class="pdf-header">
                 <h1>📊 進捗管理ダッシュボード</h1>
-                <div class="info">作成日時: ${new Date().toLocaleString('ja-JP')}</div>
-                <div class="info">集計期間: ${this.currentFilters.startPeriod} ～ ${this.currentFilters.endPeriod}</div>
-                ${this.getFilterInfo().length > 0 ? `<div class="info">検索条件: ${this.getFilterInfo().join(' | ')}</div>` : ''}
-                ${this.getSortInfo() ? `<div class="info">並び順: ${this.getSortInfo()}</div>` : ''}
+                <div style="font-size: 12px; color: #666; margin: 10px 0; line-height: 1.6;">
+                    <span style="font-weight: bold;">作成日時:</span> ${new Date().toLocaleString('ja-JP')} |
+                    <span style="font-weight: bold;">集計期間:</span> ${this.currentFilters.startPeriod} ～ ${this.currentFilters.endPeriod}
+                    ${this.getFilterInfo().length > 0 ? ` | <span style="font-weight: bold;">検索条件:</span> ${this.getFilterInfo().join(' | ')}` : ''}
+                    ${this.getSortInfo() ? ` | <span style="font-weight: bold;">並び順:</span> ${this.getSortInfo()}` : ''}
+                </div>
             </div>
 
             <div class="summary-section">
@@ -1942,11 +1939,6 @@ class AnalyticsPage {
                         }
 
                         cellContent = `<div style="background: ${progressColor}; color: white; padding: 4px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; white-space: nowrap;">${progressText}</div>`;
-
-                        // 決算月アイコン追加
-                        if (fiscalMonth && currentMonth === fiscalMonth) {
-                            cellContent += ' 📅';
-                        }
                     } else {
                         cellContent = '<span style="color: #999;">-</span>';
                     }
