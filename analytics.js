@@ -2566,10 +2566,14 @@ class AnalyticsPage {
         });
 
         if (startPeriod && endPeriod) {
-            // 期間が選択されている場合はそれを使用
+            // 期間が選択されている場合はそれを使用（月次データ用）
+            filters.startPeriod = startPeriod;  // YYYY-MM形式で直接保存
+            filters.endPeriod = endPeriod;      // YYYY-MM形式で直接保存
+
+            // ログ用のdate情報も保持
             const startDate = new Date(startPeriod + '-01');
             const endDate = new Date(endPeriod + '-01');
-            endDate.setMonth(endDate.getMonth() + 1); // 月末まで含める
+            endDate.setMonth(endDate.getMonth() + 1, 0); // その月の最終日
 
             filters.startDate = startDate.toISOString().split('T')[0];
             filters.endDate = endDate.toISOString().split('T')[0];

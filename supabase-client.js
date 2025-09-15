@@ -2654,18 +2654,15 @@ export class SupabaseAPI {
 
             // フィルター条件に基づいて月次タスクを取得
             let monthlyTasks;
-            if (filters.startDate && filters.endDate) {
-                // 期間フィルターがある場合は該当期間のタスクのみ取得
-                const startPeriod = filters.startDate.substring(0, 7); // YYYY-MM形式
-                const endPeriod = filters.endDate.substring(0, 7);
+            if (filters.startPeriod && filters.endPeriod) {
+                // 【修正】直接期間指定でフィルタリング
+                const startPeriod = filters.startPeriod; // YYYY-MM形式
+                const endPeriod = filters.endPeriod;     // YYYY-MM形式
 
                 console.log('🗓️ 月次タスク期間フィルター:', {
                     startPeriod,
                     endPeriod,
-                    originalDates: {
-                        startDate: filters.startDate,
-                        endDate: filters.endDate
-                    }
+                    note: '正確な期間フィルタリング'
                 });
 
                 monthlyTasks = await this.getMonthlyTasksByPeriod(startPeriod, endPeriod);
