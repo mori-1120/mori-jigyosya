@@ -570,9 +570,55 @@ monthly_tasks.client_id → clients.id
 
 ---
 
+## 将来的な最適化計画
+
+### 週次進捗データ容量最適化 (必要時実装)
+
+**実装時期**: データ容量100MB超過時、または性能劣化時
+
+**案1: データ圧縮 (48%削減)**
+```sql
+-- 非正規化フィールド削除版
+CREATE TABLE weekly_progress_snapshots_optimized (
+  id SERIAL PRIMARY KEY,
+  week_date DATE,
+  client_id INTEGER REFERENCES clients(id),
+  staff_id INTEGER REFERENCES staffs(id),
+  progress_rate DECIMAL(5,2),
+  completed_tasks INTEGER,
+  total_tasks INTEGER,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+-- fiscal_month, client_name, staff_name を参照に変更
+```
+
+**案2: 自動アーカイブ機能**
+```sql
+-- 2年以上古いデータを月次集約
+CREATE TABLE monthly_progress_archive (
+  month_date DATE,
+  client_id INTEGER,
+  avg_progress_rate DECIMAL(5,2),
+  avg_completed_tasks INTEGER,
+  avg_total_tasks INTEGER
+);
+```
+
+**案3: 段階的保存頻度**
+- 直近3ヶ月: 週次保存
+- 3ヶ月〜1年: 月次保存
+- 1年以上: 四半期保存
+
+**容量監視**
+- 現在予測: 10年で3.5MB (問題なし)
+- 監視指標: 年間500MB増加で要検討
+- 確認方法: Supabaseダッシュボード定期確認
+
+---
+
 ## 開発時の注意
 ①commit分は短く英文で作成してください
-②開発はステップバイステップで進めて下さい  
+②開発はステップバイステップで進めて下さい
 ③良いアイデアがあったら教えてください
 ④**安定性を最優先**とし、問題発生時は即座にロールバックを実行してください
 
