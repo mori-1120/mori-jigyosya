@@ -1903,44 +1903,44 @@ class AnalyticsPage {
         const months = [];
 
         for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
-            const monthKey = \`\${d.getFullYear()}-\${(d.getMonth() + 1).toString().padStart(2, '0')}\`;
+            const monthKey = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
             const year = d.getFullYear();
             const month = d.getMonth() + 1;
             months.push({ key: monthKey, year, month });
         }
 
         // テーブルヘッダー
-        const headerHTML = \`
+        const headerHTML = `
         <thead>
             <tr>
                 <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">事業者名</th>
                 <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">期間内平均進捗率</th>
                 <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">担当者</th>
                 <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">決算月</th>
-                \${months.map(month =>
-                    \`<th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">\${month.year}/\${month.month}</th>\`
+                ${months.map(month =>
+                    `<th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">${month.year}/${month.month}</th>`
                 ).join('')}
             </tr>
-        </thead>\`;
+        </thead>`;
 
         // テーブルボディ
-        const bodyHTML = \`<tbody>\${matrix.map(row => {
+        const bodyHTML = `<tbody>${matrix.map(row => {
             const fiscalMonth = row.fiscalMonth;
 
-            return \`<tr>
+            return `<tr>
                 <td style="border: 1px solid #dee2e6; padding: 8px;">
-                    <a href="details.html?id=\${row.clientId}" style="color: #007bff; text-decoration: none;">
-                        \${row.clientName}
+                    <a href="details.html?id=${row.clientId}" style="color: #007bff; text-decoration: none;">
+                        ${row.clientName}
                     </a>
                 </td>
                 <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
-                    <span style="font-weight: bold; color: \${this.getProgressColor(row.progressRate)};">
-                        \${row.progressRate}%
+                    <span style="font-weight: bold; color: ${this.getProgressColor(row.progressRate)};">
+                        ${row.progressRate}%
                     </span>
                 </td>
-                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">\${row.staffName}</td>
-                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">\${row.fiscalMonth}月</td>
-                \${months.map(month => {
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.staffName}</td>
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.fiscalMonth}月</td>
+                ${months.map(month => {
                     const monthData = row.monthlyProgress[month.key] || { completed: 0, total: 0, rate: 0 };
                     const currentMonth = month.month;
 
@@ -1971,12 +1971,12 @@ class AnalyticsPage {
                         const progressColor = this.getProgressColor(monthData.rate);
 
                         // 分子が1の場合に📋アイコンを追加
-                        let progressText = \`\${monthData.completed}/\${monthData.total}\`;
+                        let progressText = `${monthData.completed}/${monthData.total}`;
                         if (monthData.completed === 1) {
-                            progressText = \`📋 \${progressText}\`;
+                            progressText = `📋 ${progressText}`;
                         }
 
-                        cellContent = \`<div style="background: \${progressColor}; color: white; padding: 4px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; white-space: nowrap;">\${progressText}</div>\`;
+                        cellContent = `<div style="background: ${progressColor}; color: white; padding: 4px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; white-space: nowrap;">${progressText}</div>`;
 
                         // 決算月アイコン追加
                         if (fiscalMonth && currentMonth === fiscalMonth) {
@@ -1986,12 +1986,12 @@ class AnalyticsPage {
                         cellContent = '<span style="color: #999;">-</span>';
                     }
 
-                    return \`<td style="\${cellStyle}">\${cellContent}</td>\`;
+                    return `<td style="${cellStyle}">${cellContent}</td>`;
                 }).join('')}
-            </tr>\`;
-        }).join('')}</tbody>\`;
+            </tr>`;
+        }).join('')}</tbody>`;
 
-        return \`<table style="width: 100%; border-collapse: collapse; font-size: 10px;">\${headerHTML}\${bodyHTML}</table>\`;
+        return `<table style="width: 100%; border-collapse: collapse; font-size: 10px;">${headerHTML}${bodyHTML}</table>`;
     }
 
     generateMonthlyProgressTable(matrix) {
