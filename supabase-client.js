@@ -2820,6 +2820,21 @@ export class SupabaseAPI {
                 const completedCount = weekSnapshots.filter(s => s.progress_rate >= 100).length;
                 const lowProgressCount = weekSnapshots.filter(s => s.progress_rate < 50).length;
 
+                // 【追加】月次完了数の概算計算
+                // 各クライアントの進捗率から月次完了数を推定
+                let estimatedMonthlyCompleted = 0;
+                let estimatedTotalMonthly = 0;
+
+                weekSnapshots.forEach(snapshot => {
+                    // 期間内の推定月数（12ヶ月期間の場合）
+                    const estimatedMonthsPerClient = 12; // 固定値として設定
+                    estimatedTotalMonthly += estimatedMonthsPerClient;
+
+                    // 進捗率から完了月数を推定（100%なら全月完了、50%なら半分完了）
+                    const estimatedCompletedMonths = (snapshot.progress_rate / 100) * estimatedMonthsPerClient;
+                    estimatedMonthlyCompleted += Math.round(estimatedCompletedMonths);
+                });
+
                 let weekOverWeekChange = null;
                 if (i > 0) {
                     const previousWeek = trends[i - 1];
@@ -2841,6 +2856,9 @@ export class SupabaseAPI {
                     // タスク合計情報も追加
                     total_completed_tasks: totalCompletedTasks,
                     total_all_tasks: totalAllTasks,
+                    // 月次完了情報を追加
+                    monthly_completed: estimatedMonthlyCompleted,
+                    monthly_total: estimatedTotalMonthly,
                     snapshots: weekSnapshots
                 });
             }

@@ -2701,7 +2701,8 @@ class AnalyticsPage {
         });
 
         const avgProgressData = this.weeklyChartData.map(trend => trend.average_progress);
-        const completedData = this.weeklyChartData.map(trend => trend.completed_count);
+        // 【修正】月次完了数データに変更
+        const monthlyCompletedData = this.weeklyChartData.map(trend => trend.monthly_completed || 0);
 
         // タスク完了数データの追加
         const totalCompletedTasks = this.weeklyChartData.map(trend => {
@@ -2737,7 +2738,7 @@ class AnalyticsPage {
                     },
                     {
                         label: '月次完了数',
-                        data: completedData,
+                        data: monthlyCompletedData,
                         borderColor: '#ffc107',
                         backgroundColor: 'rgba(255, 193, 7, 0.1)',
                         yAxisID: 'y2',
@@ -2825,13 +2826,13 @@ class AnalyticsPage {
                                     ];
                                 }
                                 else if (datasetLabel === '月次完了数') {
-                                    // 月次完了数の計算（100%完了クライアント数）
-                                    const monthlyCompletedCount = weekData.completed_count;
-                                    const totalClients = weekData.total_clients;
-                                    const monthlyCompletionRate = totalClients > 0 ? ((monthlyCompletedCount / totalClients) * 100).toFixed(1) : 0;
+                                    // 【修正】正しい月次完了数を使用
+                                    const monthlyCompleted = weekData.monthly_completed || 0;
+                                    const monthlyTotal = weekData.monthly_total || 0;
+                                    const monthlyCompletionRate = monthlyTotal > 0 ? ((monthlyCompleted / monthlyTotal) * 100).toFixed(1) : 0;
 
                                     return [
-                                        `月次完了: ${monthlyCompletedCount} / ${totalClients}`,
+                                        `月次完了: ${monthlyCompleted} / ${monthlyTotal}`,
                                         `月次完了率: ${monthlyCompletionRate}%`,
                                         `要注意: ${weekData.low_progress_count}件`
                                     ];
