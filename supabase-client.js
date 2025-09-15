@@ -2658,9 +2658,21 @@ export class SupabaseAPI {
                 // 期間フィルターがある場合は該当期間のタスクのみ取得
                 const startPeriod = filters.startDate.substring(0, 7); // YYYY-MM形式
                 const endPeriod = filters.endDate.substring(0, 7);
+
+                console.log('🗓️ 月次タスク期間フィルター:', {
+                    startPeriod,
+                    endPeriod,
+                    originalDates: {
+                        startDate: filters.startDate,
+                        endDate: filters.endDate
+                    }
+                });
+
                 monthlyTasks = await this.getMonthlyTasksByPeriod(startPeriod, endPeriod);
+                console.log('📋 取得された月次タスク数:', monthlyTasks.length);
             } else {
                 monthlyTasks = await this.getMonthlyTasks();
+                console.log('📋 全月次タスク数:', monthlyTasks.length);
             }
 
             const snapshots = [];

@@ -2559,6 +2559,12 @@ class AnalyticsPage {
         const startPeriod = this.currentFilters.startPeriod;
         const endPeriod = this.currentFilters.endPeriod;
 
+        console.log('📊 週次フィルター:', {
+            startPeriod,
+            endPeriod,
+            currentFilters: this.currentFilters
+        });
+
         if (startPeriod && endPeriod) {
             // 期間が選択されている場合はそれを使用
             const startDate = new Date(startPeriod + '-01');
@@ -2567,6 +2573,11 @@ class AnalyticsPage {
 
             filters.startDate = startDate.toISOString().split('T')[0];
             filters.endDate = endDate.toISOString().split('T')[0];
+
+            console.log('📅 計算された期間:', {
+                startDate: filters.startDate,
+                endDate: filters.endDate
+            });
         } else {
             // フォールバック: 過去3ヶ月
             const endDate = new Date();
@@ -2575,6 +2586,11 @@ class AnalyticsPage {
 
             filters.startDate = startDate.toISOString().split('T')[0];
             filters.endDate = endDate.toISOString().split('T')[0];
+
+            console.log('⚠️ フォールバック期間使用:', {
+                startDate: filters.startDate,
+                endDate: filters.endDate
+            });
         }
 
         // 他のフィルターも適用
