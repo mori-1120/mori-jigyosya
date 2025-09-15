@@ -2736,7 +2736,7 @@ class AnalyticsPage {
                         borderDash: [5, 5]
                     },
                     {
-                        label: '完了クライアント数',
+                        label: '月次完了数',
                         data: completedData,
                         borderColor: '#ffc107',
                         backgroundColor: 'rgba(255, 193, 7, 0.1)',
@@ -2804,18 +2804,40 @@ class AnalyticsPage {
                         callbacks: {
                             afterLabel: (context) => {
                                 const weekData = this.weeklyChartData[context.dataIndex];
-                                const completedTasks = weekData.snapshots.reduce((sum, s) => sum + s.completed_tasks, 0);
-                                const totalTasks = weekData.snapshots.reduce((sum, s) => sum + s.total_tasks, 0);
+                                const datasetLabel = context.dataset.label;
 
-                                return [
-                                    `完了タスク: ${completedTasks} / ${totalTasks}`,
-                                    `完了クライアント: ${weekData.completed_count}件`,
-                                    `総クライアント: ${weekData.total_clients}件`,
-                                    `要注意: ${weekData.low_progress_count}件`,
-                                    `前週比: ${weekData.week_over_week_change ?
-                                        (weekData.week_over_week_change > 0 ? '+' : '') +
-                                        weekData.week_over_week_change.toFixed(1) + '%' : 'N/A'}`
-                                ];
+                                // 各グラフライン固有の情報のみ表示
+                                if (datasetLabel === '平均進捗率 (%)') {
+                                    const completedTasks = weekData.total_completed_tasks || weekData.snapshots.reduce((sum, s) => sum + s.completed_tasks, 0);
+                                    const totalTasks = weekData.total_all_tasks || weekData.snapshots.reduce((sum, s) => sum + s.total_tasks, 0);
+                                    return [
+                                        `完了タスク: ${completedTasks} / ${totalTasks}`,
+                                        `進捗率: ${weekData.average_progress}%`
+                                    ];
+                                }
+                                else if (datasetLabel === '完了タスク数') {
+                                    const completedTasks = weekData.total_completed_tasks || weekData.snapshots.reduce((sum, s) => sum + s.completed_tasks, 0);
+                                    return [
+                                        `完了タスク数: ${completedTasks}`,
+                                        `前週比: ${weekData.week_over_week_change ?
+                                            (weekData.week_over_week_change > 0 ? '+' : '') +
+                                            weekData.week_over_week_change.toFixed(1) + '%' : 'N/A'}`
+                                    ];
+                                }
+                                else if (datasetLabel === '月次完了数') {
+                                    // 月次完了数の計算（100%完了クライアント数）
+                                    const monthlyCompletedCount = weekData.completed_count;
+                                    const totalClients = weekData.total_clients;
+                                    const monthlyCompletionRate = totalClients > 0 ? ((monthlyCompletedCount / totalClients) * 100).toFixed(1) : 0;
+
+                                    return [
+                                        `月次完了: ${monthlyCompletedCount} / ${totalClients}`,
+                                        `月次完了率: ${monthlyCompletionRate}%`,
+                                        `要注意: ${weekData.low_progress_count}件`
+                                    ];
+                                }
+
+                                return [];
                             }
                         }
                     }
