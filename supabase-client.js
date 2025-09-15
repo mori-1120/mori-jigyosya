@@ -2701,17 +2701,20 @@ export class SupabaseAPI {
                     progressRate = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
                 }
 
-                snapshots.push({
-                    week_date: weekDate,
-                    client_id: client.id,
-                    staff_id: client.staff_id,
-                    progress_rate: Math.round(progressRate * 100) / 100, // 小数点第2位まで
-                    completed_tasks: completedTasks,
-                    total_tasks: totalTasks,
-                    fiscal_month: client.fiscal_month,
-                    client_name: client.name,
-                    staff_name: client.staffs?.name || null
-                });
+                // 【修正】タスクがあるクライアントのみスナップショット保存
+                if (totalTasks > 0) {
+                    snapshots.push({
+                        week_date: weekDate,
+                        client_id: client.id,
+                        staff_id: client.staff_id,
+                        progress_rate: Math.round(progressRate * 100) / 100, // 小数点第2位まで
+                        completed_tasks: completedTasks,
+                        total_tasks: totalTasks,
+                        fiscal_month: client.fiscal_month,
+                        client_name: client.name,
+                        staff_name: client.staffs?.name || null
+                    });
+                }
             }
 
             // バッチ挿入
@@ -2803,25 +2806,41 @@ export class SupabaseAPI {
                 const weekSnapshots = weeklyData[weekDate];
 
                 const totalClients = weekSnapshots.length;
+
+                // 【修正】累積タスク数ベースで進捗率計算（全体ダッシュボードと同じ方式）
+                const totalCompletedTasks = weekSnapshots.reduce((sum, s) => sum + s.completed_tasks, 0);
+                const totalAllTasks = weekSnapshots.reduce((sum, s) => sum + s.total_tasks, 0);
+                const cumulativeProgress = totalAllTasks > 0 ? (totalCompletedTasks / totalAllTasks) * 100 : 0;
+
+                // 従来の平均も保持（参考用）
                 const avgProgress = totalClients > 0
                     ? weekSnapshots.reduce((sum, s) => sum + s.progress_rate, 0) / totalClients
                     : 0;
+
                 const completedCount = weekSnapshots.filter(s => s.progress_rate >= 100).length;
                 const lowProgressCount = weekSnapshots.filter(s => s.progress_rate < 50).length;
 
                 let weekOverWeekChange = null;
                 if (i > 0) {
                     const previousWeek = trends[i - 1];
-                    weekOverWeekChange = avgProgress - previousWeek.average_progress;
+                    // 【修正】累積進捗率ベースで前週比計算
+                    weekOverWeekChange = cumulativeProgress - previousWeek.cumulative_progress;
                 }
 
                 trends.push({
                     week_date: weekDate,
                     total_clients: totalClients,
-                    average_progress: Math.round(avgProgress * 100) / 100,
+                    // 【修正】累積進捗率をメイン指標に
+                    average_progress: Math.round(cumulativeProgress * 100) / 100,
+                    cumulative_progress: Math.round(cumulativeProgress * 100) / 100,
+                    // 参考用として従来の平均も保持
+                    client_average_progress: Math.round(avgProgress * 100) / 100,
                     completed_count: completedCount,
                     low_progress_count: lowProgressCount,
                     week_over_week_change: weekOverWeekChange ? Math.round(weekOverWeekChange * 100) / 100 : null,
+                    // タスク合計情報も追加
+                    total_completed_tasks: totalCompletedTasks,
+                    total_all_tasks: totalAllTasks,
                     snapshots: weekSnapshots
                 });
             }
