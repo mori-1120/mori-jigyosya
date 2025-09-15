@@ -1722,10 +1722,20 @@ class AnalyticsPage {
 
                 th, td {
                     border: 1px solid #dee2e6 !important;
-                    padding: 3px 2px !important;
                     text-align: center;
                     vertical-align: middle;
-                    line-height: 1.2;
+                }
+
+                /* ヘッダーは現在のパディングを維持 */
+                th {
+                    padding: 6px 4px !important;
+                    line-height: 1.4;
+                }
+
+                /* データ行はより小さなパディング */
+                td {
+                    padding: 2px 1px !important;
+                    line-height: 1.1;
                 }
 
                 /* 年月列の幅を統一 */
@@ -1927,7 +1937,7 @@ class AnalyticsPage {
                     const monthData = row.monthlyProgress[month.key] || { completed: 0, total: 0, rate: 0 };
                     const currentMonth = month.month;
 
-                    let cellStyle = 'border: 1px solid #dee2e6; padding: 4px; text-align: center;';
+                    let cellStyle = 'border: 1px solid #dee2e6; padding: 2px; text-align: center;';
                     let cellContent = '';
 
                     // 決算月の視覚化
@@ -1959,7 +1969,7 @@ class AnalyticsPage {
                             progressText = `📋 ${progressText}`;
                         }
 
-                        cellContent = `<div style="background: ${progressColor}; color: white; padding: 2px 4px; border-radius: 3px; font-size: 9px; font-weight: bold; white-space: nowrap;">${progressText}</div>`;
+                        cellContent = `<div style="background: ${progressColor}; color: white; padding: 1px 3px; border-radius: 2px; font-size: 8px; font-weight: bold; white-space: nowrap;">${progressText}</div>`;
                     } else {
                         cellContent = '<span style="color: #999;">-</span>';
                     }
