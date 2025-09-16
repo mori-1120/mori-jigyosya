@@ -260,12 +260,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateUserDisplay(user);
 
                 // ダッシュボード自動リダイレクト設定をチェック
-                const personalSettings = getPersonalSettings();
-                if (personalSettings.autoRedirectDashboard && !window.location.pathname.includes('analytics.html')) {
-                    // 現在のページがanalytics.htmlでない場合のみリダイレクト
-                    console.log('🚀 ダッシュボードに自動リダイレクトします...');
-                    window.location.href = 'analytics.html';
-                    return true;
+                try {
+                    const personalSettings = loadPersonalSettings();
+                    if (personalSettings.autoRedirectDashboard && !window.location.pathname.includes('analytics.html')) {
+                        // 現在のページがanalytics.htmlでない場合のみリダイレクト
+                        console.log('🚀 ダッシュボードに自動リダイレクトします...');
+                        window.location.href = 'analytics.html';
+                        return true;
+                    }
+                } catch (settingsError) {
+                    console.warn('設定の読み込みに失敗しました:', settingsError);
+                    // エラーが発生してもアプリの初期化は続行
                 }
 
                 return true;
