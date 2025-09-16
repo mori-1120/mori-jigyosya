@@ -108,7 +108,7 @@
 
                     <!-- Dashboard Toggle Button -->
                     <button id="toggle-dashboard-button" style="
-                        background: linear-gradient(135deg, #6c757d, #495057);
+                        background: linear-gradient(135deg, #28a745, #20c997);
                         color: white;
                         border: none;
                         padding: 12px 16px;
@@ -119,8 +119,8 @@
                         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                         transition: all 0.3s ease;
                         margin-left: 10px;
-                    " onmouseover="this.style.background='linear-gradient(135deg, #495057, #343a40)'" onmouseout="this.style.background='linear-gradient(135deg, #6c757d, #495057)'">
-                        📊 グラフ表示
+                    " onmouseover="this.style.background='linear-gradient(135deg, #20c997, #17a2b8)'" onmouseout="this.style.background='linear-gradient(135deg, #28a745, #20c997)'">
+                        📊 グラフ非表示
                     </button>
 
                     <div class="export-dropdown" style="position: relative; margin-left: 20px;">
@@ -145,7 +145,7 @@
         </div>
 
         <!-- 統合サマリーダッシュボード（集計結果 + 週次進捗） -->
-        <div id="summary-dashboard" style="display: none; background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 5px; margin-bottom: 10px;">
+        <div id="summary-dashboard" style="display: block; background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 5px; margin-bottom: 10px;">
             <!-- ヘッダー情報 -->
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0px; flex-wrap: wrap; gap: 15px;">
                 <div style="display: flex; align-items: center; gap: 20px;">
@@ -425,8 +425,8 @@
             const toggleButton = document.getElementById('toggle-dashboard-button');
             const dashboardSection = document.querySelector('#summary-dashboard');
 
-            // 初期状態は非表示（元の動作に合わせて）
-            let isDashboardVisible = false;
+            // 初期状態は表示（HTMLの実際の状態に合わせて）
+            let isDashboardVisible = true;
 
             toggleButton.addEventListener('click', function() {
                 if (isDashboardVisible) {
