@@ -289,7 +289,17 @@ class AnalyticsPage {
 
         // エクスポート機能
         this.setupExportEventListeners();
-        
+
+        // 週次進捗スナップショット保存ボタン
+        const saveSnapshotBtn = document.getElementById('save-snapshot-btn');
+        if (saveSnapshotBtn) {
+            saveSnapshotBtn.addEventListener('click', async () => {
+                await this.saveWeeklySnapshot();
+                // 保存後にコンパクト版グラフを更新
+                await this.updateCompactWeeklyChart();
+            });
+        }
+
         // リアルタイムフィルタリング
         this.setupRealtimeFilters();
     }
@@ -523,7 +533,10 @@ class AnalyticsPage {
             
             // エクスポートボタンを有効化
             document.getElementById('export-button').disabled = false;
-            
+
+            // コンパクト版週次グラフを更新
+            await this.updateCompactWeeklyChart();
+
             showToast('集計が完了しました', 'success');
             
         } catch (error) {
@@ -2880,6 +2893,257 @@ class AnalyticsPage {
         document.getElementById('weekly-data-points').textContent = '--';
         document.getElementById('weekly-trend-value').textContent = '--';
     }
+
+    // ========================================
+    // コンパクト版週次グラフ機能 （ダッシュボード統合版）
+    // ========================================
+
+    async initializeCompactWeeklyChart() {
+        try {
+            // 初期データ読み込み
+            await this.loadWeeklyChartData();
+
+            if (this.weeklyChartData && this.weeklyChartData.length > 0) {
+                // グラフ作成
+                await this.createCompactWeeklyChart();
+                this.showCompactWeeklyData();
+
+                // 前週比情報を更新
+                this.updateWeeklyTrendInfo();
+
+            } else {
+                this.showNoCompactWeeklyData();
+            }
+
+        } catch (error) {
+            console.error('コンパクト版週次グラフ初期化エラー:', error);
+            this.showNoCompactWeeklyData();
+        }
+    }
+
+    async createCompactWeeklyChart() {
+        const canvas = document.getElementById('weeklyProgressChartCompact');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+
+        // 既存のチャートを破棄
+        if (this.compactWeeklyChartInstance) {
+            this.compactWeeklyChartInstance.destroy();
+        }
+
+        // データ準備
+        const labels = this.weeklyChartData.map(trend => {
+            const date = new Date(trend.week_date);
+            return `${date.getMonth() + 1}/${date.getDate()}`;
+        });
+
+        const avgProgressData = this.weeklyChartData.map(trend => trend.average_progress);
+        const attentionData = this.weeklyChartData.map(trend => trend.low_progress_count || 0);
+
+        // タスク完了数データ
+        const totalCompletedTasks = this.weeklyChartData.map(trend => {
+            return trend.snapshots.reduce((sum, snapshot) => sum + snapshot.completed_tasks, 0);
+        });
+
+        // Chart.js設定（複合グラフ：折れ線×2 + 棒グラフ×1）
+        const config = {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: '進捗率',
+                        data: avgProgressData,
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        yAxisID: 'y',
+                        tension: 0.3,
+                        type: 'line',
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        borderWidth: 2
+                    },
+                    {
+                        label: '完了タスク数',
+                        data: totalCompletedTasks,
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        yAxisID: 'y1',
+                        tension: 0.3,
+                        type: 'line',
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        borderWidth: 2,
+                        borderDash: [5, 5]
+                    },
+                    {
+                        label: '要注意クライアント',
+                        data: attentionData,
+                        backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                        borderColor: '#dc3545',
+                        yAxisID: 'y2',
+                        type: 'bar',
+                        borderWidth: 1,
+                        barThickness: 20
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleFont: { size: 12 },
+                        bodyFont: { size: 11 },
+                        callbacks: {
+                            title: (context) => {
+                                const weekData = this.weeklyChartData[context[0].dataIndex];
+                                const date = new Date(weekData.week_date);
+                                return `週 ${date.getMonth() + 1}/${date.getDate()} (${weekData.snapshots.length}事業者)`;
+                            },
+                            afterBody: (context) => {
+                                const weekData = this.weeklyChartData[context[0].dataIndex];
+                                if (!weekData) return [];
+
+                                return [
+                                    '',
+                                    `📊 対象クライアント: ${weekData.snapshots.length}件`,
+                                    `📈 平均進捗: ${weekData.average_progress.toFixed(1)}%`,
+                                    `✅ 完了タスク: ${weekData.snapshots.reduce((sum, s) => sum + s.completed_tasks, 0)}件`,
+                                    `⚠️ 要注意: ${weekData.low_progress_count || 0}件`
+                                ];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        display: true,
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                size: 10
+                            }
+                        }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: '進捗率 (%)',
+                            font: { size: 10 },
+                            color: '#28a745'
+                        },
+                        max: 100,
+                        min: 0,
+                        ticks: {
+                            font: { size: 9 },
+                            color: '#28a745'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: {
+                            display: true,
+                            text: '完了タスク数',
+                            font: { size: 10 },
+                            color: '#007bff'
+                        },
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                        ticks: {
+                            font: { size: 9 },
+                            color: '#007bff'
+                        }
+                    },
+                    y2: {
+                        type: 'linear',
+                        display: false, // 3軸目は非表示（ツールチップで確認）
+                        position: 'right',
+                    }
+                }
+            }
+        };
+
+        this.compactWeeklyChartInstance = new Chart(ctx, config);
+    }
+
+    updateWeeklyTrendInfo() {
+        if (!this.weeklyChartData || this.weeklyChartData.length < 2) {
+            document.getElementById('weekly-trend-info').style.display = 'none';
+            return;
+        }
+
+        // 前週比計算
+        const latest = this.weeklyChartData[this.weeklyChartData.length - 1];
+        const previous = this.weeklyChartData[this.weeklyChartData.length - 2];
+        const diff = latest.average_progress - previous.average_progress;
+
+        const trendElement = document.getElementById('weekly-trend-value');
+        if (trendElement) {
+            const symbol = diff > 0 ? '+' : '';
+            const color = diff > 0 ? '#28a745' : diff < 0 ? '#dc3545' : '#6c757d';
+            trendElement.textContent = `${symbol}${diff.toFixed(1)}%`;
+            trendElement.style.color = color;
+        }
+
+        document.getElementById('weekly-trend-info').style.display = 'block';
+    }
+
+    showCompactWeeklyData() {
+        document.getElementById('no-weekly-data-compact').style.display = 'none';
+        document.getElementById('weekly-chart-area-compact').style.display = 'block';
+    }
+
+    showNoCompactWeeklyData() {
+        document.getElementById('no-weekly-data-compact').style.display = 'flex';
+        document.getElementById('weekly-chart-area-compact').style.display = 'none';
+        document.getElementById('weekly-trend-info').style.display = 'none';
+    }
+
+    async updateCompactWeeklyChart() {
+        try {
+            await this.loadWeeklyChartData();
+
+            if (this.weeklyChartData && this.weeklyChartData.length > 0) {
+                await this.createCompactWeeklyChart();
+                this.showCompactWeeklyData();
+                this.updateWeeklyTrendInfo();
+            } else {
+                this.showNoCompactWeeklyData();
+            }
+
+        } catch (error) {
+            console.error('コンパクト版週次グラフ更新エラー:', error);
+            this.showNoCompactWeeklyData();
+        }
+    }
 }
 
 // ページ読み込み時に初期化
@@ -2891,8 +3155,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         await window.analytics.initialize();
 
-        // 週次グラフ初期化
+        // 週次グラフ初期化（既存の独立版）
         await window.analytics.initializeWeeklyChart();
+
+        // コンパクト版週次グラフ初期化（統合ダッシュボード版）
+        await window.analytics.initializeCompactWeeklyChart();
 
     } catch (error) {
         console.error('❌ Analytics initialization error:', error);
