@@ -2629,8 +2629,8 @@ export class SupabaseAPI {
                 // 日本時間での現在週の月曜日を取得
                 const now = new Date();
 
-                // 日本時間に変換（UTC+9）
-                const japanTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+                // 日本時間に変換（Asia/Tokyo タイムゾーンを使用）
+                const japanTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Tokyo"}));
 
                 // 日本時間での月曜日を計算
                 const monday = new Date(japanTime);
