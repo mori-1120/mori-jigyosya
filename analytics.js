@@ -290,10 +290,10 @@ class AnalyticsPage {
         // エクスポート機能
         this.setupExportEventListeners();
 
-        // 週次進捗スナップショット保存ボタン
-        const saveSnapshotBtn = document.getElementById('save-snapshot-btn');
-        if (saveSnapshotBtn) {
-            saveSnapshotBtn.addEventListener('click', async () => {
+        // 週次進捗スナップショット保存ボタン（ヘッダー配置）
+        const saveSnapshotBtnHeader = document.getElementById('save-snapshot-btn-header');
+        if (saveSnapshotBtnHeader) {
+            saveSnapshotBtnHeader.addEventListener('click', async () => {
                 await this.saveWeeklySnapshot();
                 // 保存後にコンパクト版グラフを更新
                 await this.updateCompactWeeklyChart();

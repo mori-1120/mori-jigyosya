@@ -123,19 +123,6 @@
                         </div>
                     </div>
 
-                    <!-- 現在の進捗を記録ボタン -->
-                    <button id="save-snapshot-btn" style="
-                        background: linear-gradient(135deg, #28a745, #20c997);
-                        color: white;
-                        border: none;
-                        padding: 13px 20px;
-                        border-radius: 4px;
-                        cursor: pointer;
-                        font-size: 14px;
-                        font-weight: bold;
-                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                        margin-left: 10px;
-                    ">📊 現在の進捗を記録</button>
                 </div>
             </div>
         </div>
@@ -143,13 +130,27 @@
         <!-- 統合サマリーダッシュボード（集計結果 + 週次進捗） -->
         <div id="summary-dashboard" style="display: none; background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 10px;">
             <!-- ヘッダー情報 -->
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
                 <div style="display: flex; align-items: center; gap: 20px;">
                     <h3 style="margin: 0;">📊 集計結果サマリー & 週次進捗推移</h3>
+                    <div id="summary-filter-info" style="font-size: 14px; color: #666; line-height: 1.4; font-weight: bold;">
+                        <!-- JavaScript で動的に更新されます -->
+                    </div>
                 </div>
-                <div id="summary-filter-info" style="font-size: 16px; color: #666; line-height: 1.4; font-weight: bold;">
-                    <!-- JavaScript で動的に更新されます -->
-                </div>
+
+                <!-- 現在の進捗を記録ボタン（ヘッダー右端） -->
+                <button id="save-snapshot-btn-header" style="
+                    background: linear-gradient(135deg, #28a745, #20c997);
+                    color: white;
+                    border: none;
+                    padding: 10px 16px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 13px;
+                    font-weight: bold;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    flex-shrink: 0;
+                ">📊 現在の進捗を記録</button>
             </div>
 
             <!-- メインコンテンツエリア：左側サマリー + 右側週次グラフ -->
@@ -260,6 +261,22 @@
                     }
                     .weekly-progress-section {
                         height: 280px !important;
+                    }
+
+                    /* モバイルでヘッダーを縦積み */
+                    #summary-dashboard > div:first-child {
+                        flex-direction: column !important;
+                        align-items: flex-start !important;
+                        gap: 10px !important;
+                    }
+
+                    #summary-filter-info {
+                        font-size: 12px !important;
+                    }
+
+                    #save-snapshot-btn-header {
+                        font-size: 12px !important;
+                        padding: 8px 12px !important;
                     }
                 }
 
