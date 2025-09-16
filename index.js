@@ -59,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const fontFamilySelect = document.getElementById('font-family-select');
     const hideInactiveClientsCheckbox = document.getElementById('hide-inactive-clients');
     const enableConfettiEffectCheckbox = document.getElementById('enable-confetti-effect');
+    const autoRedirectDashboardCheckbox = document.getElementById('auto-redirect-dashboard');
 
     // URL Settings Modal elements
     const urlSettingsModal = document.getElementById('url-settings-modal');
@@ -257,6 +258,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (user) {
                 updateUserDisplay(user);
+
+                // ダッシュボード自動リダイレクト設定をチェック
+                const personalSettings = getPersonalSettings();
+                if (personalSettings.autoRedirectDashboard && !window.location.pathname.includes('analytics.html')) {
+                    // 現在のページがanalytics.htmlでない場合のみリダイレクト
+                    console.log('🚀 ダッシュボードに自動リダイレクトします...');
+                    window.location.href = 'analytics.html';
+                    return true;
+                }
+
                 return true;
             } else {
                 authModal.style.display = 'flex';
@@ -1498,6 +1509,7 @@ document.addEventListener('DOMContentLoaded', () => {
             fontFamilySelect.value = personalSettings.fontFamily;
             hideInactiveClientsCheckbox.checked = personalSettings.hideInactiveClients;
             enableConfettiEffectCheckbox.checked = personalSettings.enableConfettiEffect;
+            autoRedirectDashboardCheckbox.checked = personalSettings.autoRedirectDashboard || false;
             
             // 管理者権限チェックと管理者設定の制御
             checkAndSetAdminPermissions();
@@ -1523,7 +1535,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const personalSettings = {
                 fontFamily: fontFamilySelect.value,
                 hideInactiveClients: hideInactiveClientsCheckbox.checked,
-                enableConfettiEffect: enableConfettiEffectCheckbox.checked
+                enableConfettiEffect: enableConfettiEffectCheckbox.checked,
+                autoRedirectDashboard: autoRedirectDashboardCheckbox.checked
             };
 
             // 共通設定をSupabaseに保存
