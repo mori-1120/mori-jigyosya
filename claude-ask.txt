@@ -1,9 +1,225 @@
-config.js:10 Supabase config loaded: Object
-analytics.js:2562 📊 週次フィルター: ObjectcurrentFilters: {startPeriod: '2024-10', endPeriod: '2025-09', staffId: '', fiscalMonth: '', businessName: ''}endPeriod: "2025-09"startPeriod: "2024-10"[[Prototype]]: Object
-analytics.js:2577 📅 計算された期間: ObjectendDate: "2025-10-01"startDate: "2024-10-01"[[Prototype]]: Object
-analytics.js:2562 📊 週次フィルター: {startPeriod: '2024-10', endPeriod: '2025-09', currentFilters: {…}}currentFilters: {startPeriod: '2024-10', endPeriod: '2025-09', staffId: '', fiscalMonth: '', businessName: ''}endPeriod: "2025-09"startPeriod: "2024-10"[[Prototype]]: Object
-analytics.js:2577 📅 計算された期間: {startDate: '2024-10-01', endDate: '2025-10-01'}endDate: "2025-10-01"startDate: "2024-10-01"[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
-supabase-client.js:2662 🗓️ 月次タスク期間フィルター: {startPeriod: '2024-10', endPeriod: '2025-10', originalDates: {…}}endPeriod: "2025-10"originalDates: {startDate: '2024-10-01', endDate: '2025-10-01'}startPeriod: "2024-10"[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
-supabase-client.js:2672 📋 取得された月次タスク数: 447
-analytics.js:2562 📊 週次フィルター: {startPeriod: '2024-10', endPeriod: '2025-09', currentFilters: {…}}currentFilters: {startPeriod: '2024-10', endPeriod: '2025-09', staffId: '', fiscalMonth: '', businessName: ''}endPeriod: "2025-09"startPeriod: "2024-10"[[Prototype]]: Object
-analytics.js:2577 📅 計算された期間: {startDate: '2024-10-01', endDate: '2025-10-01'}endDate: "2025-10-01"startDate: "2024-10-01"[[Prototype]]: Object
+週次データ詳細: 
+(2) [{…}, {…}]
+0
+: 
+average_progress
+: 
+91.3
+client_average_progress
+: 
+91.29
+completed_count
+: 
+0
+cumulative_progress
+: 
+91.3
+low_progress_count
+: 
+0
+monthly_completed
+: 
+22
+monthly_total
+: 
+24
+snapshots
+: 
+(2) [{…}, {…}]
+total_all_tasks
+: 
+115
+total_clients
+: 
+2
+total_completed_tasks
+: 
+105
+week_date
+: 
+"2025-09-14"
+week_over_week_change
+: 
+null
+[[Prototype]]
+: 
+Object
+1
+: 
+average_progress
+: 
+91.3
+client_average_progress
+: 
+91.29
+completed_count
+: 
+0
+cumulative_progress
+: 
+91.3
+low_progress_count
+: 
+0
+monthly_completed
+: 
+44
+monthly_total
+: 
+48
+snapshots
+: 
+(4) [{…}, {…}, {…}, {…}]
+total_all_tasks
+: 
+230
+total_clients
+: 
+4
+total_completed_tasks
+: 
+210
+week_date
+: 
+"2025-09-15"
+week_over_week_change
+: 
+0
+[[Prototype]]
+: 
+Object
+length
+: 
+2
+[[Prototype]]
+: 
+Array(0)
+at
+: 
+ƒ at()
+concat
+: 
+ƒ concat()
+constructor
+: 
+ƒ Array()
+copyWithin
+: 
+ƒ copyWithin()
+entries
+: 
+ƒ entries()
+every
+: 
+ƒ every()
+fill
+: 
+ƒ fill()
+filter
+: 
+ƒ filter()
+find
+: 
+ƒ find()
+findIndex
+: 
+ƒ findIndex()
+findLast
+: 
+ƒ findLast()
+findLastIndex
+: 
+ƒ findLastIndex()
+flat
+: 
+ƒ flat()
+flatMap
+: 
+ƒ flatMap()
+forEach
+: 
+ƒ forEach()
+includes
+: 
+ƒ includes()
+indexOf
+: 
+ƒ indexOf()
+join
+: 
+ƒ join()
+keys
+: 
+ƒ keys()
+lastIndexOf
+: 
+ƒ lastIndexOf()
+length
+: 
+0
+map
+: 
+ƒ map()
+pop
+: 
+ƒ pop()
+push
+: 
+ƒ push()
+reduce
+: 
+ƒ reduce()
+reduceRight
+: 
+ƒ reduceRight()
+reverse
+: 
+ƒ reverse()
+shift
+: 
+ƒ shift()
+slice
+: 
+ƒ slice()
+some
+: 
+ƒ some()
+sort
+: 
+ƒ sort()
+splice
+: 
+ƒ splice()
+toLocaleString
+: 
+ƒ toLocaleString()
+toReversed
+: 
+ƒ toReversed()
+toSorted
+: 
+ƒ toSorted()
+toSpliced
+: 
+ƒ toSpliced()
+toString
+: 
+ƒ toString()
+unshift
+: 
+ƒ unshift()
+values
+: 
+ƒ values()
+with
+: 
+ƒ with()
+Symbol(Symbol.iterator)
+: 
+ƒ values()
+Symbol(Symbol.unscopables)
+: 
+{at: true, copyWithin: true, entries: true, fill: true, find: true, …}
+[[Prototype]]
+: 
+Object

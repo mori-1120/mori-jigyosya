@@ -2626,28 +2626,40 @@ export class SupabaseAPI {
     static async saveWeeklySnapshot(weekDate = null, filters = {}) {
         try {
             if (!weekDate) {
-                // 現在週の月曜日を取得
+                // 日本時間での現在週の月曜日を取得
                 const now = new Date();
-                const monday = new Date(now);
-                monday.setDate(now.getDate() - (now.getDay() || 7) + 1);
+
+                // 日本時間に変換（UTC+9）
+                const japanTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+
+                // 日本時間での月曜日を計算
+                const monday = new Date(japanTime);
+                const dayOfWeek = monday.getDay();
+                const daysToMonday = (dayOfWeek === 0 ? 6 : dayOfWeek - 1); // 日曜日は6日戻る、それ以外は(曜日-1)日戻る
+                monday.setDate(monday.getDate() - daysToMonday);
+
+                // YYYY-MM-DD形式で取得（日本時間基準）
                 weekDate = monday.toISOString().split('T')[0];
+
+                console.log('🗾 日本時間基準の週次記録:', {
+                    現在日時: japanTime.toLocaleString('ja-JP'),
+                    週開始日: weekDate,
+                    曜日: ['日', '月', '火', '水', '木', '金', '土'][dayOfWeek]
+                });
             }
 
-            // 【修正】履歴保存方式：既存データはそのまま残す
-            // 同じ日に複数回記録した場合のみ最新データで更新
-            const { data: existingData } = await supabase
+            // 【修正】UPSERT方式：同じ日付の既存データを削除してから新規作成
+            // 重複を確実に防ぐため、まず既存の同日データを全削除
+            const { error: deleteError } = await supabase
                 .from('weekly_progress_snapshots')
-                .select('week_date')
-                .eq('week_date', weekDate)
-                .limit(1);
+                .delete()
+                .eq('week_date', weekDate);
 
-            // 同じ日に既に記録がある場合は上書き、無い場合は新規作成
-            if (existingData && existingData.length > 0) {
-                await supabase
-                    .from('weekly_progress_snapshots')
-                    .delete()
-                    .eq('week_date', weekDate);
+            if (deleteError) {
+                console.log('既存データ削除（エラーは無視）:', deleteError.message);
             }
+
+            console.log('📅 週次スナップショット日付:', weekDate, '（既存データ削除完了）');
 
             // 現在の全クライアントと月次タスクを取得
             const clients = await this.getClients();
