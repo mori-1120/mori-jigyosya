@@ -2457,11 +2457,7 @@ class AnalyticsPage {
     }
 
     setupWeeklyChartEventListeners() {
-        // スナップショット保存ボタン
-        const saveSnapshotBtn = document.getElementById('save-snapshot-btn');
-        if (saveSnapshotBtn) {
-            saveSnapshotBtn.addEventListener('click', () => this.saveWeeklySnapshot());
-        }
+        // スナップショット保存ボタンは setupEventListeners() で設定済み
 
         // グラフ表示切替ボタン
         const toggleChartBtn = document.getElementById('toggle-chart-btn');
@@ -3159,8 +3155,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         await window.analytics.initialize();
 
-        // 週次グラフ初期化（既存の独立版）
-        await window.analytics.initializeWeeklyChart();
+        // 週次グラフ初期化（既存の独立版は統合ダッシュボードに移行のため無効化）
+        // await window.analytics.initializeWeeklyChart();
 
         // コンパクト版週次グラフ初期化（統合ダッシュボード版）
         await window.analytics.initializeCompactWeeklyChart();

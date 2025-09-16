@@ -2645,24 +2645,15 @@ export class SupabaseAPI {
                 weekDate = `${year}-${month}-${day}`;
 
                 console.log('🗾 日本時間基準の週次記録:', {
-                    現在日時: japanTime.toLocaleString('ja-JP'),
-                    週開始日: weekDate,
-                    曜日: ['日', '月', '火', '水', '木', '金', '土'][dayOfWeek]
+                    UTC時刻: now.toISOString(),
+                    日本時刻: japanTime.toLocaleString('ja-JP'),
+                    今日の曜日: ['日', '月', '火', '水', '木', '金', '土'][dayOfWeek],
+                    月曜まで戻る日数: daysToMonday,
+                    週開始日: weekDate
                 });
             }
 
-            // 【修正】UPSERT方式：同じ日付の既存データを削除してから新規作成
-            // 重複を確実に防ぐため、まず既存の同日データを全削除
-            const { error: deleteError } = await supabase
-                .from('weekly_progress_snapshots')
-                .delete()
-                .eq('week_date', weekDate);
-
-            if (deleteError) {
-                console.log('既存データ削除（エラーは無視）:', deleteError.message);
-            }
-
-            console.log('📅 週次スナップショット日付:', weekDate, '（既存データ削除完了）');
+            console.log('📅 週次スナップショット日付:', weekDate, '（UPSERT方式で重複防止）');
 
             // 現在の全クライアントと月次タスクを取得
             const clients = await this.getClients();
@@ -2732,14 +2723,23 @@ export class SupabaseAPI {
                 }
             }
 
-            // バッチ挿入
+            // UPSERT：重複時は最新データで更新
             if (snapshots.length > 0) {
                 const { data, error } = await supabase
                     .from('weekly_progress_snapshots')
-                    .insert(snapshots)
+                    .upsert(snapshots, {
+                        onConflict: 'week_date,client_id',
+                        ignoreDuplicates: false
+                    })
                     .select();
 
                 if (error) throw error;
+
+                console.log('✅ UPSERT完了:', {
+                    保存件数: snapshots.length,
+                    実際保存件数: data?.length || 0,
+                    重複更新: snapshots.length !== (data?.length || 0) ? '有り' : '無し'
+                });
 
                 return {
                     success: true,
