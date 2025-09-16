@@ -2626,30 +2626,22 @@ export class SupabaseAPI {
     static async saveWeeklySnapshot(weekDate = null, filters = {}) {
         try {
             if (!weekDate) {
-                // 日本時間での現在週の月曜日を取得
+                // 日本時間での今日の日付を取得
                 const now = new Date();
 
                 // 日本時間に変換（Asia/Tokyo タイムゾーンを使用）
                 const japanTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Tokyo"}));
 
-                // 日本時間での月曜日を計算
-                const monday = new Date(japanTime);
-                const dayOfWeek = monday.getDay();
-                const daysToMonday = (dayOfWeek === 0 ? 6 : dayOfWeek - 1); // 日曜日は6日戻る、それ以外は(曜日-1)日戻る
-                monday.setDate(monday.getDate() - daysToMonday);
-
-                // 日本時間のまま YYYY-MM-DD形式で取得
-                const year = monday.getFullYear();
-                const month = String(monday.getMonth() + 1).padStart(2, '0');
-                const day = String(monday.getDate()).padStart(2, '0');
+                // 今日の日付をYYYY-MM-DD形式で取得
+                const year = japanTime.getFullYear();
+                const month = String(japanTime.getMonth() + 1).padStart(2, '0');
+                const day = String(japanTime.getDate()).padStart(2, '0');
                 weekDate = `${year}-${month}-${day}`;
 
-                console.log('🗾 日本時間基準の週次記録:', {
+                console.log('🗾 日本時間基準の進捗記録:', {
                     UTC時刻: now.toISOString(),
                     日本時刻: japanTime.toLocaleString('ja-JP'),
-                    今日の曜日: ['日', '月', '火', '水', '木', '金', '土'][dayOfWeek],
-                    月曜まで戻る日数: daysToMonday,
-                    週開始日: weekDate
+                    記録日: weekDate
                 });
             }
 
