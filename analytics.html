@@ -209,9 +209,9 @@
                 </div>
 
                 <!-- 右半分：週次進捗推移グラフ -->
-                <div class="weekly-progress-section" style="flex: 1; min-width: 0;">
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; height: 100%;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div class="weekly-progress-section" style="flex: 1; min-width: 0; height: 280px;">
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; height: 100%; display: flex; flex-direction: column;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-shrink: 0;">
                             <h4 style="margin: 0; font-size: 14px; color: #495057;">📈 週次進捗推移</h4>
                             <div style="display: flex; gap: 8px; align-items: center;">
                                 <!-- 前週比情報 -->
@@ -222,12 +222,12 @@
                         </div>
 
                         <!-- グラフエリア -->
-                        <div id="weekly-chart-area-compact" style="position: relative; height: calc(100% - 40px); min-height: 200px;">
-                            <canvas id="weeklyProgressChartCompact" style="width: 100%; height: 100%;"></canvas>
+                        <div id="weekly-chart-area-compact" style="position: relative; flex: 1; min-height: 0;">
+                            <canvas id="weeklyProgressChartCompact"></canvas>
                         </div>
 
                         <!-- データなし表示 -->
-                        <div id="no-weekly-data-compact" style="text-align: center; padding: 20px; color: #6c757d; height: calc(100% - 40px); display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                        <div id="no-weekly-data-compact" style="text-align: center; padding: 20px; color: #6c757d; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
                             <div style="font-size: 32px; margin-bottom: 8px;">📈</div>
                             <div style="font-size: 13px; margin-bottom: 6px;">週次進捗データなし</div>
                             <div style="font-size: 11px; color: #999;">「現在の進捗を記録」で開始</div>
@@ -247,7 +247,7 @@
                         flex: none !important;
                     }
                     .weekly-progress-section {
-                        min-height: 300px;
+                        height: 320px !important;
                     }
                 }
 
@@ -259,6 +259,18 @@
                         grid-template-columns: 1fr !important;
                         gap: 8px !important;
                     }
+                    .weekly-progress-section {
+                        height: 280px !important;
+                    }
+                }
+
+                /* グラフの高さを厳格に制御 */
+                #weekly-chart-area-compact {
+                    overflow: hidden;
+                }
+
+                #weeklyProgressChartCompact {
+                    max-height: 100% !important;
                 }
             </style>
         </div>
