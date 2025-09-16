@@ -3087,6 +3087,9 @@ class AnalyticsPage {
                         type: 'linear',
                         display: false, // 3軸目は非表示（ツールチップで確認）
                         position: 'right',
+                        min: 0,
+                        max: 50,
+                        beginAtZero: true
                     }
                 }
             }

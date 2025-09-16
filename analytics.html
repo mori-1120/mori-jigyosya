@@ -122,6 +122,20 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- 現在の進捗を記録ボタン -->
+                    <button id="save-snapshot-btn" style="
+                        background: linear-gradient(135deg, #28a745, #20c997);
+                        color: white;
+                        border: none;
+                        padding: 13px 20px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-weight: bold;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        margin-left: 10px;
+                    ">📊 現在の進捗を記録</button>
                 </div>
             </div>
         </div>
@@ -181,23 +195,8 @@
                             </div>
                         </div>
 
-                        <!-- 週次進捗アクションエリア -->
-                        <div style="flex: 1; display: flex; flex-direction: column; gap: 10px;">
-                            <!-- スナップショット保存ボタン -->
-                            <button id="save-snapshot-btn" style="
-                                background: linear-gradient(135deg, #28a745, #20c997);
-                                color: white;
-                                border: none;
-                                padding: 12px 16px;
-                                border-radius: 6px;
-                                cursor: pointer;
-                                font-size: 13px;
-                                font-weight: 500;
-                                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                                width: 100%;
-                            ">📊 現在の進捗を記録</button>
-
-                            <!-- 要注意クライアントリスト -->
+                        <!-- 要注意クライアントリスト -->
+                        <div style="flex: 1; display: flex; flex-direction: column;">
                             <div id="attention-list" style="display: none; flex: 1;">
                                 <h4 style="margin: 0 0 8px 0; font-size: 13px;">⚠️ 要注意クライアント</h4>
                                 <ul id="attention-clients-list" style="background: #fff3cd; padding: 10px; border-radius: 4px; border-left: 4px solid #ffc107; margin: 0; max-height: 120px; overflow-y: auto; font-size: 12px;">
