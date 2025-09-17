@@ -2797,7 +2797,13 @@ class AnalyticsPage {
                         },
                         ticks: {
                             color: '#28a745'
-                        }
+                        },
+                        // 完了タスク数の縦軸をMAXの50%を最低値に設定
+                        suggestedMin: (() => {
+                            const completedTasks = this.weeklyChartData.map(d => d.total_completed_tasks || 0);
+                            const max = Math.max(...completedTasks);
+                            return Math.floor(max * 0.5);
+                        })()
                     },
                     y2: {
                         type: 'linear',
@@ -3077,7 +3083,13 @@ class AnalyticsPage {
                         ticks: {
                             font: { size: 9 },
                             color: '#007bff'
-                        }
+                        },
+                        // 完了タスク数の縦軸をMAXの50%を最低値に設定
+                        suggestedMin: (() => {
+                            const completedTasks = this.weeklyChartData.map(d => d.total_completed_tasks || 0);
+                            const max = Math.max(...completedTasks);
+                            return Math.floor(max * 0.5);
+                        })()
                     },
                     y2: {
                         type: 'linear',
