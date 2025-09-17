@@ -259,14 +259,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (user) {
                 updateUserDisplay(user);
 
-                // ダッシュボード自動リダイレクト設定をチェック
+                // ダッシュボード自動リダイレクト設定をチェック（ログイン時のみ）
                 try {
                     const personalSettings = loadPersonalSettings();
-                    if (personalSettings.autoRedirectDashboard && !window.location.pathname.includes('analytics.html')) {
-                        // 現在のページがanalytics.htmlでない場合のみリダイレクト
-                        console.log('🚀 ダッシュボードに自動リダイレクトします...');
+                    const isLoginRedirect = sessionStorage.getItem('loginRedirect') === 'true';
+
+                    if (personalSettings.autoRedirectDashboard &&
+                        !window.location.pathname.includes('analytics.html') &&
+                        isLoginRedirect) {
+                        // ログイン直後でanalytics.htmlでない場合のみリダイレクト
+                        console.log('🚀 ログイン時のダッシュボード自動リダイレクトを実行します...');
+                        sessionStorage.removeItem('loginRedirect'); // フラグをクリア
                         window.location.href = 'analytics.html';
                         return true;
+                    }
+
+                    // ログイン直後でない場合はフラグをクリア
+                    if (isLoginRedirect) {
+                        sessionStorage.removeItem('loginRedirect');
                     }
                 } catch (settingsError) {
                     console.warn('設定の読み込みに失敗しました:', settingsError);
@@ -305,12 +315,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (SupabaseAPI.supabase && SupabaseAPI.supabase.auth) {
             SupabaseAPI.supabase.auth.onAuthStateChange(async (event, session) => {
                 if (event === 'SIGNED_IN' && session?.user) {
+                    // ログイン成功時にリダイレクトフラグを設定
+                    sessionStorage.setItem('loginRedirect', 'true');
                     updateUserDisplay(session.user);
                     // Initialize app when user signs in
                     await initializeAuthenticatedApp();
                 } else if (event === 'SIGNED_OUT') {
                     updateUserDisplay(null);
                     isInitialized = false; // ログアウト時に初期化フラグをリセット
+                    // ログアウト時はリダイレクトフラグをクリア
+                    sessionStorage.removeItem('loginRedirect');
                 }
             });
         }
