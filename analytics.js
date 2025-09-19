@@ -843,17 +843,17 @@ class AnalyticsPage {
                 <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
                     <a href="edit.html?id=${row.clientId}"
                        style="color: #007bff; text-decoration: none; cursor: pointer; font-weight: bold;"
-                       onmouseover="this.style.textDecoration='underline'"
-                       onmouseout="this.style.textDecoration='none'"
+                       onmouseover="this.style.textDecoration='underline'; this.originalTitle = this.title; this.title = '';"
+                       onmouseout="this.style.textDecoration='none'; this.title = this.originalTitle;"
                        title="クリックして編集">
                         ${row.clientId}
                     </a>
                 </td>
-                <td style="border: 1px solid #dee2e6; padding: 8px;">
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
                     <a href="details.html?id=${row.clientId}"
                        style="color: #007bff; text-decoration: none; cursor: pointer;"
-                       onmouseover="this.style.textDecoration='underline'"
-                       onmouseout="this.style.textDecoration='none'"
+                       onmouseover="this.style.textDecoration='underline'; this.originalTitle = this.title; this.title = '';"
+                       onmouseout="this.style.textDecoration='none'; this.title = this.originalTitle;"
                        title="詳細画面へ移動">
                         ${row.clientName}
                     </a>
