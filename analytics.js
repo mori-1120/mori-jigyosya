@@ -2455,37 +2455,7 @@ class AnalyticsPage {
 
     // === 週次進捗グラフ機能 ===
 
-    async initializeWeeklyChart() {
-        try {
-            // 週次グラフ関連のイベントリスナー設定
-            this.setupWeeklyChartEventListeners();
 
-            // 既存データがあるかチェック
-            await this.checkExistingWeeklyData();
-
-        } catch (error) {
-            console.error('週次グラフ初期化エラー:', error);
-        }
-    }
-
-    setupWeeklyChartEventListeners() {
-        // スナップショット保存ボタンは setupEventListeners() で設定済み
-
-        // グラフ表示切替ボタン
-        const toggleChartBtn = document.getElementById('toggle-chart-btn');
-        if (toggleChartBtn) {
-            toggleChartBtn.addEventListener('click', () => this.toggleWeeklyChart());
-        }
-
-        // フィルター変更時にグラフも更新
-        const originalPerformAnalysis = this.performAnalysis.bind(this);
-        this.performAnalysis = async () => {
-            await originalPerformAnalysis();
-            if (this.weeklyChartInstance) {
-                await this.updateWeeklyChart();
-            }
-        };
-    }
 
     async checkExistingWeeklyData() {
         try {
