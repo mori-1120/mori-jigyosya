@@ -212,7 +212,6 @@ export class SupabaseAPI {
             } else {
                 // 全件取得（analytics用）- RLS問題回避のため並べ替え追加
                 const { data, error } = await query
-                    .order('client_id', { ascending: true })
                     .order('month', { ascending: false })
                     .order('id', { ascending: true });
                 if (error) {
@@ -245,7 +244,6 @@ export class SupabaseAPI {
         const { data, error } = await supabase
             .from('monthly_tasks')
             .select('*')
-            .order('client_id', { ascending: true }) // クライアント順
             .order('month', { ascending: false }) // 新しい月から
             .order('completed', { ascending: false }) // 完了済みを先に（index.js用）
             .order('id', { ascending: true }); // RLS問題回避のためidでソート
