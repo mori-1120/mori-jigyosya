@@ -696,6 +696,7 @@ class AnalyticsPage {
                 clientName: client.name,
                 staffName: staff ? staff.name : '未設定',
                 fiscalMonth: client.fiscal_month,
+                accountingMethod: client.accounting_method || '-',
                 progressRate,
                 completedTasks,
                 totalTasks,
@@ -852,12 +853,14 @@ class AnalyticsPage {
                     <a href="details.html?id=${row.clientId}"
                        style="color: #007bff; text-decoration: none; cursor: pointer;"
                        onmouseover="this.style.textDecoration='underline'"
-                       onmouseout="this.style.textDecoration='none'">
+                       onmouseout="this.style.textDecoration='none'"
+                       title="詳細画面へ移動">
                         ${row.clientName}
                     </a>
                 </td>
                 <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.staffName}</td>
                 <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.fiscalMonth}月</td>
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.accountingMethod}</td>
                 <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
                     <span style="font-weight: bold; color: ${this.getProgressColor(row.progressRate)};">
                         ${row.progressRate}%
@@ -1083,6 +1086,10 @@ class AnalyticsPage {
                     aValue = parseInt(a.fiscalMonth) || 0;
                     bValue = parseInt(b.fiscalMonth) || 0;
                     break;
+                case 'accounting':
+                    aValue = a.accountingMethod || '';
+                    bValue = b.accountingMethod || '';
+                    break;
                 default:
                     return 0;
             }
@@ -1109,7 +1116,8 @@ class AnalyticsPage {
             'name': '事業者名',
             'progress': '進捗率',
             'staff': '担当者',
-            'fiscal': '決算月'
+            'fiscal': '決算月',
+            'accounting': '経理方式'
         };
         showToast(`${sortNames[sortBy]}で${this.sortDirection === 'asc' ? '昇順' : '降順'}ソート`, 'success');
     }
@@ -2379,6 +2387,10 @@ class AnalyticsPage {
                 case 'fiscal':
                     // 決算月の場合は現在の月-2ヶ月を起点としたカスタムソート
                     return this.sortByFiscalMonth(a, b);
+                case 'accounting':
+                    aValue = a.accountingMethod || '';
+                    bValue = b.accountingMethod || '';
+                    break;
                 default:
                     return 0;
             }
@@ -2453,7 +2465,8 @@ class AnalyticsPage {
             'name': '事業者名',
             'progress': '進捗率',
             'staff': '担当者',
-            'fiscal': '決算月'
+            'fiscal': '決算月',
+            'accounting': '経理方式'
         };
 
         // 月別ソートの場合
