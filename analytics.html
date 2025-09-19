@@ -311,21 +311,14 @@
                     position: relative;
                 }
 
-                /* デフォルトのツールチップを無効化 */
-                [title]:hover {
-                    pointer-events: none;
-                }
-
-                [title]:hover::after,
-                [title]:hover::before {
-                    pointer-events: auto;
-                }
+                /* デフォルトのツールチップを無効化（z-indexで制御） */
 
                 [title]:hover::after {
                     content: attr(title);
                     position: absolute;
-                    top: 0;
-                    right: 100%;
+                    bottom: 100%;
+                    left: 50%;
+                    transform: translateX(-50%);
                     background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
                     color: white;
                     padding: 8px 12px;
@@ -333,22 +326,24 @@
                     font-size: 12px;
                     font-weight: 500;
                     white-space: nowrap;
-                    z-index: 1000;
+                    z-index: 10000;
                     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
                     animation: tooltipFadeIn 0.2s ease-out;
-                    margin-right: 8px;
-                    margin-top: -8px;
+                    margin-bottom: 8px;
+                    pointer-events: none;
                 }
 
                 [title]:hover::before {
                     content: '';
                     position: absolute;
-                    top: 8px;
-                    right: 100%;
+                    bottom: 100%;
+                    left: 50%;
+                    transform: translateX(-50%);
                     border: 5px solid transparent;
-                    border-left-color: #1a1a1a;
-                    z-index: 1001;
-                    margin-right: 3px;
+                    border-top-color: #1a1a1a;
+                    z-index: 10001;
+                    margin-bottom: 3px;
+                    pointer-events: none;
                 }
 
                 @keyframes tooltipFadeIn {
