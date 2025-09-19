@@ -2981,14 +2981,11 @@ class AnalyticsPage {
                         label: '完了タスク数',
                         data: totalCompletedTasks,
                         borderColor: '#007bff',
-                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        backgroundColor: 'rgba(0, 123, 255, 0.7)',
                         yAxisID: 'y1',
-                        tension: 0.3,
-                        type: 'line',
-                        pointRadius: 3,
-                        pointHoverRadius: 5,
-                        borderWidth: 2,
-                        borderDash: [5, 5]
+                        type: 'bar',
+                        borderWidth: 1,
+                        barThickness: 15
                     },
                     {
                         label: '要注意クライアント',
@@ -3034,17 +3031,41 @@ class AnalyticsPage {
                                 const date = new Date(weekData.week_date);
                                 return `週 ${date.getMonth() + 1}/${date.getDate()} (${weekData.snapshots.length}事業者)`;
                             },
-                            afterBody: (context) => {
-                                const weekData = this.weeklyChartData[context[0].dataIndex];
-                                if (!weekData) return [];
+                            afterLabel: (context) => {
+                                const weekData = this.weeklyChartData[context.dataIndex];
+                                const datasetLabel = context.dataset.label;
 
-                                return [
-                                    '',
-                                    `📊 対象クライアント: ${weekData.snapshots.length}件`,
-                                    `📈 平均進捗: ${weekData.average_progress.toFixed(1)}%`,
-                                    `✅ 完了タスク: ${weekData.snapshots.reduce((sum, s) => sum + s.completed_tasks, 0)}件`,
-                                    `⚠️ 要注意: ${weekData.low_progress_count || 0}件`
-                                ];
+                                // 各グラフライン固有の情報のみ表示（重複除去）
+                                if (datasetLabel === '平均進捗率 (%)') {
+                                    const completedTasks = weekData.total_completed_tasks || weekData.snapshots.reduce((sum, s) => sum + s.completed_tasks, 0);
+                                    const totalTasks = weekData.total_all_tasks || weekData.snapshots.reduce((sum, s) => sum + s.total_tasks, 0);
+                                    return [
+                                        `完了: ${completedTasks} / ${totalTasks}`,
+                                        `平均進捗率: ${weekData.average_progress}%`
+                                    ];
+                                }
+                                else if (datasetLabel === '完了タスク数') {
+                                    const completedTasks = weekData.total_completed_tasks || weekData.snapshots.reduce((sum, s) => sum + s.completed_tasks, 0);
+                                    return [
+                                        `完了タスク: ${completedTasks}件`,
+                                        `前週比: ${weekData.week_over_week_change ?
+                                            (weekData.week_over_week_change > 0 ? '+' : '') +
+                                            weekData.week_over_week_change.toFixed(1) + '%' : 'N/A'}`
+                                    ];
+                                }
+                                else if (datasetLabel === '要注意クライアント') {
+                                    const attentionCount = weekData.low_progress_count || 0;
+                                    const totalClients = weekData.total_clients || 0;
+                                    const attentionRate = totalClients > 0 ? ((attentionCount / totalClients) * 100).toFixed(1) : 0;
+
+                                    return [
+                                        `要注意: ${attentionCount} / ${totalClients}件`,
+                                        `比率: ${attentionRate}%`,
+                                        `(進捗50%未満のクライアント)`
+                                    ];
+                                }
+
+                                return [];
                             }
                         }
                     }
@@ -3072,7 +3093,7 @@ class AnalyticsPage {
                             color: '#28a745'
                         },
                         max: 100,
-                        min: 0,
+                        min: 50,
                         ticks: {
                             font: { size: 9 },
                             color: '#28a745'
