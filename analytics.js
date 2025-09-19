@@ -3086,7 +3086,11 @@ class AnalyticsPage {
                             font: { size: 9 },
                             color: '#007bff'
                         },
-                        // 完了タスク数の縦軸をMAXの50%を最低値に設定
+                        // 完了タスク数の縦軸をタスク総数に設定
+                        max: (() => {
+                            const totalTasks = this.weeklyChartData.map(d => d.total_all_tasks || 0);
+                            return Math.max(...totalTasks);
+                        })(),
                         suggestedMin: (() => {
                             const completedTasks = this.weeklyChartData.map(d => d.total_completed_tasks || 0);
                             const max = Math.max(...completedTasks);
