@@ -721,11 +721,23 @@ class AnalyticsPage {
             
             // 各月のタスクレコード内のJSONタスクを計算
             monthTasks.forEach(monthlyTask => {
-                if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
-                    const tasksList = Object.values(monthlyTask.tasks);
+                let tasksObj = monthlyTask.tasks;
+
+                // tasksが文字列の場合はJSONパース
+                if (typeof tasksObj === 'string') {
+                    try {
+                        tasksObj = JSON.parse(tasksObj);
+                    } catch (e) {
+                        console.warn(`[ANALYTICS] JSON parse error for client ${clientId}, month ${monthlyTask.month}:`, e);
+                        return;
+                    }
+                }
+
+                if (tasksObj && typeof tasksObj === 'object') {
+                    const tasksList = Object.values(tasksObj);
                     totalTasks += tasksList.length;
-                    
-                    const completedCount = tasksList.filter(task => task === true || task === '完了').length;
+
+                    const completedCount = tasksList.filter(task => task.completed === true).length;
                     completedTasks += completedCount;
                 }
             });
