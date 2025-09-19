@@ -737,7 +737,7 @@ class AnalyticsPage {
                     const tasksList = Object.values(tasksObj);
                     totalTasks += tasksList.length;
 
-                    const completedCount = tasksList.filter(task => task.completed === true).length;
+                    const completedCount = tasksList.filter(task => task === true || task === '完了').length;
                     completedTasks += completedCount;
                 }
             });

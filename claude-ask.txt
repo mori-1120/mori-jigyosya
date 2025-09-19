@@ -1,2 +1,29 @@
- 週次フィルター: {startPeriod: '2024-10', endPeriod: '2025-09', currentFilters: {…}}currentFilters: businessName: ""endPeriod: "2025-09"fiscalMonth: ""staffId: "7"startPeriod: "2024-10"[[Prototype]]: ObjectendPeriod: "2025-09"startPeriod: "2024-10"[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
-analytics.js:2590 📅 計算された期間: {startDate: '2024-10-01', endDate: '2025-09-30'}endDate: "2025-09-30"startDate: "2024-10-01"[[Prototype]]: Objectconstructor: ƒ Object()hasOwnProperty: ƒ hasOwnProperty()isPrototypeOf: ƒ isPrototypeOf()propertyIsEnumerable: ƒ propertyIsEnumerable()toLocaleString: ƒ toLocaleString()toString: ƒ toString()valueOf: ƒ valueOf()__defineGetter__: ƒ __defineGetter__()__defineSetter__: ƒ __defineSetter__()__lookupGetter__: ƒ __lookupGetter__()__lookupSetter__: ƒ __lookupSetter__()__proto__: (...)get __proto__: ƒ __proto__()set __proto__: ƒ __proto__()
+● Update(analytics.js)
+  ⎿  Updated analytics.js with 16 additions and 4 removals
+       721 
+       722                // 各月のタスクレコード内のJSONタスクを計算
+       723                monthTasks.forEach(monthlyTask => {
+       724 -                  if (monthlyTask.tasks && typeof monthlyTask.tasks === 'object') {
+       725 -                      const tasksList = Object.values(monthlyTask.tasks);
+       724 +                  let tasksObj = monthlyTask.tasks;
+       725 +  
+       726 +                  // tasksが文字列の場合はJSONパース
+       727 +                  if (typeof tasksObj === 'string') {
+       728 +                      try {
+       729 +                          tasksObj = JSON.parse(tasksObj);
+       730 +                      } catch (e) {
+       731 +                          console.warn(`[ANALYTICS] JSON parse error for client ${clientId}, month ${monthlyTask.month}:`, e);
+       732 +                          return;
+       733 +                      }
+       734 +                  }
+       735 +  
+       736 +                  if (tasksObj && typeof tasksObj === 'object') {
+       737 +                      const tasksList = Object.values(tasksObj);
+       738                        totalTasks += tasksList.length;
+       739 -
+       740 -                      const completedCount = tasksList.filter(task => task === true || task === '完了').length;
+       739 +  
+       740 +                      const completedCount = tasksList.filter(task => task.completed === true).length;
+       741                        completedTasks += completedCount;
+       742                    }
+       743                });
