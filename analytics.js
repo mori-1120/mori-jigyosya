@@ -2750,12 +2750,12 @@ class AnalyticsPage {
                     },
                     {
                         label: '完了タスク数',
+                        type: 'bar',
                         data: totalCompletedTasks,
                         borderColor: '#28a745',
-                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
                         yAxisID: 'y1',
-                        tension: 0.4,
-                        borderDash: [5, 5]
+                        borderWidth: 1
                     },
                     {
                         label: '要注意クライアント数',
@@ -2793,7 +2793,7 @@ class AnalyticsPage {
                             text: '平均進捗率 (%)'
                         },
                         max: 100,
-                        min: 0
+                        min: 50
                     },
                     y1: {
                         type: 'linear',
@@ -2834,33 +2834,32 @@ class AnalyticsPage {
                                 const weekData = this.weeklyChartData[context.dataIndex];
                                 const datasetLabel = context.dataset.label;
 
-                                // 各グラフライン固有の情報のみ表示
+                                // 各グラフライン固有の情報のみ表示（重複除去）
                                 if (datasetLabel === '平均進捗率 (%)') {
                                     const completedTasks = weekData.total_completed_tasks || weekData.snapshots.reduce((sum, s) => sum + s.completed_tasks, 0);
                                     const totalTasks = weekData.total_all_tasks || weekData.snapshots.reduce((sum, s) => sum + s.total_tasks, 0);
                                     return [
-                                        `完了タスク: ${completedTasks} / ${totalTasks}`,
-                                        `進捗率: ${weekData.average_progress}%`
+                                        `完了: ${completedTasks} / ${totalTasks}`,
+                                        `平均進捗率: ${weekData.average_progress}%`
                                     ];
                                 }
                                 else if (datasetLabel === '完了タスク数') {
                                     const completedTasks = weekData.total_completed_tasks || weekData.snapshots.reduce((sum, s) => sum + s.completed_tasks, 0);
                                     return [
-                                        `完了タスク数: ${completedTasks}`,
+                                        `完了タスク: ${completedTasks}件`,
                                         `前週比: ${weekData.week_over_week_change ?
                                             (weekData.week_over_week_change > 0 ? '+' : '') +
                                             weekData.week_over_week_change.toFixed(1) + '%' : 'N/A'}`
                                     ];
                                 }
                                 else if (datasetLabel === '要注意クライアント数') {
-                                    // 【修正】要注意クライアント数の詳細情報
                                     const attentionCount = weekData.low_progress_count || 0;
                                     const totalClients = weekData.total_clients || 0;
                                     const attentionRate = totalClients > 0 ? ((attentionCount / totalClients) * 100).toFixed(1) : 0;
 
                                     return [
                                         `要注意: ${attentionCount} / ${totalClients}件`,
-                                        `要注意率: ${attentionRate}%`,
+                                        `比率: ${attentionRate}%`,
                                         `(進捗50%未満のクライアント)`
                                     ];
                                 }
