@@ -837,23 +837,32 @@ class AnalyticsPage {
         matrix.forEach(row => {
             const tr = document.createElement('tr');
             
-            // 基本列
+            // 基本列（新しい順序：ID、名前、担当者、決算月、進捗率）
             tr.innerHTML = `
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
+                    <a href="edit.html?id=${row.clientId}"
+                       style="color: #007bff; text-decoration: none; cursor: pointer; font-weight: bold;"
+                       onmouseover="this.style.textDecoration='underline'"
+                       onmouseout="this.style.textDecoration='none'"
+                       title="クリックして編集">
+                        ${row.clientId}
+                    </a>
+                </td>
                 <td style="border: 1px solid #dee2e6; padding: 8px;">
-                    <a href="details.html?id=${row.clientId}" 
+                    <a href="details.html?id=${row.clientId}"
                        style="color: #007bff; text-decoration: none; cursor: pointer;"
                        onmouseover="this.style.textDecoration='underline'"
                        onmouseout="this.style.textDecoration='none'">
                         ${row.clientName}
                     </a>
                 </td>
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.staffName}</td>
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.fiscalMonth}月</td>
                 <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
                     <span style="font-weight: bold; color: ${this.getProgressColor(row.progressRate)};">
                         ${row.progressRate}%
                     </span>
                 </td>
-                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.staffName}</td>
-                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.fiscalMonth}月</td>
             `;
             
             // クライアント情報を渡して月別進捗列を追加
@@ -1054,6 +1063,10 @@ class AnalyticsPage {
             let aValue, bValue;
             
             switch (sortBy) {
+                case 'id':
+                    aValue = parseInt(a.clientId) || 0;
+                    bValue = parseInt(b.clientId) || 0;
+                    break;
                 case 'name':
                     aValue = a.clientName;
                     bValue = b.clientName;
@@ -1092,8 +1105,9 @@ class AnalyticsPage {
         this.displayProgressMatrix(sortedMatrix);
         
         const sortNames = {
+            'id': '事業者ID',
             'name': '事業者名',
-            'progress': '進捗率', 
+            'progress': '進捗率',
             'staff': '担当者',
             'fiscal': '決算月'
         };
@@ -2346,6 +2360,10 @@ class AnalyticsPage {
             
             // 基本ソートの場合
             switch (this.currentSort) {
+                case 'id':
+                    aValue = parseInt(a.clientId) || 0;
+                    bValue = parseInt(b.clientId) || 0;
+                    break;
                 case 'name':
                     aValue = a.clientName;
                     bValue = b.clientName;
@@ -2431,8 +2449,9 @@ class AnalyticsPage {
         }
 
         const sortNames = {
+            'id': '事業者ID',
             'name': '事業者名',
-            'progress': '進捗率', 
+            'progress': '進捗率',
             'staff': '担当者',
             'fiscal': '決算月'
         };
