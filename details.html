@@ -45,7 +45,7 @@
                 <h2 id="client-name-display" class="client-name-large"><!-- 事業者名がここに表示されます --></h2>
             </div>
             <div class="nav-links">
-                <a href="index.html" id="back-to-main">メイン画面に戻る</a>
+                <a href="analytics.html" id="back-to-main">ダッシュボードに戻る</a>
                 <!-- 「年度を選択してください」のラベルを削除 -->
                 <div class="custom-select-wrapper">
                     <div class="custom-select-trigger"></div>
@@ -65,24 +65,6 @@
             </div>
         </div>
 
-        <!-- 分析機能ボタン（右上配置） -->
-        <div style="position: absolute; right: 50px; top: 170px; z-index: 1000;">
-            <button id="analytics-button" style="
-                background: linear-gradient(135deg, #0b8bbdcc, #072fe4c7, #3b7ee4af); 
-                color: white; 
-                border: 2px solid white; 
-                padding: 23px 34px; 
-                border-radius: 8px; 
-                cursor: pointer; 
-                font-size: 16px; 
-                font-weight: bold; 
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3); 
-                transition: all 0.3s ease; 
-                backdrop-filter: blur(10px);
-            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.4)'" onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.3)'">
-                📊 ダッシュボード
-            </button>
-        </div>
 
         <!-- Legacy status display - now replaced with toast notifications -->
         <div id="connection-status" style="display: none !important;">

@@ -376,7 +376,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 // Redirect to main page
                 setTimeout(() => {
-                    window.location.href = 'index.html';
+                    window.location.href = 'analytics.html';
                 }, 1500);
                 
             } else {
@@ -391,7 +391,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 // 更新成功後、1.5秒待ってからメイン画面に遷移
                 setTimeout(() => {
-                    window.location.href = 'index.html';
+                    window.location.href = 'analytics.html';
                 }, 1500);
             }
 
@@ -469,7 +469,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     // Close modal and redirect to main page after delete
                     hideDeleteModal();
                     setTimeout(() => {
-                        window.location.href = 'index.html';
+                        window.location.href = 'analytics.html';
                     }, 2000);
                     return;
             }
