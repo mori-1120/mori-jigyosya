@@ -20,7 +20,7 @@
 <body>
     <div class="container">
         <!-- 統合ヘッダー & フィルターエリア -->
-        <div class="analytics-filters" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+        <div class="analytics-filters" style="background: #0000002e; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
             <!-- タイトル行 -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; position: relative;">
                 <h1 style="margin: 0;">📈 進捗管理ダッシュボード</h1>
@@ -29,7 +29,7 @@
                 <div style="position: absolute; top: -9px; right: 0px; display: flex; gap: 0px; z-index: 1000;">
                     <!-- その他アプリ アコーディオン -->
                     <div id="other-apps-accordion" class="accordion-container" style="position: relative;">
-                        <button class="accordion-header" style="background: #2e93a3e0; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                        <button class="accordion-header" style="background: #ffffff; color: #6c757d; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
                             <span>🔗 その他メニュー</span>
                             <span class="accordion-icon">▼</span>
                         </button>
@@ -42,7 +42,7 @@
 
                     <!-- 管理メニュー アコーディオン -->
                     <div id="management-accordion" class="accordion-container" style="position: relative;">
-                        <button class="accordion-header" style="background: #2e93a3e0; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                        <button class="accordion-header" style="background: #ffffff; color: #6c757d; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
                             <span>⚙️ 管理メニュー</span>
                             <span class="accordion-icon">▼</span>
                         </button>
@@ -63,8 +63,8 @@
                     <button id="back-to-main" style="background: #6c757d; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
                         ← メイン画面に戻る
                     </button>
-                    <button id="performance-dashboard-button" style="background: #ffc107; color: #212529; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">
-                        👥 パフォーマンス
+                    <button id="performance-dashboard-button" style="background: #ffc107c5; color: #212529; border: none; padding: 15px 12px; border-radius: 45px; cursor: pointer; font-size: 15px; font-weight: bold;">
+                        👥 担当者別ボード
                     </button>
                 </div>
             </div>
@@ -497,22 +497,33 @@
     <script>
         // アコーディオン機能
         function toggleAccordion(element) {
+            console.log('toggleAccordion実行:', element);
             const content = element.nextElementSibling;
             const icon = element.querySelector('.accordion-icon');
-            const isOpen = content.style.display === 'block';
+            console.log('content:', content);
+            console.log('icon:', icon);
+            console.log('現在のdisplay:', content ? content.style.display : 'なし');
+
+            const isOpen = content && content.style.display === 'block';
+            console.log('isOpen:', isOpen);
 
             // 他のアコーディオンを閉じる
-            document.querySelectorAll('.accordion-content').forEach(content => {
-                content.style.display = 'none';
+            document.querySelectorAll('.accordion-content').forEach(otherContent => {
+                otherContent.classList.remove('show');
+                otherContent.style.cssText = 'display: none; position: absolute; top: 100%; right: 0; min-width: 150px;';
             });
             document.querySelectorAll('.accordion-icon').forEach(icon => {
                 icon.textContent = '▼';
             });
 
             // クリックされたアコーディオンを開閉
-            if (!isOpen) {
-                content.style.display = 'block';
-                icon.textContent = '▲';
+            if (!isOpen && content) {
+                content.classList.add('show');
+                content.style.cssText = 'display: block; position: absolute; top: 100%; right: 0; min-width: 150px; z-index: 1001;';
+                console.log('アコーディオンを開きました');
+                if (icon) {
+                    icon.textContent = '▲';
+                }
             }
         }
 
