@@ -3402,8 +3402,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const linksToCreate = finalLinks.filter(l => l.id === undefined);
             const linksToUpdate = finalLinks.filter(l => l.id !== undefined);
 
-            // Supabaseに保存（利用可能な場合）
-            if (window.SupabaseAPI) {
+            // Supabaseに保存
+            try {
                 const promises = [];
                 if (idsToDelete.length > 0) {
                     promises.push(SupabaseAPI.deleteAppLinks(idsToDelete));
@@ -3416,9 +3416,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
 
                 await Promise.all(promises);
-            } else {
-                // フォールバック: localStorageに保存
-                console.warn('SupabaseAPI not available, saving to localStorage');
+            } catch (supabaseError) {
+                console.warn('SupabaseAPI error, saving to localStorage as fallback:', supabaseError);
                 localStorage.setItem('appLinks', JSON.stringify(finalLinks));
             }
 
@@ -3434,16 +3433,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadAppLinks() {
         try {
-            if (window.SupabaseAPI) {
-                appLinks = await SupabaseAPI.fetchAppLinks();
-            } else {
-                // フォールバック: localStorageから読み込み
-                const stored = localStorage.getItem('appLinks');
-                appLinks = stored ? JSON.parse(stored) : [];
-            }
+            appLinks = await SupabaseAPI.fetchAppLinks();
             renderAppLinksButtons();
         } catch (error) {
-            console.error('Error loading app links:', error);
+            console.error('Error loading app links from Supabase:', error);
             // エラー時はlocalStorageからフォールバック
             try {
                 const stored = localStorage.getItem('appLinks');
@@ -3452,6 +3445,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } catch (fallbackError) {
                 console.error('Error loading from localStorage:', fallbackError);
                 appLinks = [];
+                renderAppLinksButtons();
             }
         }
     }
@@ -3509,37 +3503,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // SupabaseAPIが利用可能になってからアプリリンクを読み込み
-    function waitForSupabaseAPI() {
-        let attempts = 0;
-        const maxAttempts = 10;
-
-        const checkAPI = () => {
-            attempts++;
-            if (window.SupabaseAPI) {
-                console.log('SupabaseAPI available, loading app links');
-                loadAppLinks();
-            } else if (attempts < maxAttempts) {
-                console.warn(`SupabaseAPI not available, retrying... (${attempts}/${maxAttempts})`);
-                setTimeout(checkAPI, 500);
-            } else {
-                console.error('SupabaseAPI still not available after retries, falling back to localStorage');
-                // フォールバック: localStorageから読み込み
-                try {
-                    const stored = localStorage.getItem('appLinks');
-                    appLinks = stored ? JSON.parse(stored) : [];
-                    renderAppLinksButtons();
-                } catch (error) {
-                    console.error('Error loading from localStorage:', error);
-                    appLinks = [];
-                    renderAppLinksButtons();
-                }
-            }
-        };
-
-        setTimeout(checkAPI, 100);
-    }
-
-    waitForSupabaseAPI();
+    // アプリリンクを初期化時に読み込み
+    loadAppLinks();
 });
 
