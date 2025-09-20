@@ -61,7 +61,10 @@ class AnalyticsPage {
 
             // 基本データ読み込み
             await this.loadInitialData();
-            
+
+            // 設定読み込み（関与終了顧問先の表示制御）
+            this.loadDisplaySettings();
+
             // UI初期化
             this.setupEventListeners();
             this.populateFilters();
@@ -120,7 +123,35 @@ class AnalyticsPage {
         this.clients = clientsResult || [];
         this.staffs = staffsResult || [];
         this.monthlyTasks = tasksResult || [];
-        
+
+    }
+
+    loadDisplaySettings() {
+        // ローカルストレージからpersonalSettingsを取得
+        const personalSettings = this.loadPersonalSettings();
+
+        // body要素にクラスを適用して表示制御
+        if (personalSettings.hideInactiveClients) {
+            document.body.classList.add('hide-inactive-clients');
+        } else {
+            document.body.classList.remove('hide-inactive-clients');
+        }
+
+        // インスタンス変数として保存
+        this.hideInactiveClients = personalSettings.hideInactiveClients || false;
+    }
+
+    loadPersonalSettings() {
+        const savedSettings = JSON.parse(localStorage.getItem('personalSettings') || '{}');
+        // デフォルト値
+        const defaults = {
+            fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+            hideInactiveClients: false,
+            enableConfettiEffect: false
+        };
+
+        const mergedSettings = { ...defaults, ...savedSettings };
+        return mergedSettings;
     }
 
     populateFilters() {
@@ -607,7 +638,14 @@ class AnalyticsPage {
                     return false;
                 }
             }
-            
+
+            // 関与終了事業者の表示制御
+            const showInactive = !this.hideInactiveClients;
+            const matchesStatus = client.status === 'active' || (showInactive && (client.status === 'inactive' || client.status === 'deleted'));
+            if (!matchesStatus) {
+                return false;
+            }
+
             return true;
         });
     }
@@ -862,7 +900,13 @@ class AnalyticsPage {
         
         matrix.forEach(row => {
             const tr = document.createElement('tr');
-            
+
+            // 関与終了クライアントのスタイル適用
+            const client = this.clients.find(c => c.id === row.clientId);
+            if (client && (client.status === 'inactive' || client.status === 'deleted')) {
+                tr.classList.add('inactive-client');
+            }
+
             // 基本列（新しい順序：ID、名前、担当者、決算月、進捗率）
             tr.innerHTML = `
                 <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center; position: relative;">
