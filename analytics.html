@@ -29,7 +29,7 @@
                 <div style="position: absolute; top: -9px; right: 0px; display: flex; gap: 0px; z-index: 2000; overflow: visible;">
                     <!-- その他アプリ アコーディオン -->
                     <div id="other-apps-accordion" class="accordion-container" style="position: relative; z-index: 2001; overflow: visible;">
-                        <button class="accordion-header" style="background: #ffffff; color: #6c757d; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                        <button class="accordion-header" style="background: #ffffff; color: #6c757d; border: none; padding: 8px 12px; border-radius: 39px; cursor: pointer; font-size: 14px;">
                             <span>🔗 その他メニュー</span>
                             <span class="accordion-icon">▼</span>
                         </button>
@@ -42,7 +42,7 @@
 
                     <!-- 管理メニュー アコーディオン -->
                     <div id="management-accordion" class="accordion-container" style="position: relative; z-index: 2002; overflow: visible;">
-                        <button class="accordion-header" style="background: #ffffff; color: #6c757d; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                        <button class="accordion-header" style="background: #ffffff; color: #6c757d; border: none; padding: 8px 12px; border-radius: 39px; cursor: pointer; font-size: 14px;">
                             <span>⚙️ 管理メニュー</span>
                             <span class="accordion-icon">▼</span>
                         </button>
@@ -540,6 +540,38 @@
             }
         }
 
+        // 基本設定モーダル表示
+        function openBasicSettings() {
+            const modal = document.getElementById('basic-settings-modal');
+            modal.style.display = 'block';
+
+            // 設定値の読み込み（簡略版）
+            const yellowThreshold = document.getElementById('yellow-threshold');
+            const redThreshold = document.getElementById('red-threshold');
+
+            if (yellowThreshold) {
+                yellowThreshold.innerHTML = '';
+                for (let i = 1; i <= 12; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = i;
+                    yellowThreshold.appendChild(option);
+                }
+                yellowThreshold.value = '3'; // デフォルト値
+            }
+
+            if (redThreshold) {
+                redThreshold.innerHTML = '';
+                for (let i = 1; i <= 12; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = i;
+                    redThreshold.appendChild(option);
+                }
+                redThreshold.value = '6'; // デフォルト値
+            }
+        }
+
         // モーダル表示機能（iframe方式）
         function openModal(modalType) {
             const modal = document.createElement('div');
@@ -612,8 +644,27 @@
             // ボタンイベントリスナー
             document.getElementById('manage-staff-button')?.addEventListener('click', () => openModal('staff'));
             document.getElementById('add-client-button')?.addEventListener('click', () => openModal('client'));
-            document.getElementById('basic-settings-button')?.addEventListener('click', () => openModal('settings'));
+            document.getElementById('basic-settings-button')?.addEventListener('click', openBasicSettings);
             document.getElementById('url-settings-button')?.addEventListener('click', () => openModal('url'));
+
+            // 基本設定モーダルのイベントリスナー
+            const basicSettingsModal = document.getElementById('basic-settings-modal');
+            const closeBasicSettingsButton = basicSettingsModal?.querySelector('.close-button');
+            const cancelBasicSettingsButton = document.getElementById('cancel-basic-settings-button');
+
+            closeBasicSettingsButton?.addEventListener('click', () => {
+                basicSettingsModal.style.display = 'none';
+            });
+            cancelBasicSettingsButton?.addEventListener('click', () => {
+                basicSettingsModal.style.display = 'none';
+            });
+
+            // モーダル外クリックで閉じる
+            basicSettingsModal?.addEventListener('click', (e) => {
+                if (e.target === basicSettingsModal) {
+                    basicSettingsModal.style.display = 'none';
+                }
+            });
 
             // グローバルクリックでアコーディオンを閉じる
             document.addEventListener('click', (e) => {
@@ -654,6 +705,68 @@
             });
         });
     </script>
+
+    <!-- 基本設定モーダル -->
+    <div id="basic-settings-modal" class="modal" style="display: none;">
+        <div class="modal-content settings-modal-content">
+            <span class="close-button">&times;</span>
+            <h2>基本設定</h2>
+
+            <div class="settings-container">
+                <!-- 個別設定 -->
+                <div class="settings-column">
+                    <div class="settings-section">
+                        <h3>📋 個別設定</h3>
+                        <div class="setting-item">
+                            <label>文字サイズ:</label>
+                            <div class="font-size-control-group" style="display: flex; align-items: center; gap: 10px;">
+                                <button id="font-size-decrease" class="font-size-button" style="width: 30px; height: 30px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 4px; cursor: pointer;">－</button>
+                                <span id="font-size-display" style="min-width: 40px; text-align: center; font-weight: bold;">100%</span>
+                                <button id="font-size-increase" class="font-size-button" style="width: 30px; height: 30px; border: 1px solid #ddd; background: #f8f9fa; border-radius: 4px; cursor: pointer;">＋</button>
+                                <button id="font-size-reset" class="font-size-button" style="padding: 4px 8px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer; font-size: 12px;">リセット</button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <label for="font-family-select">全体のフォント:</label>
+                            <select id="font-family-select"></select>
+                        </div>
+                        <div class="setting-item">
+                            <label for="hide-inactive-clients">関与終了した顧問先を隠す:</label>
+                            <input type="checkbox" id="hide-inactive-clients">
+                        </div>
+                        <div class="setting-item">
+                            <label for="enable-confetti-effect">達成時エフェクトを表示する:</label>
+                            <input type="checkbox" id="enable-confetti-effect">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 共通設定 -->
+                <div class="settings-column">
+                    <div class="settings-section">
+                        <h3>⚙️ 共通設定</h3>
+                        <div class="setting-item threshold-setting-simple">
+                            <label for="yellow-threshold">警告表示:</label>
+                            <select id="yellow-threshold"></select>
+                            <span>ヶ月</span>
+                            <input type="color" id="yellow-color">
+                        </div>
+                        <div class="setting-item threshold-setting-simple">
+                            <label for="red-threshold">危険表示:</label>
+                            <select id="red-threshold"></select>
+                            <span>ヶ月</span>
+                            <input type="color" id="red-color">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button id="save-basic-settings-button" class="save-button">設定を保存</button>
+                <button id="cancel-basic-settings-button" class="cancel-button">キャンセル</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Copyright Notice -->
     <div style="position: fixed; bottom: 10px; right: 15px; opacity: 0.6; font-size: 11px; color: #666; z-index: 100; pointer-events: none;">
