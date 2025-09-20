@@ -104,7 +104,7 @@ class PerformancePage {
     setupEventListeners() {
         // ナビゲーションボタン
         document.getElementById('back-to-main').addEventListener('click', () => {
-            window.location.href = 'analytics.html';
+            window.location.href = 'index.html';
         });
 
         document.getElementById('progress-dashboard-button').addEventListener('click', () => {

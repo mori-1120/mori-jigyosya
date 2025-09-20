@@ -292,7 +292,7 @@ class AnalyticsPage {
     setupEventListeners() {
         // ナビゲーションボタン
         document.getElementById('back-to-main').addEventListener('click', () => {
-            window.location.href = 'analytics.html';
+            window.location.href = 'index.html';
         });
 
         document.getElementById('performance-dashboard-button').addEventListener('click', () => {
