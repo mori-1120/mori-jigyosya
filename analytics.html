@@ -532,21 +532,60 @@
             }
         }
 
-        // URL設定モーダル表示（軽量版）
+        // URL設定とアプリリンク管理（DB連携版）
+        let appLinks = [];
+
+        async function loadAppLinks() {
+            try {
+                // 仮でlocalStorage、実際はSupabaseから読み込み
+                const savedLinks = JSON.parse(localStorage.getItem('customAppLinks') || '[]');
+                appLinks = savedLinks;
+                renderAppLinksButtons();
+            } catch (error) {
+                console.error('アプリリンク読み込みエラー:', error);
+                appLinks = [];
+            }
+        }
+
+        function renderAppLinksButtons() {
+            const container = document.querySelector('#other-apps-accordion .accordion-buttons-container');
+            if (!container) return;
+
+            // URL設定ボタン以外を削除
+            while (container.children.length > 1) {
+                container.removeChild(container.lastChild);
+            }
+
+            // アプリリンクがある場合、区切り線を追加
+            if (appLinks.length > 0) {
+                const separator = document.createElement('hr');
+                separator.style.margin = '8px 0';
+                container.appendChild(separator);
+            }
+
+            // 各アプリリンクのボタンを生成
+            appLinks.forEach(link => {
+                const button = document.createElement('button');
+                button.className = 'accordion-button app-link-button';
+                button.textContent = link.name;
+                button.addEventListener('click', () => {
+                    window.open(link.url, '_blank', 'noopener,noreferrer');
+                });
+                container.appendChild(button);
+            });
+        }
+
         function openUrlSettings() {
             const modal = document.getElementById('url-settings-modal');
             modal.style.display = 'block';
-
-            // 簡易URL一覧表示
             loadUrlList();
         }
 
         function loadUrlList() {
             const container = document.getElementById('url-list-container');
-            const savedLinks = JSON.parse(localStorage.getItem('customAppLinks') || '[]');
-
             container.innerHTML = '';
-            savedLinks.forEach((link, index) => {
+
+            appLinks.forEach((link, index) => {
                 const item = document.createElement('div');
                 item.style.cssText = `
                     display: flex; align-items: center; gap: 10px; padding: 8px;
@@ -562,11 +601,16 @@
         }
 
         window.deleteUrl = function(index) {
-            const savedLinks = JSON.parse(localStorage.getItem('customAppLinks') || '[]');
-            savedLinks.splice(index, 1);
-            localStorage.setItem('customAppLinks', JSON.stringify(savedLinks));
+            appLinks.splice(index, 1);
+            saveAppLinks();
             loadUrlList();
+            renderAppLinksButtons();
         };
+
+        function saveAppLinks() {
+            // 仮でlocalStorage、実際はSupabaseに保存
+            localStorage.setItem('customAppLinks', JSON.stringify(appLinks));
+        }
 
         // 基本設定モーダル表示
         function openBasicSettings() {
@@ -650,12 +694,14 @@
                         modalType: modalType
                     }, '*');
 
-                    // 方法2: 直接DOM操作（同一オリジン）
+                    // 方法2: 直接DOM操作（同一オリジン） - 担当者管理に特別な遅延
                     try {
                         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
                         const targetButton = iframeDoc.getElementById(getButtonId(modalType));
                         if (targetButton) {
-                            targetButton.click();
+                            // 担当者管理は初期化が重いので追加遅延
+                            const delay = modalType === 'staff' ? 500 : 100;
+                            setTimeout(() => targetButton.click(), delay);
                         }
                     } catch (e) {
                         console.log('直接操作失敗、postMessageに依存:', e);
@@ -746,8 +792,10 @@
                 urlSettingsModal.style.display = 'none';
             });
             saveUrlButton?.addEventListener('click', () => {
+                saveAppLinks();
                 urlSettingsModal.style.display = 'none';
                 alert('URL設定が保存されました');
+                renderAppLinksButtons(); // アコーディオンボタンを更新
             });
 
             addUrlButton?.addEventListener('click', () => {
@@ -755,16 +803,16 @@
                 const urlInput = document.getElementById('new-url-link');
 
                 if (nameInput.value && urlInput.value) {
-                    const savedLinks = JSON.parse(localStorage.getItem('customAppLinks') || '[]');
-                    savedLinks.push({
+                    appLinks.push({
                         name: nameInput.value,
                         url: urlInput.value
                     });
-                    localStorage.setItem('customAppLinks', JSON.stringify(savedLinks));
+                    saveAppLinks();
 
                     nameInput.value = '';
                     urlInput.value = '';
                     loadUrlList();
+                    renderAppLinksButtons(); // アコーディオンボタンも更新
                 }
             });
 
@@ -786,6 +834,9 @@
                     basicSettingsModal.style.display = 'none';
                 }
             });
+
+            // アプリリンク初期読み込み
+            loadAppLinks();
 
             // グローバルクリックでアコーディオンを閉じる
             document.addEventListener('click', (e) => {
