@@ -454,7 +454,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     await SupabaseAPI.updateClient(currentClient.id, { status: 'inactive' });
                     currentClient.status = 'inactive';
                     showNotification('顧客を関与終了にしました', 'success');
-                    break;
+
+                    // Close modal and redirect to analytics page after inactive
+                    hideDeleteModal();
+                    setTimeout(() => {
+                        window.location.href = 'analytics.html';
+                    }, 2000);
+                    return;
                     
                 case 'reactivate':
                     await SupabaseAPI.restoreClient(currentClient.id);
@@ -465,11 +471,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 case 'delete':
                     await SupabaseAPI.permanentlyDeleteClient(currentClient.id);
                     showNotification('顧客を完全に削除しました', 'success');
-                    
-                    // Close modal and redirect to main page after delete
+
+                    // Close modal and redirect to analytics page with refresh parameter
                     hideDeleteModal();
                     setTimeout(() => {
-                        window.location.href = 'analytics.html';
+                        window.location.href = 'analytics.html?refresh=true';
                     }, 2000);
                     return;
             }

@@ -69,11 +69,22 @@ class AnalyticsPage {
             this.setupEventListeners();
             this.populateFilters();
             
+            // リフレッシュパラメータチェック（削除後のデータ更新用）
+            const refreshRequested = this.checkRefreshParameter();
+
             // URLパラメータから担当者を自動選択（復元前に処理）
             const hasUrlParameters = this.handleUrlParameters();
-            
-            // URLパラメータがある場合は復元をスキップして新規分析
-            if (hasUrlParameters) {
+
+            // URLパラメータまたはリフレッシュ要求がある場合は復元をスキップして新規分析
+            if (hasUrlParameters || refreshRequested) {
+                if (refreshRequested) {
+                    // 強制データ更新後に分析実行
+                    setTimeout(async () => {
+                        await this.forceDataRefresh();
+                        await this.performAnalysis();
+                        showToast('最新データで更新しました', 'success');
+                    }, 500);
+                }
                 // URLパラメータがある場合は新規分析を優先
             } else {
                 // URLパラメータがない場合のみ保存された分析結果を復元
@@ -152,6 +163,24 @@ class AnalyticsPage {
 
         const mergedSettings = { ...defaults, ...savedSettings };
         return mergedSettings;
+    }
+
+    checkRefreshParameter() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refresh = urlParams.get('refresh');
+
+        if (refresh === 'true') {
+            // URLパラメータをクリア（ブラウザ履歴に残さないように）
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, '', newUrl);
+            return true;
+        }
+        return false;
+    }
+
+    async forceDataRefresh() {
+        // 強制的にデータを再読み込み
+        await this.loadInitialData();
     }
 
     populateFilters() {
