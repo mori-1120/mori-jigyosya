@@ -25,16 +25,16 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(135deg, rgba(173, 216, 230, 0.85), rgba(135, 206, 235, 0.85), rgba(176, 224, 230, 0.85));
+        background: linear-gradient(135deg, rgba(173, 216, 230, 0.95), rgba(135, 206, 235, 0.95), rgba(176, 224, 230, 0.95));
         backdrop-filter: blur(8px);
-        z-index: 500;
+        z-index: 1000;
         transition: opacity 0.3s ease;
         opacity: 0;
         pointer-events: none;
         display: none;
     ">
         <!-- カバー制御ボタン -->
-        <div style="position: absolute; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 501;">
+        <div style="position: absolute; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 1001;">
             <button id="hide-cover-btn" style="
                 background: rgba(255, 255, 255, 0.9);
                 border: 2px solid #007bff;
@@ -100,7 +100,7 @@
             font-weight: bold;
             box-shadow: 0 3px 15px rgba(135, 206, 235, 0.4);
             transition: all 0.3s ease;
-            display: none;
+            display: block;
         " onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 5px 20px rgba(135, 206, 235, 0.6)';"
            onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 3px 15px rgba(135, 206, 235, 0.4)';">
             🎭 カバーON
@@ -930,14 +930,32 @@
             const hideCoverBtn = document.getElementById('hide-cover-btn');
             const focusModeBtn = document.getElementById('focus-mode-btn');
 
+            console.log('カバー要素の取得状況:');
+            console.log('coverOverlay:', coverOverlay);
+            console.log('showCoverBtn:', showCoverBtn);
+            console.log('hideCoverBtn:', hideCoverBtn);
+            console.log('focusModeBtn:', focusModeBtn);
+
             // カバー表示
             showCoverBtn?.addEventListener('click', () => {
+                console.log('カバーONボタンがクリックされました');
+                console.log('coverOverlay:', coverOverlay);
+                console.log('coverOverlay.style.display before:', coverOverlay.style.display);
+
                 coverOverlay.style.display = 'block';
+                coverOverlay.style.zIndex = '1000';
+                coverOverlay.style.opacity = '0';
+
+                console.log('coverOverlay.style.display after:', coverOverlay.style.display);
+
                 setTimeout(() => {
                     coverOverlay.style.opacity = '1';
                     coverOverlay.style.pointerEvents = 'auto';
-                }, 10);
+                    console.log('アニメーション完了');
+                }, 50);
+
                 showCoverBtn.style.display = 'none';
+                console.log('カバーが表示されました');
             });
 
             // カバー非表示
