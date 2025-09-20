@@ -52,7 +52,7 @@ class AnalyticsPage {
             const user = await SupabaseAPI.getCurrentUser();
             if (!user) {
                 showToast('認証が必要です', 'error');
-                window.location.href = 'index.html';
+                window.location.href = 'analytics.html';
                 return;
             }
 
@@ -292,7 +292,7 @@ class AnalyticsPage {
     setupEventListeners() {
         // ナビゲーションボタン
         document.getElementById('back-to-main').addEventListener('click', () => {
-            window.location.href = 'index.html';
+            window.location.href = 'analytics.html';
         });
 
         document.getElementById('performance-dashboard-button').addEventListener('click', () => {

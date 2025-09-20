@@ -20,7 +20,7 @@ class PerformancePage {
             const user = await SupabaseAPI.getCurrentUser();
             if (!user) {
                 showToast('認証が必要です', 'error');
-                window.location.href = 'index.html';
+                window.location.href = 'analytics.html';
                 return;
             }
 
@@ -104,7 +104,7 @@ class PerformancePage {
     setupEventListeners() {
         // ナビゲーションボタン
         document.getElementById('back-to-main').addEventListener('click', () => {
-            window.location.href = 'index.html';
+            window.location.href = 'analytics.html';
         });
 
         document.getElementById('progress-dashboard-button').addEventListener('click', () => {
