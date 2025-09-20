@@ -29,7 +29,7 @@
                 <div style="position: absolute; top: -9px; right: 0px; display: flex; gap: 0px; z-index: 1000;">
                     <!-- その他アプリ アコーディオン -->
                     <div id="other-apps-accordion" class="accordion-container" style="position: relative;">
-                        <button class="accordion-header" style="background: #17a2b8; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                        <button class="accordion-header" style="background: #2e93a3e0; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
                             <span>🔗 その他メニュー</span>
                             <span class="accordion-icon">▼</span>
                         </button>
@@ -42,7 +42,7 @@
 
                     <!-- 管理メニュー アコーディオン -->
                     <div id="management-accordion" class="accordion-container" style="position: relative;">
-                        <button class="accordion-header" style="background: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                        <button class="accordion-header" style="background: #2e93a3e0; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
                             <span>⚙️ 管理メニュー</span>
                             <span class="accordion-icon">▼</span>
                         </button>
@@ -571,10 +571,19 @@
 
         // DOMContentLoaded後の初期化
         document.addEventListener('DOMContentLoaded', function() {
-            // アコーディオンイベントリスナー
-            document.querySelectorAll('.accordion-header').forEach(header => {
-                header.addEventListener('click', () => toggleAccordion(header));
-            });
+            // 少し遅延してアコーディオンを初期化
+            setTimeout(() => {
+                // アコーディオンイベントリスナー
+                document.querySelectorAll('.accordion-header').forEach(header => {
+                    console.log('アコーディオンヘッダーを設定:', header);
+                    header.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('アコーディオンクリック:', header);
+                        toggleAccordion(header);
+                    });
+                });
+            }, 100);
 
             // ボタンイベントリスナー
             document.getElementById('manage-staff-button')?.addEventListener('click', () => openModal('staff'));
