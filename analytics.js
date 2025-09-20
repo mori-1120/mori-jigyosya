@@ -3510,28 +3510,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // SupabaseAPIが利用可能になってからアプリリンクを読み込み
-    setTimeout(() => {
-        if (window.SupabaseAPI) {
-            loadAppLinks();
-        } else {
-            console.warn('SupabaseAPI not available, retrying...');
-            setTimeout(() => {
-                if (window.SupabaseAPI) {
-                    loadAppLinks();
-                } else {
-                    console.error('SupabaseAPI still not available, falling back to localStorage');
-                    // フォールバック: localStorageから読み込み
-                    try {
-                        const stored = localStorage.getItem('appLinks');
-                        appLinks = stored ? JSON.parse(stored) : [];
-                        renderAppLinksButtons();
-                    } catch (error) {
-                        console.error('Error loading from localStorage:', error);
-                        appLinks = [];
-                    }
+    function waitForSupabaseAPI() {
+        let attempts = 0;
+        const maxAttempts = 10;
+
+        const checkAPI = () => {
+            attempts++;
+            if (window.SupabaseAPI) {
+                console.log('SupabaseAPI available, loading app links');
+                loadAppLinks();
+            } else if (attempts < maxAttempts) {
+                console.warn(`SupabaseAPI not available, retrying... (${attempts}/${maxAttempts})`);
+                setTimeout(checkAPI, 500);
+            } else {
+                console.error('SupabaseAPI still not available after retries, falling back to localStorage');
+                // フォールバック: localStorageから読み込み
+                try {
+                    const stored = localStorage.getItem('appLinks');
+                    appLinks = stored ? JSON.parse(stored) : [];
+                    renderAppLinksButtons();
+                } catch (error) {
+                    console.error('Error loading from localStorage:', error);
+                    appLinks = [];
+                    renderAppLinksButtons();
                 }
-            }, 1000);
-        }
-    }, 500);
+            }
+        };
+
+        setTimeout(checkAPI, 100);
+    }
+
+    waitForSupabaseAPI();
 });
 
