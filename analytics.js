@@ -840,21 +840,19 @@ class AnalyticsPage {
             
             // 基本列（新しい順序：ID、名前、担当者、決算月、進捗率）
             tr.innerHTML = `
-                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center; position: relative;">
                     <a href="edit.html?id=${row.clientId}"
                        style="color: #007bff; text-decoration: none; cursor: pointer; font-weight: bold;"
-                       onmouseover="this.style.textDecoration='underline'; this.originalTitle = this.title; this.title = '';"
-                       onmouseout="this.style.textDecoration='none'; this.title = this.originalTitle;"
-                       title="クリックして編集">
+                       onmouseover="this.style.textDecoration='underline'; showCustomTooltip(this, 'クリックして編集');"
+                       onmouseout="this.style.textDecoration='none'; hideCustomTooltip(this);">
                         ${row.clientId}
                     </a>
                 </td>
-                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center; position: relative;">
                     <a href="details.html?id=${row.clientId}"
                        style="color: #007bff; text-decoration: none; cursor: pointer;"
-                       onmouseover="this.style.textDecoration='underline'; this.originalTitle = this.title; this.title = '';"
-                       onmouseout="this.style.textDecoration='none'; this.title = this.originalTitle;"
-                       title="詳細画面へ移動">
+                       onmouseover="this.style.textDecoration='underline'; showCustomTooltip(this, '詳細画面へ移動');"
+                       onmouseout="this.style.textDecoration='none'; hideCustomTooltip(this);">
                         ${row.clientName}
                     </a>
                 </td>
@@ -3219,3 +3217,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.analytics.setupEventListeners();
     }
 });
+
+// カスタムツールチップ関数
+function showCustomTooltip(element, text) {
+    // 既存のツールチップを削除
+    hideCustomTooltip(element);
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'custom-tooltip show';
+    tooltip.textContent = text;
+
+    // 親要素に追加
+    element.parentElement.appendChild(tooltip);
+
+    // アニメーション用の遅延
+    setTimeout(() => {
+        tooltip.classList.add('show');
+    }, 10);
+}
+
+function hideCustomTooltip(element) {
+    const tooltip = element.parentElement.querySelector('.custom-tooltip');
+    if (tooltip) {
+        tooltip.remove();
+    }
+}

@@ -307,14 +307,7 @@
                 }
 
                 /* モダンなツールチップスタイル */
-                [title] {
-                    position: relative;
-                }
-
-                /* デフォルトのツールチップを無効化（z-indexで制御） */
-
-                [title]:hover::after {
-                    content: attr(title);
+                .custom-tooltip {
                     position: absolute;
                     bottom: 100%;
                     left: 50%;
@@ -328,33 +321,24 @@
                     white-space: nowrap;
                     z-index: 10000;
                     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                    animation: tooltipFadeIn 0.2s ease-out;
-                    margin-bottom: 8px;
+                    opacity: 0;
                     pointer-events: none;
+                    margin-bottom: 8px;
+                    transition: opacity 0.2s ease-out;
                 }
 
-                [title]:hover::before {
+                .custom-tooltip.show {
+                    opacity: 1;
+                }
+
+                .custom-tooltip::before {
                     content: '';
                     position: absolute;
-                    bottom: 100%;
+                    top: 100%;
                     left: 50%;
                     transform: translateX(-50%);
                     border: 5px solid transparent;
                     border-top-color: #1a1a1a;
-                    z-index: 10001;
-                    margin-bottom: 3px;
-                    pointer-events: none;
-                }
-
-                @keyframes tooltipFadeIn {
-                    from {
-                        opacity: 0;
-                        transform: translateY(-4px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
                 }
             </style>
         </div>
