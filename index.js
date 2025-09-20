@@ -35,6 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => targetButton.click(), 100);
             }
         }
+
+        // analytics.htmlに戻る命令
+        if (event.data && event.data.action === 'returnToAnalytics') {
+            window.parent.postMessage({action: 'closeModal'}, '*');
+        }
     });
 
     function getButtonIdForModal(modalType) {
@@ -1597,6 +1602,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function closeBasicSettingsModal() {
         basicSettingsModal.style.display = 'none';
+
+        // analytics.htmlから来た場合、戻る指示を送信
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('from') === 'analytics') {
+            window.postMessage({action: 'returnToAnalytics'}, '*');
+        }
     }
 
     // 管理者権限チェックと管理者設定エリアの制御

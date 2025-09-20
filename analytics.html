@@ -30,7 +30,7 @@
                     <!-- その他アプリ アコーディオン -->
                     <div id="other-apps-accordion" class="accordion-container" style="position: relative; z-index: 2001; overflow: visible;">
                         <button class="accordion-header" style="background: #ffffff; color: #6c757d; border: none; padding: 8px 12px; border-radius: 39px; cursor: pointer; font-size: 14px;">
-                            <span>🔗 その他メニュー</span>
+                            <span>🔗 その他アプリ</span>
                             <span class="accordion-icon">▼</span>
                         </button>
                         <div class="accordion-content" style="display: none; position: absolute; top: 100%; right: 0; min-width: 150px;">
@@ -532,6 +532,42 @@
             }
         }
 
+        // URL設定モーダル表示（軽量版）
+        function openUrlSettings() {
+            const modal = document.getElementById('url-settings-modal');
+            modal.style.display = 'block';
+
+            // 簡易URL一覧表示
+            loadUrlList();
+        }
+
+        function loadUrlList() {
+            const container = document.getElementById('url-list-container');
+            const savedLinks = JSON.parse(localStorage.getItem('customAppLinks') || '[]');
+
+            container.innerHTML = '';
+            savedLinks.forEach((link, index) => {
+                const item = document.createElement('div');
+                item.style.cssText = `
+                    display: flex; align-items: center; gap: 10px; padding: 8px;
+                    border: 1px solid #ddd; border-radius: 4px; margin: 5px 0;
+                `;
+                item.innerHTML = `
+                    <span style="flex: 1; font-weight: bold;">${link.name}</span>
+                    <span style="flex: 2; color: #666;">${link.url}</span>
+                    <button onclick="deleteUrl(${index})" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">削除</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        window.deleteUrl = function(index) {
+            const savedLinks = JSON.parse(localStorage.getItem('customAppLinks') || '[]');
+            savedLinks.splice(index, 1);
+            localStorage.setItem('customAppLinks', JSON.stringify(savedLinks));
+            loadUrlList();
+        };
+
         // 基本設定モーダル表示
         function openBasicSettings() {
             const modal = document.getElementById('basic-settings-modal');
@@ -657,9 +693,17 @@
             `;
 
             closeBtn.onclick = () => document.body.removeChild(modal);
-            modal.onclick = (e) => {
-                if (e.target === modal) document.body.removeChild(modal);
-            };
+            // モーダル外クリックでは閉じない（index.htmlメイン画面が見えて混乱するため）
+            // modal.onclick = (e) => {
+            //     if (e.target === modal) document.body.removeChild(modal);
+            // };
+
+            // analytics.htmlに戻るメッセージ受信
+            window.addEventListener('message', function(event) {
+                if (event.data && event.data.action === 'closeModal') {
+                    document.body.removeChild(modal);
+                }
+            });
 
             modal.appendChild(iframe);
             modal.appendChild(closeBtn);
@@ -682,11 +726,47 @@
                 });
             }, 100);
 
-            // ボタンイベントリスナー（背景ぼかし版）
+            // ボタンイベントリスナー（背景ぼかし版 + URL設定は直接）
             document.getElementById('manage-staff-button')?.addEventListener('click', () => openBlurModal('staff'));
             document.getElementById('add-client-button')?.addEventListener('click', () => openBlurModal('client'));
             document.getElementById('basic-settings-button')?.addEventListener('click', () => openBlurModal('settings'));
-            document.getElementById('url-settings-button')?.addEventListener('click', () => openBlurModal('url'));
+            document.getElementById('url-settings-button')?.addEventListener('click', openUrlSettings);
+
+            // URL設定モーダルのイベントリスナー
+            const urlSettingsModal = document.getElementById('url-settings-modal');
+            const closeUrlButton = urlSettingsModal?.querySelector('.close-button');
+            const cancelUrlButton = document.getElementById('cancel-url-settings-button');
+            const saveUrlButton = document.getElementById('save-url-settings-button');
+            const addUrlButton = document.getElementById('add-url-button');
+
+            closeUrlButton?.addEventListener('click', () => {
+                urlSettingsModal.style.display = 'none';
+            });
+            cancelUrlButton?.addEventListener('click', () => {
+                urlSettingsModal.style.display = 'none';
+            });
+            saveUrlButton?.addEventListener('click', () => {
+                urlSettingsModal.style.display = 'none';
+                alert('URL設定が保存されました');
+            });
+
+            addUrlButton?.addEventListener('click', () => {
+                const nameInput = document.getElementById('new-url-name');
+                const urlInput = document.getElementById('new-url-link');
+
+                if (nameInput.value && urlInput.value) {
+                    const savedLinks = JSON.parse(localStorage.getItem('customAppLinks') || '[]');
+                    savedLinks.push({
+                        name: nameInput.value,
+                        url: urlInput.value
+                    });
+                    localStorage.setItem('customAppLinks', JSON.stringify(savedLinks));
+
+                    nameInput.value = '';
+                    urlInput.value = '';
+                    loadUrlList();
+                }
+            });
 
             // 基本設定モーダルのイベントリスナー
             const basicSettingsModal = document.getElementById('basic-settings-modal');
@@ -746,6 +826,30 @@
             });
         });
     </script>
+
+    <!-- URL設定モーダル -->
+    <div id="url-settings-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>URL設定</h2>
+            <p>「その他アプリ」メニューに表示するカスタムリンクを設定します。</p>
+
+            <div id="url-list-container" class="list-container">
+                <!-- URLアイテムがここに動的に追加されます -->
+            </div>
+
+            <div class="new-item-form">
+                <input type="text" id="new-url-name" placeholder="リンク名" style="padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                <input type="url" id="new-url-link" placeholder="https://example.com" style="padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                <button id="add-url-button" class="add-button" style="padding: 8px 16px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">追加</button>
+            </div>
+
+            <div class="modal-actions">
+                <button id="save-url-settings-button" class="save-button">保存</button>
+                <button id="cancel-url-settings-button" class="cancel-button">キャンセル</button>
+            </div>
+        </div>
+    </div>
 
     <!-- 基本設定モーダル -->
     <div id="basic-settings-modal" class="modal" style="display: none;">
