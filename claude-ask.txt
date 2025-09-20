@@ -1,9 +1,22 @@
 config.js:10 Supabase config loaded: Object
-analytics.html:578 アコーディオンヘッダーを設定: <button class=​"accordion-header" style=​"background:​ #2e93a3e0;​ color:​ white;​ border:​ none;​ padding:​ 8px 12px;​ border-radius:​ 4px;​ cursor:​ pointer;​ font-size:​ 14px;​">​…​</button>​flex
-analytics.html:578 アコーディオンヘッダーを設定: <button class=​"accordion-header" style=​"background:​ #2e93a3e0;​ color:​ white;​ border:​ none;​ padding:​ 8px 12px;​ border-radius:​ 4px;​ cursor:​ pointer;​ font-size:​ 14px;​">​…​</button>​flex
+analytics.html:589 アコーディオンヘッダーを設定: <button class=​"accordion-header" style=​"background:​ #ffffff;​ color:​ #6c757d;​ border:​ none;​ padding:​ 8px 12px;​ border-radius:​ 4px;​ cursor:​ pointer;​ font-size:​ 14px;​">​…​</button>​flex
+analytics.html:589 アコーディオンヘッダーを設定: <button class=​"accordion-header" style=​"background:​ #ffffff;​ color:​ #6c757d;​ border:​ none;​ padding:​ 8px 12px;​ border-radius:​ 4px;​ cursor:​ pointer;​ font-size:​ 14px;​">​…​</button>​flex
 analytics.js:2608 📊 週次フィルター: Object
 analytics.js:2627 📅 計算された期間: Object
-analytics.html:582 アコーディオンクリック: <button class=​"accordion-header" style=​"background:​ #2e93a3e0;​ color:​ white;​ border:​ none;​ padding:​ 8px 12px;​ border-radius:​ 4px;​ cursor:​ pointer;​ font-size:​ 14px;​">​…​</button>​flex
-analytics.html:582 アコーディオンクリック: <button class=​"accordion-header" style=​"background:​ #2e93a3e0;​ color:​ white;​ border:​ none;​ padding:​ 8px 12px;​ border-radius:​ 4px;​ cursor:​ pointer;​ font-size:​ 14px;​">​…​</button>​flex
-analytics.html:582 アコーディオンクリック: <button class=​"accordion-header" style=​"background:​ #2e93a3e0;​ color:​ white;​ border:​ none;​ padding:​ 8px 12px;​ border-radius:​ 4px;​ cursor:​ pointer;​ font-size:​ 14px;​">​…​</button>​flex
-analytics.html:582 アコーディオンクリック: <button class=​"accordion-header" style=​"background:​ #2e93a3e0;​ color:​ white;​ border:​ none;​ padding:​ 8px 12px;​ border-radius:​ 4px;​ cursor:​ pointer;​ font-size:​ 14px;​">​flex<span>​⚙️ 管理メニュー​</span>​<span class=​"accordion-icon">​▼​</span>​</button>​
+analytics.html:593 アコーディオンクリック: <button class=​"accordion-header" style=​"background:​ #ffffff;​ color:​ #6c757d;​ border:​ none;​ padding:​ 8px 12px;​ border-radius:​ 4px;​ cursor:​ pointer;​ font-size:​ 14px;​">​…​</button>​flex
+analytics.html:500 toggleAccordion実行: <button class=​"accordion-header" style=​"background:​ #ffffff;​ color:​ #6c757d;​ border:​ none;​ padding:​ 8px 12px;​ border-radius:​ 4px;​ cursor:​ pointer;​ font-size:​ 14px;​">​…​</button>​flex
+analytics.html:503 content: <div class=​"accordion-content" style=​"display:​ none;​ position:​ absolute;​ top:​ 100%;​ right:​ 0px;​ min-width:​ 150px;​">​…​</div>​
+analytics.html:504 icon: <span class=​"accordion-icon">​▼​</span>​
+analytics.html:505 現在のdisplay: none
+analytics.html:508 isOpen: false
+analytics.html:523 アコーディオンを開きました
+analytics.html:593 アコーディオンクリック: <button class=​"accordion-header" style=​"background:​ #ffffff;​ color:​ #6c757d;​ border:​ none;​ padding:​ 8px 12px;​ border-radius:​ 4px;​ cursor:​ pointer;​ font-size:​ 14px;​">​…​</button>​flex
+analytics.html:500 toggleAccordion実行: <button class=​"accordion-header" style=​"background:​ #ffffff;​ color:​ #6c757d;​ border:​ none;​ padding:​ 8px 12px;​ border-radius:​ 4px;​ cursor:​ pointer;​ font-size:​ 14px;​">​…​</button>​flex
+analytics.html:503 content: <div class=​"accordion-content show" style=​"display:​ block;​ position:​ absolute;​ top:​ 100%;​ right:​ 0px;​ min-width:​ 150px;​ z-index:​ 1001;​">​…​</div>​
+analytics.html:504 icon: <span class=​"accordion-icon">​▲​</span>​
+analytics.html:505 現在のdisplay: none
+analytics.html:508 isOpen: false
+analytics.html:523 アコーディオンを開きました
+analytics.html:593 アコーディオンクリック: <button class=​"accordion-header" style=​"background:​ #ffffff;​ color:​ #6c757d;​ border:​ none;​ padding:​ 8px 12px;​ border-radius:​ 4px;​ cursor:​ pointer;​ font-size:​ 14px;​">​…​</button>​flex
+analytics.html:500 toggleAccordion実行: <button class=​"accordion-header" style=​"background:​ #ffffff;​ color:​ #6c757d;​ border:​ none;​ padding:​ 8px 12px;​ border-radius:​ 4px;​ cursor:​ pointer;​ font-size:​ 14px;​">​…​</button>​flex
+analytics.html:503 content: <div class=​"accordion-content" style=​"display:​ block;​ position:​ absolute;​ top:​ 100%;​ right:​ 0px;​ min-width:​ 150px;​ z-index:​ 1001;​">​…​</div>​

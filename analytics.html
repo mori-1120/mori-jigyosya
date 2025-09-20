@@ -502,9 +502,9 @@
             const icon = element.querySelector('.accordion-icon');
             console.log('content:', content);
             console.log('icon:', icon);
-            console.log('現在のdisplay:', content ? content.style.display : 'なし');
 
-            const isOpen = content && content.style.display === 'block';
+            // クラスベースで開閉状態を判定
+            const isOpen = content && content.classList.contains('show');
             console.log('isOpen:', isOpen);
 
             // 他のアコーディオンを閉じる
@@ -512,14 +512,27 @@
                 otherContent.classList.remove('show');
                 otherContent.style.cssText = 'display: none; position: absolute; top: 100%; right: 0; min-width: 150px;';
             });
-            document.querySelectorAll('.accordion-icon').forEach(icon => {
-                icon.textContent = '▼';
+            document.querySelectorAll('.accordion-icon').forEach(otherIcon => {
+                otherIcon.textContent = '▼';
             });
 
             // クリックされたアコーディオンを開閉
             if (!isOpen && content) {
                 content.classList.add('show');
-                content.style.cssText = 'display: block; position: absolute; top: 100%; right: 0; min-width: 150px; z-index: 1001;';
+                // より具体的なスタイル設定
+                content.style.cssText = `
+                    display: block !important;
+                    position: absolute;
+                    top: 100%;
+                    right: 0;
+                    min-width: 150px;
+                    z-index: 1001;
+                    background: white;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                    padding: 8px;
+                `;
                 console.log('アコーディオンを開きました');
                 if (icon) {
                     icon.textContent = '▲';
