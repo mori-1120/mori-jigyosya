@@ -2,6 +2,31 @@
 import { SupabaseAPI } from './supabase-client.js';
 import './toast.js'; // showToastはwindow.showToastとしてグローバルに利用可能
 
+// === カスタムツールチップ関数（グローバルスコープ - 最優先読み込み） ===
+window.showCustomTooltip = function(element, text) {
+    // 既存のツールチップを削除
+    window.hideCustomTooltip(element);
+
+    const tooltip = document.createElement('div');
+    tooltip.className = 'custom-tooltip show';
+    tooltip.textContent = text;
+
+    // 親要素に追加
+    element.parentElement.appendChild(tooltip);
+
+    // アニメーション用の遅延
+    setTimeout(() => {
+        tooltip.classList.add('show');
+    }, 10);
+};
+
+window.hideCustomTooltip = function(element) {
+    const tooltip = element.parentElement.querySelector('.custom-tooltip');
+    if (tooltip) {
+        tooltip.remove();
+    }
+};
+
 class AnalyticsPage {
     constructor() {
         this.clients = [];
@@ -3218,27 +3243,3 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-// カスタムツールチップ関数
-function showCustomTooltip(element, text) {
-    // 既存のツールチップを削除
-    hideCustomTooltip(element);
-
-    const tooltip = document.createElement('div');
-    tooltip.className = 'custom-tooltip show';
-    tooltip.textContent = text;
-
-    // 親要素に追加
-    element.parentElement.appendChild(tooltip);
-
-    // アニメーション用の遅延
-    setTimeout(() => {
-        tooltip.classList.add('show');
-    }, 10);
-}
-
-function hideCustomTooltip(element) {
-    const tooltip = element.parentElement.querySelector('.custom-tooltip');
-    if (tooltip) {
-        tooltip.remove();
-    }
-}
