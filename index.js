@@ -1,6 +1,51 @@
 import { SupabaseAPI, handleSupabaseError, supabase } from './supabase-client.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    // URL パラメータを解析してモーダル自動開く機能
+    const urlParams = new URLSearchParams(window.location.search);
+    const modalParam = urlParams.get('modal');
+    const fromParam = urlParams.get('from');
+
+    if (modalParam && fromParam === 'analytics') {
+        // analytics.htmlから来た場合、指定されたモーダルを自動で開く
+        setTimeout(() => {
+            switch(modalParam) {
+                case 'settings':
+                    document.getElementById('basic-settings-button')?.click();
+                    break;
+                case 'staff':
+                    document.getElementById('manage-staff-button')?.click();
+                    break;
+                case 'client':
+                    document.getElementById('add-client-button')?.click();
+                    break;
+                case 'url':
+                    document.getElementById('url-settings-button')?.click();
+                    break;
+            }
+        }, 500); // DOM完全読み込み後に実行
+    }
+
+    // postMessage受信でモーダル開く（analytics.htmlからの通信）
+    window.addEventListener('message', function(event) {
+        if (event.data && event.data.action === 'openModal') {
+            const modalType = event.data.modalType;
+            const targetButton = document.getElementById(getButtonIdForModal(modalType));
+            if (targetButton) {
+                setTimeout(() => targetButton.click(), 100);
+            }
+        }
+    });
+
+    function getButtonIdForModal(modalType) {
+        const buttonMap = {
+            'settings': 'basic-settings-button',
+            'staff': 'manage-staff-button',
+            'client': 'add-client-button',
+            'url': 'url-settings-button'
+        };
+        return buttonMap[modalType] || 'basic-settings-button';
+    }
     // --- Authentication Elements ---
     const authModal = document.getElementById('auth-modal');
     const signInButton = document.getElementById('signin-button');

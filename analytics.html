@@ -577,7 +577,7 @@
             }
         }
 
-        // 背景ぼかし版モーダル（推奨）
+        // 最強版: 3段階確実モーダル開く
         function openBlurModal(modalType) {
             const modal = document.createElement('div');
             modal.style.cssText = `
@@ -604,6 +604,39 @@
                 background: white;
                 box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             `;
+
+            // 🚀 3段階確実実行: URL + postMessage + 直接操作
+            iframe.onload = function() {
+                setTimeout(() => {
+                    // 方法1: postMessage通信
+                    iframe.contentWindow.postMessage({
+                        action: 'openModal',
+                        modalType: modalType
+                    }, '*');
+
+                    // 方法2: 直接DOM操作（同一オリジン）
+                    try {
+                        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        const targetButton = iframeDoc.getElementById(getButtonId(modalType));
+                        if (targetButton) {
+                            targetButton.click();
+                        }
+                    } catch (e) {
+                        console.log('直接操作失敗、postMessageに依存:', e);
+                    }
+                }, 200);
+            };
+
+            // ボタンID取得ヘルパー
+            function getButtonId(modalType) {
+                const buttonMap = {
+                    'settings': 'basic-settings-button',
+                    'staff': 'manage-staff-button',
+                    'client': 'add-client-button',
+                    'url': 'url-settings-button'
+                };
+                return buttonMap[modalType] || 'basic-settings-button';
+            }
 
             const closeBtn = document.createElement('button');
             closeBtn.innerHTML = '✕';
