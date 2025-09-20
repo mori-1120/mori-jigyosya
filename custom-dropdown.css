@@ -50,7 +50,7 @@
 
 
 .custom-options {
-    position: absolute;
+    position: sticky; /* Changed from absolute to sticky */
     top: 100%; /* Position below the trigger */
     left: 0;
     right: 0;

@@ -3433,7 +3433,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadAppLinks() {
         try {
-            appLinks = await SupabaseAPI.fetchAppLinks();
+            appLinks = await SupabaseAPI.getAppLinks();
             renderAppLinksButtons();
         } catch (error) {
             console.error('Error loading app links from Supabase:', error);
