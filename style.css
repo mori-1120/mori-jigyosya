@@ -2536,6 +2536,76 @@ body.hide-inactive-clients .inactive-client {
     display: none !important;
 }
 
+/* === 統一ナビゲーションタブ === */
+.tab-navigation {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 1500;
+}
+
+.nav-tab {
+    padding: 12px 20px;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 8px 0 0 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: -2px 2px 8px rgba(0,0,0,0.1);
+    min-width: 150px;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* 色別スタイル */
+.nav-tab.dashboard {
+    border-left: 4px solid #17a2b8;
+    color: #17a2b8;
+}
+.nav-tab.performance {
+    border-left: 4px solid #28a745;
+    color: #28a745;
+}
+.nav-tab.settings {
+    border-left: 4px solid #fd7e14;
+    color: #fd7e14;
+}
+
+/* アクティブ状態（現在いるページ） */
+.nav-tab.active {
+    background: #f8f9fa;
+    color: #6c757d !important;
+    cursor: default;
+    box-shadow: inset -2px 2px 8px rgba(0,0,0,0.1);
+    border-left-color: #6c757d !important;
+}
+
+/* ホバーエフェクト */
+.nav-tab:not(.active):hover {
+    background: #f8f9fa;
+    transform: translateX(-2px);
+    box-shadow: -4px 4px 12px rgba(0,0,0,0.15);
+}
+
+.nav-tab:not(.active):hover.dashboard {
+    background: rgba(23, 162, 184, 0.1);
+}
+.nav-tab:not(.active):hover.performance {
+    background: rgba(40, 167, 69, 0.1);
+}
+.nav-tab:not(.active):hover.settings {
+    background: rgba(253, 126, 20, 0.1);
+}
+
 /* 関与終了マーク */
 .inactive-badge {
     display: inline-block;

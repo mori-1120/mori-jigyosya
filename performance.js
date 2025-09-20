@@ -102,14 +102,7 @@ class PerformancePage {
     }
 
     setupEventListeners() {
-        // ナビゲーションボタン
-        document.getElementById('back-to-main').addEventListener('click', () => {
-            window.location.href = 'index.html';
-        });
-
-        document.getElementById('progress-dashboard-button').addEventListener('click', () => {
-            window.location.href = 'analytics.html';
-        });
+        // 統一ナビゲーションタブはHTMLのリンクで動作するため、イベントリスナー不要
 
 
         // ソート機能

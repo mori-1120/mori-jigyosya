@@ -190,6 +190,20 @@
 
     <div class="container">
         <h1>顧客進捗管理 - メイン画面</h1>
+
+        <!-- 統一ナビゲーションタブ -->
+        <div class="tab-navigation" style="z-index: 2000;">
+            <a href="analytics.html" class="nav-tab dashboard">
+                🏠 ダッシュボード
+            </a>
+            <a href="performance.html" class="nav-tab performance">
+                📊 担当者別
+            </a>
+            <a href="index.html" class="nav-tab settings active">
+                ⚙️ 設定画面
+            </a>
+        </div>
+
         <!-- Legacy status display - now replaced with toast notifications -->
         <div id="connection-status" style="display: none !important;">
             <span id="status-text"></span>

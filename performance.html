@@ -19,13 +19,18 @@
         <!-- ヘッダー -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: -15px;">
             <h1>👥 担当者別パフォーマンスダッシュボード</h1>
-            <div style="display: flex; gap: 10px;">
-                <button id="progress-dashboard-button" style="background: #007bff; color: white; border: none; padding: 16px 16px; border-radius: 4px; cursor: pointer;">
-                    ダッシュボードへ戻る
-                </button>
-                <button id="back-to-main" style="background: #6c757d; color: white; border: none; padding: 16px 16px; border-radius: 4px; cursor: pointer;">
-                    設定画面へ
-                </button>
+
+            <!-- 統一ナビゲーションタブ -->
+            <div class="tab-navigation">
+                <a href="analytics.html" class="nav-tab dashboard">
+                    🏠 ダッシュボード
+                </a>
+                <a href="performance.html" class="nav-tab performance active">
+                    📊 担当者別
+                </a>
+                <a href="index.html" class="nav-tab settings">
+                    ⚙️ 設定画面
+                </a>
             </div>
         </div>
 
