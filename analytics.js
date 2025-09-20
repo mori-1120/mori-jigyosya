@@ -3241,5 +3241,255 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 最低限のUIは動作するようにする
         window.analytics.setupEventListeners();
     }
+
+    // URL設定機能（その他のアプリ）
+    let appLinks = [];
+    let originalAppLinksState = [];
+    let currentEditingAppLinks = [];
+    let sortableUrlList = null;
+
+    // モーダル要素の取得
+    const urlSettingsModal = document.getElementById('url-settings-modal');
+    const urlSettingsButton = document.getElementById('url-settings-button');
+    const closeUrlSettingsModalButton = urlSettingsModal?.querySelector('.close-button');
+    const urlListContainer = document.getElementById('url-list-container');
+    const newUrlNameInput = document.getElementById('new-url-name');
+    const newUrlLinkInput = document.getElementById('new-url-link');
+    const addUrlButton = document.getElementById('add-url-button');
+    const saveUrlSettingsButton = document.getElementById('save-url-settings-button');
+    const cancelUrlSettingsButton = document.getElementById('cancel-url-settings-button');
+
+    // アコーディオン機能
+    function toggleAccordion(header) {
+        const content = header.nextElementSibling;
+        const icon = header.querySelector('.accordion-icon');
+
+        if (content.style.display === 'none' || content.style.display === '') {
+            content.style.display = 'block';
+            icon.textContent = '▲';
+        } else {
+            content.style.display = 'none';
+            icon.textContent = '▼';
+        }
+    }
+
+    // イベントリスナーの設定
+    document.querySelectorAll('.accordion-header').forEach(header => {
+        header.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleAccordion(header);
+        });
+    });
+
+    // グローバルクリックでアコーディオンを閉じる
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.accordion-container')) {
+            document.querySelectorAll('.accordion-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            document.querySelectorAll('.accordion-icon').forEach(icon => {
+                icon.textContent = '▼';
+            });
+        }
+    });
+
+    // URL設定モーダル関連の機能
+    function openUrlSettingsModal() {
+        originalAppLinksState = JSON.parse(JSON.stringify(appLinks));
+        currentEditingAppLinks = JSON.parse(JSON.stringify(appLinks));
+        renderUrlListForEdit();
+
+        if (urlSettingsModal) {
+            urlSettingsModal.style.display = 'block';
+        }
+    }
+
+    function closeUrlSettingsModal() {
+        if (sortableUrlList) {
+            sortableUrlList.destroy();
+            sortableUrlList = null;
+        }
+        if (urlSettingsModal) {
+            urlSettingsModal.style.display = 'none';
+        }
+    }
+
+    function renderUrlListForEdit() {
+        if (!urlListContainer) return;
+
+        urlListContainer.innerHTML = '';
+        currentEditingAppLinks.forEach((link, index) => {
+            const item = document.createElement('div');
+            item.className = 'url-item';
+            item.dataset.id = link.id || `new-${index}`;
+            item.innerHTML = `
+                <span class="drag-handle">☰</span>
+                <input type="text" class="url-name-input" value="${link.name || ''}" placeholder="リンク名">
+                <input type="url" class="url-link-input" value="${link.url || ''}" placeholder="https://example.com">
+                <button class="delete-button">削除</button>
+            `;
+            urlListContainer.appendChild(item);
+
+            item.querySelector('.delete-button').addEventListener('click', () => {
+                const idToDelete = item.dataset.id;
+                currentEditingAppLinks = currentEditingAppLinks.filter(l => (l.id || `new-${currentEditingAppLinks.indexOf(l)}`) != idToDelete);
+                renderUrlListForEdit();
+            });
+        });
+
+        if (sortableUrlList) {
+            sortableUrlList.destroy();
+        }
+        sortableUrlList = new Sortable(urlListContainer, {
+            animation: 150,
+            handle: '.drag-handle',
+            ghostClass: 'dragging'
+        });
+    }
+
+    function addNewUrlItem() {
+        const name = newUrlNameInput?.value.trim();
+        const url = newUrlLinkInput?.value.trim();
+
+        if (!name || !url) {
+            toast.warning('リンク名とURLの両方を入力してください。');
+            return;
+        }
+        try {
+            new URL(url);
+        } catch (_) {
+            toast.error('有効なURLを入力してください。');
+            return;
+        }
+
+        currentEditingAppLinks.push({ name, url });
+        renderUrlListForEdit();
+        if (newUrlNameInput) newUrlNameInput.value = '';
+        if (newUrlLinkInput) newUrlLinkInput.value = '';
+    }
+
+    async function saveUrlSettings() {
+        const saveToast = toast.loading('URL設定を保存中...');
+
+        try {
+            // DOM順序を取得
+            const orderedIds = Array.from(urlListContainer.children).map(item => item.dataset.id);
+            const finalLinks = [];
+
+            orderedIds.forEach(id => {
+                const item = urlListContainer.querySelector(`[data-id="${id}"]`);
+                if (item) {
+                    const name = item.querySelector('.url-name-input').value.trim();
+                    const url = item.querySelector('.url-link-input').value.trim();
+
+                    if (name && url) {
+                        const linkData = { name, url };
+                        if (id.startsWith('new-')) {
+                            finalLinks.push(linkData);
+                        } else {
+                            linkData.id = parseInt(id);
+                            finalLinks.push(linkData);
+                        }
+                    }
+                }
+            });
+
+            // 変更を特定
+            const originalIds = new Set(originalAppLinksState.filter(l => l.id).map(l => l.id));
+            const finalIds = new Set(finalLinks.filter(l => l.id).map(l => l.id));
+            const idsToDelete = [...originalIds].filter(id => !finalIds.has(id));
+
+            const linksToCreate = finalLinks.filter(l => l.id === undefined);
+            const linksToUpdate = finalLinks.filter(l => l.id !== undefined);
+
+            // Supabaseに保存
+            const promises = [];
+            if (idsToDelete.length > 0) {
+                promises.push(SupabaseAPI.deleteAppLinks(idsToDelete));
+            }
+            if (linksToCreate.length > 0) {
+                promises.push(SupabaseAPI.createAppLinks(linksToCreate));
+            }
+            if (linksToUpdate.length > 0) {
+                promises.push(SupabaseAPI.updateAppLinks(linksToUpdate));
+            }
+
+            await Promise.all(promises);
+
+            toast.update(saveToast, 'URL設定を保存しました', 'success');
+            closeUrlSettingsModal();
+            loadAppLinks();
+
+        } catch (error) {
+            console.error('Error saving URL settings:', error);
+            toast.update(saveToast, 'URL設定の保存に失敗しました', 'error');
+        }
+    }
+
+    async function loadAppLinks() {
+        try {
+            appLinks = await SupabaseAPI.fetchAppLinks();
+            renderAppLinksButtons();
+        } catch (error) {
+            console.error('Error loading app links:', error);
+            appLinks = [];
+        }
+    }
+
+    function renderAppLinksButtons() {
+        const container = document.querySelector('#other-apps-accordion .accordion-buttons-container');
+        if (!container) return;
+
+        // 既存の動的ボタンを削除（URL設定ボタンは残す）
+        const urlSettingsBtn = container.querySelector('#url-settings-button');
+        container.innerHTML = '';
+        if (urlSettingsBtn) {
+            container.appendChild(urlSettingsBtn);
+        }
+
+        // アプリリンクボタンを追加
+        appLinks.forEach(link => {
+            const button = document.createElement('button');
+            button.className = 'accordion-button';
+            button.textContent = link.name;
+            button.addEventListener('click', () => {
+                window.open(link.url, '_blank');
+            });
+            container.appendChild(button);
+        });
+    }
+
+    // イベントリスナーの設定
+    if (urlSettingsButton) {
+        urlSettingsButton.addEventListener('click', openUrlSettingsModal);
+    }
+
+    if (closeUrlSettingsModalButton) {
+        closeUrlSettingsModalButton.addEventListener('click', closeUrlSettingsModal);
+    }
+
+    if (cancelUrlSettingsButton) {
+        cancelUrlSettingsButton.addEventListener('click', closeUrlSettingsModal);
+    }
+
+    if (saveUrlSettingsButton) {
+        saveUrlSettingsButton.addEventListener('click', saveUrlSettings);
+    }
+
+    if (addUrlButton) {
+        addUrlButton.addEventListener('click', addNewUrlItem);
+    }
+
+    // モーダル外クリックで閉じる
+    if (urlSettingsModal) {
+        urlSettingsModal.addEventListener('click', (e) => {
+            if (e.target === urlSettingsModal) {
+                closeUrlSettingsModal();
+            }
+        });
+    }
+
+    // 初期化時にアプリリンクを読み込み
+    loadAppLinks();
 });
 

@@ -3645,4 +3645,59 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         initResponsiveTable();
     }, 1500);
+
+    // カバーレイヤー制御機能
+    const coverOverlay = document.getElementById('cover-overlay');
+    const showCoverBtn = document.getElementById('show-cover-btn');
+    const hideCoverBtn = document.getElementById('hide-cover-btn');
+    const focusModeBtn = document.getElementById('focus-mode-btn');
+
+    // カバー表示
+    showCoverBtn?.addEventListener('click', () => {
+        coverOverlay.style.display = 'block';
+        coverOverlay.style.zIndex = '1000';
+        coverOverlay.style.opacity = '0';
+
+        setTimeout(() => {
+            coverOverlay.style.opacity = '1';
+            coverOverlay.style.pointerEvents = 'auto';
+        }, 50);
+
+        showCoverBtn.style.display = 'none';
+    });
+
+    // カバー非表示
+    hideCoverBtn?.addEventListener('click', () => {
+        coverOverlay.style.opacity = '0';
+        coverOverlay.style.pointerEvents = 'none';
+        setTimeout(() => {
+            coverOverlay.style.display = 'none';
+            showCoverBtn.style.display = 'block';
+        }, 300);
+    });
+
+    // 集中モード（カバー+アコーディオン閉じる）
+    focusModeBtn?.addEventListener('click', () => {
+        // 全アコーディオンを閉じる
+        document.querySelectorAll('.accordion-content').forEach(content => {
+            content.style.display = 'none';
+        });
+        document.querySelectorAll('.accordion-icon').forEach(icon => {
+            icon.textContent = '▼';
+        });
+
+        // カバーを非表示
+        hideCoverBtn.click();
+    });
+
+    // Escキーでカバー切り替え
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            if (coverOverlay.style.display === 'block') {
+                hideCoverBtn.click();
+            } else {
+                showCoverBtn.click();
+            }
+        }
+    });
 });

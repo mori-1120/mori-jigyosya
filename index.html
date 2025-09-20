@@ -22,6 +22,94 @@
     <link rel="stylesheet" href="table-resize.css">
 </head>
 <body>
+    <!-- カバーレイヤー -->
+    <div id="cover-overlay" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(173, 216, 230, 0.95), rgba(135, 206, 235, 0.95), rgba(176, 224, 230, 0.95));
+        backdrop-filter: blur(8px);
+        z-index: 1000;
+        transition: opacity 0.3s ease;
+        opacity: 1;
+        pointer-events: auto;
+        display: block;
+    ">
+        <!-- カバー制御ボタン -->
+        <div style="position: absolute; top: 20px; left: 20px; display: flex; gap: 10px; z-index: 1001;">
+            <button id="hide-cover-btn" style="
+                background: rgba(255, 255, 255, 0.9);
+                border: 2px solid #007bff;
+                color: #007bff;
+                padding: 8px 16px;
+                border-radius: 25px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: bold;
+                backdrop-filter: blur(5px);
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                transition: all 0.2s ease;
+            " onmouseover="this.style.background='rgba(0,123,255,0.9)'; this.style.color='white';"
+               onmouseout="this.style.background='rgba(255,255,255,0.9)'; this.style.color='#007bff';">
+                🎭 カバーOFF
+            </button>
+            <button id="focus-mode-btn" style="
+                background: rgba(255, 255, 255, 0.9);
+                border: 2px solid #28a745;
+                color: #28a745;
+                padding: 8px 16px;
+                border-radius: 25px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: bold;
+                backdrop-filter: blur(5px);
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                transition: all 0.2s ease;
+            " onmouseover="this.style.background='rgba(40,167,69,0.9)'; this.style.color='white';"
+               onmouseout="this.style.background='rgba(255,255,255,0.9)'; this.style.color='#28a745';">
+                🎯 集中モード
+            </button>
+        </div>
+
+        <!-- カバー中央メッセージ -->
+        <div style="
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            pointer-events: none;
+        ">
+            🌊 集中モード 🌊
+        </div>
+    </div>
+
+    <!-- カバーONボタン（非表示状態） -->
+    <div style="position: fixed; top: 20px; left: 20px; z-index: 1500; display: flex; gap: 10px;">
+        <button id="show-cover-btn" style="
+            background: linear-gradient(135deg, #87ceeb, #87cefa);
+            border: none;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 3px 15px rgba(135, 206, 235, 0.4);
+            transition: all 0.3s ease;
+            display: none;
+        " onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 5px 20px rgba(135, 206, 235, 0.6)';"
+           onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 3px 15px rgba(135, 206, 235, 0.4)';">
+            🎭 カバーON
+        </button>
+    </div>
+
     <!-- ユーザー情報表示エリア（非表示、管理メニューに統合） -->
     <div id="user-info" style="display:none;">
         <div style="display: flex; align-items: center; gap: 12px;">

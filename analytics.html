@@ -16,20 +16,36 @@
 
     <!-- Chart.js CDN for weekly progress graphs -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <!-- SortableJS CDN for drag and drop functionality -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
 <body>
     <div class="container">
         <!-- 統合ヘッダー & フィルターエリア -->
         <div class="analytics-filters" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
             <!-- タイトル行 -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; position: relative;">
                 <h1 style="margin: 0;">📈 進捗管理ダッシュボード</h1>
+
+                <!-- その他アプリ アコーディオンメニュー -->
+                <div id="other-apps-accordion" class="accordion-container" style="position: absolute; right: 250px; top: 0; z-index: 1000;">
+                    <button class="accordion-header" style="background: #ffffff; color: #6c757d; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                        <span>🔗 その他アプリ</span>
+                        <span class="accordion-icon">▼</span>
+                    </button>
+                    <div class="accordion-content" style="display: none; position: absolute; top: 100%; right: 0; min-width: 150px; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 8px; z-index: 1001;">
+                        <div class="accordion-buttons-container">
+                            <button id="url-settings-button" class="accordion-button">URL設定</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div style="display: flex; gap: 10px;">
                     <button id="performance-dashboard-button" style="background: #17a2b8; color: white; border: none; padding: 12px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
                         👥 担当者別パフォーマンス
                     </button>
-                    <button id="back-to-main" style="background: #6c757d; color: white; border: none; padding: 12px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
-                        ← メイン画面に戻る
+                    <button id="back-to-main" style="background: #fd7e14; color: white; border: none; padding: 12px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                        ⚙️ 設定画面へ移動
                     </button>
                 </div>
             </div>
@@ -487,6 +503,30 @@
             });
         });
     </script>
+
+    <!-- URL Settings Modal -->
+    <div id="url-settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>URL設定</h2>
+            <p>「その他アプリ」メニューに表示するカスタムリンクを設定します。</p>
+
+            <div id="url-list-container" class="list-container">
+                <!-- URLアイテムがここに動的に追加されます -->
+            </div>
+
+            <div class="new-item-form">
+                <input type="text" id="new-url-name" placeholder="リンク名">
+                <input type="url" id="new-url-link" placeholder="https://example.com">
+                <button id="add-url-button" class="add-button">追加</button>
+            </div>
+
+            <div class="modal-actions">
+                <button id="save-url-settings-button" class="save-button">保存</button>
+                <button id="cancel-url-settings-button" class="cancel-button">キャンセル</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Copyright Notice -->
     <div style="position: fixed; bottom: 10px; right: 15px; opacity: 0.6; font-size: 11px; color: #666; z-index: 100; pointer-events: none;">
