@@ -26,14 +26,14 @@
                 <h1 style="margin: 0;">📈 進捗管理ダッシュボード</h1>
 
                 <!-- 右上エリア: アコーディオンメニュー -->
-                <div style="position: absolute; top: 0; right: 200px; display: flex; gap: 15px; z-index: 1000;">
+                <div style="position: absolute; top: 0; right: 200px; display: flex; gap: 10px; z-index: 1000;">
                     <!-- その他アプリ アコーディオン -->
-                    <div id="other-apps-accordion" class="accordion-container">
+                    <div id="other-apps-accordion" class="accordion-container" style="position: relative;">
                         <button class="accordion-header" style="background: #17a2b8; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
                             <span>🔗 その他</span>
                             <span class="accordion-icon">▼</span>
                         </button>
-                        <div class="accordion-content" style="display: none;">
+                        <div class="accordion-content" style="display: none; position: absolute; top: 100%; right: 0; min-width: 150px;">
                             <div class="accordion-buttons-container">
                                 <button id="url-settings-button" class="accordion-button">URL設定</button>
                             </div>
@@ -41,12 +41,12 @@
                     </div>
 
                     <!-- 管理メニュー アコーディオン -->
-                    <div id="management-accordion" class="accordion-container">
+                    <div id="management-accordion" class="accordion-container" style="position: relative;">
                         <button class="accordion-header" style="background: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 14px;">
                             <span>⚙️ 管理</span>
                             <span class="accordion-icon">▼</span>
                         </button>
-                        <div class="accordion-content" style="display: none;">
+                        <div class="accordion-content" style="display: none; position: absolute; top: 100%; right: 0; min-width: 150px;">
                             <div class="accordion-buttons-container">
                                 <button id="manage-staff-button" class="accordion-button">担当者管理</button>
                                 <button id="add-client-button" class="accordion-button">顧問先追加</button>
@@ -59,7 +59,7 @@
                 </div>
 
                 <!-- 右下エリア: 操作ボタン -->
-                <div style="position: absolute; top: 45px; right: 200px; display: flex; gap: 10px;">
+                <div style="position: absolute; top: 45px; right: 0; display: flex; gap: 10px;">
                     <button id="back-to-main" style="background: #6c757d; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">
                         ← メイン画面に戻る
                     </button>
