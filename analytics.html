@@ -19,22 +19,20 @@
 </head>
 <body>
     <div class="container">
-        <!-- ヘッダー -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: -10px;">
-            <h1>📈 進捗管理ダッシュボード</h1>
-            <div style="display: flex; gap: 10px;">
-                <button id="performance-dashboard-button" style="background: #17a2b8; color: white; border: none; padding: 16px 16px; border-radius: 4px; cursor: pointer;">
-                    👥 担当者別パフォーマンス
-                </button>
-                <button id="back-to-main" style="background: #6c757d; color: white; border: none; padding: 17px 16px; border-radius: 4px; cursor: pointer;">
-                    ← メイン画面に戻る
-                </button>
+        <!-- 統合ヘッダー & フィルターエリア -->
+        <div class="analytics-filters" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+            <!-- タイトル行 -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h1 style="margin: 0;">📈 進捗管理ダッシュボード</h1>
+                <div style="display: flex; gap: 10px;">
+                    <button id="performance-dashboard-button" style="background: #17a2b8; color: white; border: none; padding: 12px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                        👥 担当者別パフォーマンス
+                    </button>
+                    <button id="back-to-main" style="background: #6c757d; color: white; border: none; padding: 12px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                        ← メイン画面に戻る
+                    </button>
+                </div>
             </div>
-        </div>
-
-        <!-- フィルター & アクションエリア -->
-        <div class="analytics-filters" style="background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 5px;">
-            <h3 style="margin-top: 0;">🔍 フィルター & アクション</h3>
             
             <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: end;">
                 <!-- 期間選択 -->
@@ -414,7 +412,7 @@
                     <thead style="position: sticky; top: 0; z-index: 10; background: #f8f9fa;">
                         <tr style="background: #f8f9fa;">
                             <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer; background: #f8f9fa; position: sticky; top: 0; z-index: 10;" data-sort="id">
-                                ID（編集） <span class="sort-icon">▲▼</span>
+                                ID(編集) <span class="sort-icon">▲▼</span>
                             </th>
                             <th style="border: 1px solid #dee2e6; padding: 12px; text-align: center; cursor: pointer; background: #f8f9fa; position: sticky; top: 0; z-index: 10;" data-sort="name">
                                 事業者名 <span class="sort-icon">▲▼</span>
