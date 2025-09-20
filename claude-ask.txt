@@ -1,0 +1,115 @@
+Supabase config loaded: Object
+analytics.js:2608 📊 週次フィルター: Object
+analytics.js:2627 📅 計算された期間: Object
+analytics.js:2608 📊 週次フィルター: Object
+analytics.js:2627 📅 計算された期間: Object
+analytics.js:2608 📊 週次フィルター: Object
+analytics.js:2627 📅 計算された期間: Object
+analytics.js:2608 📊 週次フィルター: Object
+analytics.js:2627 📅 計算された期間: Object
+analytics.js:2608 📊 週次フィルター: {startPeriod: '2024-10', endPeriod: '2025-09', currentFilters: {…}}
+analytics.js:2627 📅 計算された期間: {startDate: '2024-10-01', endDate: '2025-09-30'}
+analytics.js:248 Transparent refresh error (silent): {message: 'TypeError: Failed to fetch', details: 'TypeError: Failed to fetch\n    at https://cdn.jsde…livr.net/npm/@supabase/supabase-js@2/+esm:7:3139)', hint: '', code: ''}
+performTransparentRefresh @ analytics.js:248
+await in performTransparentRefresh
+(anonymous) @ analytics.js:219
+setTimeout
+scheduleTransparentRefresh @ analytics.js:218
+(anonymous) @ analytics.js:198Understand this warning
+supabase-client.js:218 Error fetching all monthly tasks: {message: 'TypeError: Failed to fetch', details: 'TypeError: Failed to fetch\n    at https://cdn.jsde…livr.net/npm/@supabase/supabase-js@2/+esm:7:3139)', hint: '', code: ''}
+getMonthlyTasks @ supabase-client.js:218
+await in getMonthlyTasks
+loadInitialData @ analytics.js:117
+performTransparentRefresh @ analytics.js:229
+(anonymous) @ analytics.js:219
+setTimeout
+scheduleTransparentRefresh @ analytics.js:218
+(anonymous) @ analytics.js:198Understand this error
+analytics.js:248 Transparent refresh error (silent): {message: 'TypeError: Failed to fetch', details: 'TypeError: Failed to fetch\n    at https://cdn.jsde…livr.net/npm/@supabase/supabase-js@2/+esm:7:3139)', hint: '', code: ''}
+performTransparentRefresh @ analytics.js:248
+await in performTransparentRefresh
+(anonymous) @ analytics.js:219
+setTimeout
+scheduleTransparentRefresh @ analytics.js:218
+(anonymous) @ analytics.js:198Understand this warning
+supabase-client.js:218 Error fetching all monthly tasks: {message: 'TypeError: Failed to fetch', details: 'TypeError: Failed to fetch\n    at https://cdn.jsde…livr.net/npm/@supabase/supabase-js@2/+esm:7:3139)', hint: '', code: ''}
+getMonthlyTasks @ supabase-client.js:218
+await in getMonthlyTasks
+loadInitialData @ analytics.js:117
+performTransparentRefresh @ analytics.js:229
+(anonymous) @ analytics.js:219
+setTimeout
+scheduleTransparentRefresh @ analytics.js:218
+(anonymous) @ analytics.js:198Understand this error
+analytics.js:248 Transparent refresh error (silent): {message: 'TypeError: Failed to fetch', details: 'TypeError: Failed to fetch\n    at https://cdn.jsde…livr.net/npm/@supabase/supabase-js@2/+esm:7:3139)', hint: '', code: ''}
+performTransparentRefresh @ analytics.js:248
+await in performTransparentRefresh
+(anonymous) @ analytics.js:219
+setTimeout
+scheduleTransparentRefresh @ analytics.js:218
+(anonymous) @ analytics.js:198Understand this warning
+supabase-client.js:218 Error fetching all monthly tasks: {message: 'TypeError: Failed to fetch', details: 'TypeError: Failed to fetch\n    at https://cdn.jsde…livr.net/npm/@supabase/supabase-js@2/+esm:7:3139)', hint: '', code: ''}
+getMonthlyTasks @ supabase-client.js:218
+await in getMonthlyTasks
+loadInitialData @ analytics.js:117
+performTransparentRefresh @ analytics.js:229
+(anonymous) @ analytics.js:219
+setTimeout
+scheduleTransparentRefresh @ analytics.js:218
+(anonymous) @ analytics.js:198Understand this error
+analytics.js:248 Transparent refresh error (silent): {message: 'TypeError: Failed to fetch', details: 'TypeError: Failed to fetch\n    at https://cdn.jsde…livr.net/npm/@supabase/supabase-js@2/+esm:7:3139)', hint: '', code: ''}
+performTransparentRefresh @ analytics.js:248
+await in performTransparentRefresh
+(anonymous) @ analytics.js:219
+setTimeout
+scheduleTransparentRefresh @ analytics.js:218
+(anonymous) @ analytics.js:198Understand this warning
+supabase-client.js:218 Error fetching all monthly tasks: {message: 'TypeError: Failed to fetch', details: 'TypeError: Failed to fetch\n    at https://cdn.jsde…livr.net/npm/@supabase/supabase-js@2/+esm:7:3139)', hint: '', code: ''}
+getMonthlyTasks @ supabase-client.js:218
+await in getMonthlyTasks
+loadInitialData @ analytics.js:117
+performTransparentRefresh @ analytics.js:229
+(anonymous) @ analytics.js:219
+setTimeout
+scheduleTransparentRefresh @ analytics.js:218
+(anonymous) @ analytics.js:198Understand this error
+analytics.js:248 Transparent refresh error (silent): {message: 'TypeError: Failed to fetch', details: 'TypeError: Failed to fetch\n    at https://cdn.jsde…livr.net/npm/@supabase/supabase-js@2/+esm:7:3139)', hint: '', code: ''}
+performTransparentRefresh @ analytics.js:248
+await in performTransparentRefresh
+(anonymous) @ analytics.js:219
+setTimeout
+scheduleTransparentRefresh @ analytics.js:218
+(anonymous) @ analytics.js:198Understand this warning
+supabase-client.js:218 Error fetching all monthly tasks: {message: 'TypeError: Failed to fetch', details: 'TypeError: Failed to fetch\n    at https://cdn.jsde…livr.net/npm/@supabase/supabase-js@2/+esm:7:3139)', hint: '', code: ''}
+getMonthlyTasks @ supabase-client.js:218
+await in getMonthlyTasks
+loadInitialData @ analytics.js:117
+performTransparentRefresh @ analytics.js:229
+(anonymous) @ analytics.js:219
+setTimeout
+scheduleTransparentRefresh @ analytics.js:218
+(anonymous) @ analytics.js:198Understand this error
+analytics.js:248 Transparent refresh error (silent): {message: 'TypeError: Failed to fetch', details: 'TypeError: Failed to fetch\n    at https://cdn.jsde…livr.net/npm/@supabase/supabase-js@2/+esm:7:3139)', hint: '', code: ''}
+performTransparentRefresh @ analytics.js:248
+await in performTransparentRefresh
+(anonymous) @ analytics.js:219
+setTimeout
+scheduleTransparentRefresh @ analytics.js:218
+(anonymous) @ analytics.js:198Understand this warning
+supabase-client.js:218 Error fetching all monthly tasks: {message: 'TypeError: Failed to fetch', details: 'TypeError: Failed to fetch\n    at https://cdn.jsde…livr.net/npm/@supabase/supabase-js@2/+esm:7:3139)', hint: '', code: ''}
+getMonthlyTasks @ supabase-client.js:218
+await in getMonthlyTasks
+loadInitialData @ analytics.js:117
+performTransparentRefresh @ analytics.js:229
+(anonymous) @ analytics.js:219
+setTimeout
+scheduleTransparentRefresh @ analytics.js:218
+(anonymous) @ analytics.js:198Understand this error
+analytics.js:248 Transparent refresh error (silent): {message: 'TypeError: Failed to fetch', details: 'TypeError: Failed to fetch\n    at https://cdn.jsde…livr.net/npm/@supabase/supabase-js@2/+esm:7:3139)', hint: '', code: ''}
+performTransparentRefresh @ analytics.js:248
+await in performTransparentRefresh
+(anonymous) @ analytics.js:219
+setTimeout
+scheduleTransparentRefresh @ analytics.js:218
+(anonymous) @ analytics.js:198Understand this warning
+supabase-client.js:218 Error fetching all monthly tasks: {message: 'TypeError: Failed to fetch', details: 'TypeError: Failed to fetch\n    at https://cdn.jsde…livr.net/npm/@supabase/supabase-js@2/+esm:7:3139)', hint: '', code: ''}
