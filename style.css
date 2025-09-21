@@ -2587,7 +2587,7 @@ body.hide-inactive-clients .inactive-client {
     cursor: default;
     box-shadow: inset -4px 4px 12px rgba(0,0,0,0.2), inset 2px -2px 8px rgba(0,0,0,0.1);
     border-left-color: #6c757d !important;
-    border-color: #ced4da !important;
+    border-color: #535455ad !important;
     transform: translateX(2px) translateY(1px);
     opacity: 0.8;
 }
