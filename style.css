@@ -2585,12 +2585,12 @@ body.hide-inactive-clients .inactive-client {
     background: #e9ecef;
     color: #495057 !important;
     cursor: default;
-    box-shadow: inset -6px 4px 16px rgba(0,0,0,0.25), inset 3px -2px 10px rgba(0,0,0,0.15);
+    box-shadow: inset -4px 4px 12px rgba(0,0,0,0.2), inset 2px -2px 8px rgba(0,0,0,0.1);
     border-left-color: #6c757d !important;
     border-color: #535455ad !important;
-    transform: translateX(8px) translateY(2px);
+    transform: translateX(22px) translateY(2px);
     opacity: 0.9;
-    border-radius: 50px 0px 0px 16px;
+    border-radius: 50px 0px 0px 0px;
     position: relative;
 }
 
