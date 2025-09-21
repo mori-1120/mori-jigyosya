@@ -52,7 +52,7 @@ class AnalyticsPage {
             const user = await SupabaseAPI.getCurrentUser();
             if (!user) {
                 showToast('認証が必要です', 'error');
-                window.location.href = 'analytics.html';
+                window.location.href = 'index.html';
                 return;
             }
 
