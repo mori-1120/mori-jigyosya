@@ -3276,7 +3276,7 @@ body.hide-inactive-clients .inactive-client {
     align-items: center;
     gap: 8px;
     background: linear-gradient(135deg, #f9f9f9d9 0%, #fbfbfb 100%);
-    color: white;
+    color: rgba(0, 0, 0, 0.753);
     text-decoration: none;
     padding: 12px 20px;
     border-radius: 25px;
