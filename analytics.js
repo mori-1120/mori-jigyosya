@@ -889,19 +889,20 @@ class AnalyticsPage {
                     align-items: center;
                 `;
                 item.innerHTML = `
-                    <div style="font-weight: bold; color: #333; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                        ${client.name}
-                    </div>
-                    <div style="font-size: 9px; color: #dc3545; font-weight: bold; margin: 0 4px; flex-shrink: 0;">
-                        ${client.progressRate || 0}%
-                    </div>
-                    <div style="font-size: 9px; color: #666; flex-shrink: 0; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                        ${client.staffName || '未設定'}
-                    </div>
+                    <a href="details.html?id=${client.id}" style="display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit; width: 100%;">
+                        <div style="font-weight: bold; color: #333; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${client.name}
+                        </div>
+                        <div style="font-size: 9px; color: #dc3545; font-weight: bold; margin: 0 4px; flex-shrink: 0;">
+                            ${client.progressRate || 0}%
+                        </div>
+                        <div style="font-size: 9px; color: #666; flex-shrink: 0; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            ${client.staffName || '未設定'}
+                        </div>
+                    </a>
                 `;
                 item.addEventListener('mouseover', () => item.style.backgroundColor = '#f8f9fa');
                 item.addEventListener('mouseout', () => item.style.backgroundColor = '#fff');
-                item.addEventListener('click', () => this.openClientDetails(client.id));
                 listElement.appendChild(item);
             });
 
