@@ -2551,7 +2551,7 @@ body.hide-inactive-clients .inactive-client {
     padding: 10px 21px;
     background: white;
     border: 2px solid #e9ecef;
-    border-radius: 50px 0px 0px 8px;
+    border-radius: 50px 0px 0px 0%;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
