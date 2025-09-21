@@ -1,0 +1,14 @@
+analytics.js:536 Failed to restore analysis from localStorage: TypeError: Cannot set properties of null (setting 'innerHTML')
+    at AnalyticsPage.drawStatusChart (analytics.js:2468:59)
+    at AnalyticsPage.displaySummary (analytics.js:857:14)
+    at AnalyticsPage.restoreAnalysisFromLocalStorage (analytics.js:515:22)
+    at AnalyticsPage.initialize (analytics.js:91:46)
+    at async HTMLDocument.<anonymous> (analytics.js:3420:9)
+restoreAnalysisFromLocalStorage @ analytics.js:536Understand this warning
+analytics.js:2799 📊 週次フィルター: Object
+analytics.js:2818 📅 計算された期間: Object
+analytics.js:621 Analysis failed: TypeError: Cannot set properties of null (setting 'innerHTML')
+    at AnalyticsPage.drawStatusChart (analytics.js:2468:59)
+    at AnalyticsPage.displaySummary (analytics.js:857:14)
+    at AnalyticsPage.performAnalysis (analytics.js:588:18)
+    at async analytics.js:95:25

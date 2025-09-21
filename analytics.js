@@ -876,20 +876,27 @@ class AnalyticsPage {
             displayClients.forEach(client => {
                 const item = document.createElement('div');
                 item.style.cssText = `
-                    padding: 6px 8px;
-                    margin-bottom: 4px;
+                    padding: 4px 6px;
+                    margin-bottom: 2px;
                     background: #fff;
                     border-left: 3px solid #dc3545;
                     border-radius: 3px;
-                    font-size: 11px;
+                    font-size: 10px;
                     cursor: pointer;
                     transition: background-color 0.2s ease;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
                 `;
                 item.innerHTML = `
-                    <div style="font-weight: bold; color: #333; margin-bottom: 2px;">${client.name}</div>
-                    <div style="color: #666; font-size: 10px;">
-                        進捗率: <span style="color: #dc3545; font-weight: bold;">${client.progressRate || 0}%</span>
-                        | 担当: ${client.staffName || '未設定'}
+                    <div style="font-weight: bold; color: #333; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        ${client.name}
+                    </div>
+                    <div style="font-size: 9px; color: #dc3545; font-weight: bold; margin: 0 4px; flex-shrink: 0;">
+                        ${client.progressRate || 0}%
+                    </div>
+                    <div style="font-size: 9px; color: #666; flex-shrink: 0; max-width: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        ${client.staffName || '未設定'}
                     </div>
                 `;
                 item.addEventListener('mouseover', () => item.style.backgroundColor = '#f8f9fa');
