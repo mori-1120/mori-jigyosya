@@ -2540,10 +2540,10 @@ body.hide-inactive-clients .inactive-client {
 .tab-navigation {
     position: absolute;
     top: 20px;
-    right: 20px;
+    right: 0px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
     z-index: 1500;
 }
 
