@@ -188,13 +188,13 @@
                 ">📊 現在の進捗を記録</button>
             </div>
 
-            <!-- メインコンテンツエリア：左側サマリー + 右側週次グラフ -->
-            <div class="dashboard-main-content" style="display: flex; gap: 20px;">
+            <!-- メインコンテンツエリア：4分割レイアウト -->
+            <div class="dashboard-main-content" style="display: flex; gap: 15px;">
 
-                <!-- 左半分：集計結果サマリー -->
-                <div class="summary-section" style="flex: 1; min-width: 0;">
-                    <!-- サマリーカード群 -->
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 15px;">
+                <!-- 1/4：集計結果サマリー（縮小版） -->
+                <div class="summary-section" style="flex: 0 0 25%; min-width: 0;">
+                    <!-- サマリーカード群（縦並び） -->
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;">
                         <!-- 全体進捗率 -->
                         <div style="background: #e3f2fd; padding: 8px 12px; border-radius: 6px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 60px;">
                             <div style="font-size: 12px; color: #0277bd; margin-bottom: 3px;">📈 全体進捗率</div>
@@ -243,8 +243,33 @@
                     </div>
                 </div>
 
-                <!-- 右半分：週次進捗推移グラフ -->
-                <div class="weekly-progress-section" style="flex: 1; min-width: 0; height: 280px;box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);">
+                <!-- 2/4：要注意クライアント欄 -->
+                <div class="attention-clients-section" style="flex: 0 0 25%; min-width: 0;">
+                    <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 12px; height: 280px; display: flex; flex-direction: column;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h4 style="margin: 0; font-size: 14px; color: #856404;">⚠️ 要注意クライアント</h4>
+                            <span id="attention-count" style="background: #dc3545; color: white; padding: 2px 6px; border-radius: 10px; font-size: 12px; font-weight: bold;">0</span>
+                        </div>
+                        <div id="attention-clients-list" style="flex: 1; overflow-y: auto; font-size: 12px;">
+                            <!-- 要注意クライアント一覧がここに表示されます -->
+                        </div>
+                        <button id="show-all-attention-btn" style="
+                            display: none;
+                            background: #ffc107;
+                            color: #212529;
+                            border: none;
+                            padding: 6px 12px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 12px;
+                            font-weight: bold;
+                            margin-top: 8px;
+                        ">📋 全件表示</button>
+                    </div>
+                </div>
+
+                <!-- 3/4：週次進捗推移グラフ -->
+                <div class="weekly-progress-section" style="flex: 0 0 50%; min-width: 0; height: 280px;box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);">
                     <div style="background: #f8f9fa; padding: 8px; border-radius: 6px; height: 94%; display: flex; flex-direction: column;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-shrink: 0;">
                             <h4 style="margin: 0; font-size: 14px; color: #495057;">📈 週次進捗推移</h4>
@@ -463,6 +488,36 @@
                 <span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 3px; margin: 0 5px;">5/5</span> 完了
                 <span style="background: #ffc107; color: black; padding: 2px 6px; border-radius: 3px; margin: 0 5px;">3/5</span> 進行中
                 <span style="background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px; margin: 0 5px;">1/5</span> 遅延
+            </div>
+        </div>
+    </div>
+
+    <!-- 要注意クライアント全件表示モーダル -->
+    <div id="attention-clients-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px; max-height: 80vh;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">⚠️ 要注意クライアント 全件一覧</h2>
+                <span class="close-button" id="close-attention-modal" style="cursor: pointer; font-size: 28px; font-weight: bold; color: #aaa;">&times;</span>
+            </div>
+
+            <div style="background: #fff3cd; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; color: #856404;">
+                <strong>📊 表示条件:</strong> 進捗率50%未満のクライアント
+            </div>
+
+            <div id="attention-clients-modal-list" style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 4px; padding: 10px;">
+                <!-- 全件一覧がここに表示されます -->
+            </div>
+
+            <div style="margin-top: 15px; text-align: right;">
+                <button id="close-attention-modal-btn" style="
+                    background: #6c757d;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-weight: bold;
+                ">閉じる</button>
             </div>
         </div>
     </div>

@@ -842,23 +842,155 @@ class AnalyticsPage {
         document.getElementById('overall-progress').textContent = `${summary.progressRate}%`;
         document.getElementById('completed-tasks').textContent = `${summary.completedTasks} / ${summary.totalTasks}`;
         document.getElementById('attention-clients').textContent = `${summary.attentionClients.length}件`;
-        
+
         // フィルター情報を表示
         this.updateSummaryFilterInfo();
-        
-        // 要注意クライアントリスト
+
+        // 新しい要注意クライアント表示
+        this.displayAttentionClientsNew(summary.attentionClients);
+
+        // 旧要注意クライアントリスト（後方互換性のため残す）
         const attentionList = document.getElementById('attention-clients-list');
         const attentionContainer = document.getElementById('attention-list');
-        
+
         if (summary.attentionClients.length > 0) {
             this.displayAttentionClients(summary.attentionClients);
-            attentionContainer.style.display = 'block';
+            if (attentionContainer) attentionContainer.style.display = 'block';
         } else {
-            attentionContainer.style.display = 'none';
+            if (attentionContainer) attentionContainer.style.display = 'none';
         }
 
         // ステータス別構成円グラフを描画
         this.drawStatusChart(summary.statusComposition);
+    }
+
+    displayAttentionClientsNew(attentionClients) {
+        const countElement = document.getElementById('attention-count');
+        const listElement = document.getElementById('attention-clients-list');
+        const showAllBtn = document.getElementById('show-all-attention-btn');
+
+        // カウント表示
+        countElement.textContent = attentionClients.length;
+
+        // リスト表示（最大10件）
+        const displayClients = attentionClients.slice(0, 10);
+        listElement.innerHTML = '';
+
+        if (attentionClients.length === 0) {
+            listElement.innerHTML = '<div style="text-align: center; color: #6c757d; padding: 20px;">要注意クライアントはありません</div>';
+            showAllBtn.style.display = 'none';
+        } else {
+            displayClients.forEach(client => {
+                const item = document.createElement('div');
+                item.style.cssText = `
+                    padding: 6px 8px;
+                    margin-bottom: 4px;
+                    background: #fff;
+                    border-left: 3px solid #dc3545;
+                    border-radius: 3px;
+                    font-size: 11px;
+                    cursor: pointer;
+                    transition: background-color 0.2s ease;
+                `;
+                item.innerHTML = `
+                    <div style="font-weight: bold; color: #333; margin-bottom: 2px;">${client.name}</div>
+                    <div style="color: #666; font-size: 10px;">
+                        進捗率: <span style="color: #dc3545; font-weight: bold;">${client.progressRate || 0}%</span>
+                        | 担当: ${client.staffName || '未設定'}
+                    </div>
+                `;
+                item.addEventListener('mouseover', () => item.style.backgroundColor = '#f8f9fa');
+                item.addEventListener('mouseout', () => item.style.backgroundColor = '#fff');
+                item.addEventListener('click', () => this.openClientDetails(client.id));
+                listElement.appendChild(item);
+            });
+
+            // 10件超過時のボタン表示
+            if (attentionClients.length > 10) {
+                showAllBtn.style.display = 'block';
+                showAllBtn.textContent = `📋 全 ${attentionClients.length} 件表示`;
+            } else {
+                showAllBtn.style.display = 'none';
+            }
+        }
+
+        // 全件表示ボタンのイベントリスナー設定（重複防止）
+        if (!showAllBtn.hasAttribute('data-listener-set')) {
+            showAllBtn.addEventListener('click', () => this.showAttentionClientsModal(attentionClients));
+            showAllBtn.setAttribute('data-listener-set', 'true');
+        }
+    }
+
+    showAttentionClientsModal(allAttentionClients) {
+        const modal = document.getElementById('attention-clients-modal');
+        const modalList = document.getElementById('attention-clients-modal-list');
+
+        // モーダル内にすべてのクライアントを表示
+        modalList.innerHTML = '';
+        allAttentionClients.forEach((client, index) => {
+            const item = document.createElement('div');
+            item.style.cssText = `
+                padding: 10px;
+                margin-bottom: 8px;
+                background: #fff;
+                border: 1px solid #dee2e6;
+                border-left: 4px solid #dc3545;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            `;
+            item.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <span style="font-weight: bold; color: #333;">${index + 1}. ${client.name}</span>
+                    <span style="background: #dc3545; color: white; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: bold;">
+                        ${client.progressRate || 0}%
+                    </span>
+                </div>
+                <div style="font-size: 12px; color: #666;">
+                    ID: ${client.id} | 担当: ${client.staffName || '未設定'} | 決算月: ${client.fiscalMonth}月
+                </div>
+            `;
+            item.addEventListener('mouseover', () => {
+                item.style.backgroundColor = '#f8f9fa';
+                item.style.borderLeftColor = '#007bff';
+            });
+            item.addEventListener('mouseout', () => {
+                item.style.backgroundColor = '#fff';
+                item.style.borderLeftColor = '#dc3545';
+            });
+            item.addEventListener('click', () => {
+                modal.style.display = 'none';
+                this.openClientDetails(client.id);
+            });
+            modalList.appendChild(item);
+        });
+
+        // モーダル表示
+        modal.style.display = 'block';
+
+        // 閉じるボタンのイベントリスナー設定（重複防止）
+        const closeBtn = document.getElementById('close-attention-modal');
+        const closeBtnBottom = document.getElementById('close-attention-modal-btn');
+        if (!closeBtn.hasAttribute('data-listener-set')) {
+            closeBtn.addEventListener('click', () => modal.style.display = 'none');
+            closeBtn.setAttribute('data-listener-set', 'true');
+        }
+        if (!closeBtnBottom.hasAttribute('data-listener-set')) {
+            closeBtnBottom.addEventListener('click', () => modal.style.display = 'none');
+            closeBtnBottom.setAttribute('data-listener-set', 'true');
+        }
+
+        // 背景クリックで閉じる
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+
+    openClientDetails(clientId) {
+        // 詳細画面を開く（既存機能を利用）
+        window.open(`details.html?id=${clientId}`, '_blank');
     }
 
     updateSummaryFilterInfo() {
