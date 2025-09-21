@@ -2289,11 +2289,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Accordion ---
+    // --- Accordion --- (常に開いた状態に固定のためコメントアウト)
     function toggleAccordion() {
+        // アコーディオンを常に開いた状態に維持するため、機能をコメントアウト
+        /*
         const isExpanded = accordionContent.style.display === 'block';
         accordionContent.style.display = isExpanded ? 'none' : 'block';
-        
+
         const icon = accordionHeader.querySelector('.accordion-icon');
         if (icon) {
             icon.textContent = isExpanded ? '▼' : '▲';
@@ -2305,6 +2307,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } else { // If accordion is now collapsed
             document.removeEventListener('click', closeAccordionOnClickOutside);
         }
+        */
+        return;
     }
 
     function closeAccordionOnClickOutside(event) {

@@ -492,7 +492,7 @@ tr:hover {
     background-color: #28a745; /* Green color */
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 47px;
     cursor: pointer;
     transition: background-color 0.3s ease;
     justify-self: start; /* Align button to the start of the grid cell */
