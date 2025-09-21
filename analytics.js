@@ -731,9 +731,16 @@ class AnalyticsPage {
             // 進捗率50%未満 または 遅延・停滞ステータスがある場合
             if ((clientProgressRate < 50 && clientTotal > 0) || hasDelayedStatus) {
                 const reason = hasDelayedStatus ? '遅延・停滞' : '進捗率低下';
+                // 担当者名を取得
+                const staff = this.staffs.find(s => s.id === client.staff_id);
+                const staffName = staff ? staff.name : '未設定';
+
                 attentionClients.push({
+                    id: client.id,
                     name: client.name,
                     progressRate: Math.round(clientProgressRate),
+                    staffName: staffName,
+                    fiscalMonth: client.fiscal_month,
                     reason: reason
                 });
             }

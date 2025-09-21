@@ -1,14 +1,11 @@
-analytics.js:536 Failed to restore analysis from localStorage: TypeError: Cannot set properties of null (setting 'innerHTML')
-    at AnalyticsPage.drawStatusChart (analytics.js:2468:59)
-    at AnalyticsPage.displaySummary (analytics.js:857:14)
-    at AnalyticsPage.restoreAnalysisFromLocalStorage (analytics.js:515:22)
-    at AnalyticsPage.initialize (analytics.js:91:46)
-    at async HTMLDocument.<anonymous> (analytics.js:3420:9)
-restoreAnalysisFromLocalStorage @ analytics.js:536Understand this warning
-analytics.js:2799 📊 週次フィルター: Object
-analytics.js:2818 📅 計算された期間: Object
-analytics.js:621 Analysis failed: TypeError: Cannot set properties of null (setting 'innerHTML')
-    at AnalyticsPage.drawStatusChart (analytics.js:2468:59)
-    at AnalyticsPage.displaySummary (analytics.js:857:14)
-    at AnalyticsPage.performAnalysis (analytics.js:588:18)
-    at async analytics.js:95:25
+config.js:10 Supabase config loaded: Object
+details.js:262 Error loading client details: Objectcode: "22P02"details: nullhint: nullmessage: "invalid input syntax for type integer: \"undefined\""[[Prototype]]: Object
+loadClientDetails @ details.js:262
+supabase-client.js:2905 Supabase error: Objectcode: "22P02"details: nullhint: nullmessage: "invalid input syntax for type integer: \"undefined\""[[Prototype]]: Object
+handleSupabaseError @ supabase-client.js:2905
+details.js:2207 Fatal initialization error: Objectcode: "22P02"details: nullhint: nullmessage: "invalid input syntax for type integer: \"undefined\""[[Prototype]]: Object
+initialize @ details.js:2207
+supabase-client.js:2905 Supabase error: Objectcode: "22P02"details: nullhint: nullmessage: "invalid input syntax for type integer: \"undefined\""[[Prototype]]: Object
+handleSupabaseError @ supabase-client.js:2905
+supabase-client.js:2905 Supabase error: Objectcode: "22P02"details: nullhint: nullmessage: "invalid input syntax for type integer: \"undefined\""[[Prototype]]: Object
+handleSupabaseError @ supabase-client.js:2905
