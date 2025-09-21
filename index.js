@@ -40,10 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tasksKityoContainer = document.getElementById('tasks-kityo');
     const tasksJikeiContainer = document.getElementById('tasks-jikei');
 
-    // Other Apps Accordion elements
-    const otherAppsAccordion = document.getElementById('other-apps-accordion');
-    const otherAppsAccordionHeader = otherAppsAccordion.querySelector('.accordion-header');
-    const otherAppsAccordionContent = otherAppsAccordion.querySelector('.accordion-content');
+    // URL Settings Button (moved to management accordion)
     const urlSettingsButton = document.getElementById('url-settings-button');
 
     // Basic Settings Modal elements
@@ -678,23 +675,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Accordion (Management)
         accordionHeader.addEventListener('click', toggleAccordion);
 
-        // Accordion (Other Apps)
-        otherAppsAccordionHeader.addEventListener('click', () => {
-            const isExpanded = otherAppsAccordionContent.style.display === 'block';
-            otherAppsAccordionContent.style.display = isExpanded ? 'none' : 'block';
-            
-            const icon = otherAppsAccordionHeader.querySelector('.accordion-icon');
-            if (icon) {
-                icon.textContent = isExpanded ? '▼' : '▲';
-            }
-
-            // Add/remove global click listener for this accordion
-            if (!isExpanded) { // If accordion is now expanded
-                document.addEventListener('click', (e) => closeOtherAppsAccordionOnClickOutside(e, otherAppsAccordion, otherAppsAccordionContent, otherAppsAccordionHeader));
-            } else { // If accordion is now collapsed
-                document.removeEventListener('click', (e) => closeOtherAppsAccordionOnClickOutside(e, otherAppsAccordion, otherAppsAccordionContent, otherAppsAccordionHeader));
-            }
-        });
+        // Other Apps Accordion removed - functionality moved to analytics.html
 
         // URL設定ボタンのイベントリスナー - with debugging
         if (urlSettingsButton) {
@@ -1097,12 +1078,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderAppLinksButtons() {
-        const container = otherAppsAccordionContent.querySelector('.accordion-buttons-container');
-        if (!container) return;
-
-        // Clear existing buttons except the settings button
-        while (container.children.length > 1) {
-            container.removeChild(container.lastChild);
+        // Other Apps functionality moved to analytics.html
+        return;
         }
 
         // Add a separator if there are links
@@ -2361,18 +2338,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function closeOtherAppsAccordionOnClickOutside(event, accordionContainer, accordionContent, accordionHeader) {
-        // Check if the clicked element is inside the accordion header or content
-        if (!accordionContainer.contains(event.target)) {
-            // If not, close the accordion
-            accordionContent.style.display = 'none';
-            const icon = accordionHeader.querySelector('.accordion-icon');
-            if (icon) {
-                icon.textContent = '▼'; // Reset icon to closed state
-            }
-            document.removeEventListener('click', (e) => closeOtherAppsAccordionOnClickOutside(e, accordionContainer, accordionContent, accordionHeader)); // Remove listener
-        }
-    }
+    // Other Apps Accordion function removed - functionality moved to analytics.html
 
     // --- URL Settings Modal Functions ---
     function openUrlSettingsModal() {
