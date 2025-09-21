@@ -2538,7 +2538,7 @@ body.hide-inactive-clients .inactive-client {
 
 /* === 統一ナビゲーションタブ === */
 .tab-navigation {
-    position: fixed;
+    position: absolute;
     top: 20px;
     right: 20px;
     display: flex;
@@ -2548,7 +2548,7 @@ body.hide-inactive-clients .inactive-client {
 }
 
 .nav-tab {
-    padding: 14px 8px;
+    padding: 10px 0px;
     background: white;
     border: 2px solid #e9ecef;
     border-radius: 50px 10px 10px 8px;
