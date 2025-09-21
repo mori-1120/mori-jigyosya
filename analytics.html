@@ -193,51 +193,38 @@
 
                 <!-- 1/4：集計結果サマリー（縮小版） -->
                 <div class="summary-section" style="flex: 0 0 25%; min-width: 0;">
-                    <!-- サマリーカード群（縦並び） -->
-                    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;">
+                    <!-- サマリーカード群（横並び・コンパクト） -->
+                    <div style="display: flex; gap: 4px; margin-bottom: 12px;">
                         <!-- 全体進捗率 -->
-                        <div style="background: #e3f2fd; padding: 8px 12px; border-radius: 6px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 60px;">
-                            <div style="font-size: 12px; color: #0277bd; margin-bottom: 3px;">📈 全体進捗率</div>
-                            <div id="overall-progress" style="font-size: 18px; font-weight: bold; color: #01579b;">--%</div>
+                        <div style="background: #e3f2fd; padding: 6px 4px; border-radius: 4px; text-align: center; flex: 1;">
+                            <div style="font-size: 10px; color: #0277bd; margin-bottom: 2px;">📈</div>
+                            <div id="overall-progress" style="font-size: 14px; font-weight: bold; color: #01579b;">--%</div>
                         </div>
 
                         <!-- 完了タスク数 -->
-                        <div style="background: #e8f5e8; padding: 8px 12px; border-radius: 6px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 60px;">
-                            <div style="font-size: 12px; color: #2e7d32; margin-bottom: 3px;">✅ 完了タスク</div>
-                            <div id="completed-tasks" style="font-size: 18px; font-weight: bold; color: #1b5e20;">-- / --</div>
+                        <div style="background: #e8f5e8; padding: 6px 4px; border-radius: 4px; text-align: center; flex: 1;">
+                            <div style="font-size: 10px; color: #2e7d32; margin-bottom: 2px;">✅</div>
+                            <div id="completed-tasks" style="font-size: 14px; font-weight: bold; color: #1b5e20;">-- / --</div>
                         </div>
 
                         <!-- 要注意クライアント数 -->
-                        <div style="background: #ffeaa7; padding: 8px 12px; border-radius: 6px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 60px;">
-                            <div style="font-size: 12px; color: #b7750c; margin-bottom: 3px;">⚠️ 要注意</div>
-                            <div id="attention-clients" style="font-size: 18px; font-weight: bold; color: #8b4513;">--件</div>
+                        <div style="background: #fff3cd; padding: 6px 4px; border-radius: 4px; text-align: center; flex: 1;">
+                            <div style="font-size: 10px; color: #856404; margin-bottom: 2px;">⚠️</div>
+                            <div id="attention-clients" style="font-size: 14px; font-weight: bold; color: #6c5200;">--件</div>
                         </div>
                     </div>
 
-                    <!-- 円グラフとアクションボタンエリア -->
-                    <div style="display: flex; gap: 15px; align-items: flex-start;">
-                        <!-- ステータス別構成円グラフ -->
-                        <div style="flex: 1; background: #f8f9fa; padding: 3px; border-radius: 6px; min-height: 182px;box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2)">
-                            <div style="font-size: 13px; color: #495057; margin-bottom: 10px; font-weight: bold; text-align: center;">📊 ステータス別構成</div>
-                            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 140px;">
-                                <!-- 円グラフ -->
-                                <div style="flex-shrink: 0;">
-                                    <canvas id="status-chart" width="140" height="140" style="max-width: 140px; max-height: 140px;"></canvas>
-                                </div>
-                                <!-- 凡例 -->
-                                <div id="chart-legend" style="flex: 1; font-size: 11px; text-align: left;">
-                                    <!-- JavaScript で動的生成 -->
-                                </div>
-                            </div>
+                    <!-- ステータス別構成円グラフ（拡大版） -->
+                    <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; text-align: center; flex: 1;">
+                        <div style="font-size: 12px; color: #666; margin-bottom: 8px; font-weight: bold;">📊 ステータス構成</div>
+                        <div style="position: relative; width: 100%; height: 140px; display: flex; justify-content: center; align-items: center;">
+                            <canvas id="status-chart" width="120" height="120"></canvas>
                         </div>
-
-                        <!-- 要注意クライアントリスト -->
-                        <div style="flex: 1; display: flex; flex-direction: column;">
-                            <div id="attention-list" style="display: none; flex: 1;">
-                                <h4 style="margin: 0 0 8px 0; font-size: 13px;">⚠️ 要注意クライアント</h4>
-                                <ul id="attention-clients-list" style="background: #fff3cd; padding: 10px; border-radius: 4px; border-left: 4px solid #ffc107; margin: 0; max-height: 120px; overflow-y: auto; font-size: 12px;">
-                                    <!-- JavaScript で動的生成 -->
-                                </ul>
+                        <div style="font-size: 10px; color: #666; margin-top: 8px;">
+                            <div style="display: flex; justify-content: center; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                <span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 3px;">5/5</span> 完了
+                                <span style="background: #ffc107; color: black; padding: 2px 6px; border-radius: 3px;">3/5</span> 進行中
+                                <span style="background: #dc3545; color: white; padding: 2px 6px; border-radius: 3px;">1/5</span> 遅延
                             </div>
                         </div>
                     </div>
@@ -268,7 +255,7 @@
                     </div>
                 </div>
 
-                <!-- 3/4：週次進捗推移グラフ -->
+                <!-- 3/4 & 4/4：週次進捗推移グラフ（50%幅） -->
                 <div class="weekly-progress-section" style="flex: 0 0 50%; min-width: 0; height: 280px;box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);">
                     <div style="background: #f8f9fa; padding: 8px; border-radius: 6px; height: 94%; display: flex; flex-direction: column;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-shrink: 0;">

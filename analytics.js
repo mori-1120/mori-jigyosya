@@ -849,16 +849,9 @@ class AnalyticsPage {
         // 新しい要注意クライアント表示
         this.displayAttentionClientsNew(summary.attentionClients);
 
-        // 旧要注意クライアントリスト（後方互換性のため残す）
-        const attentionList = document.getElementById('attention-clients-list');
+        // 旧要注意クライアントリスト（非表示）
         const attentionContainer = document.getElementById('attention-list');
-
-        if (summary.attentionClients.length > 0) {
-            this.displayAttentionClients(summary.attentionClients);
-            if (attentionContainer) attentionContainer.style.display = 'block';
-        } else {
-            if (attentionContainer) attentionContainer.style.display = 'none';
-        }
+        if (attentionContainer) attentionContainer.style.display = 'none';
 
         // ステータス別構成円グラフを描画
         this.drawStatusChart(summary.statusComposition);
