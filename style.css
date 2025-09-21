@@ -2582,11 +2582,14 @@ body.hide-inactive-clients .inactive-client {
 
 /* アクティブ状態（現在いるページ） */
 .nav-tab.active {
-    background: #f8f9fa;
-    color: #6c757d !important;
+    background: #e9ecef;
+    color: #495057 !important;
     cursor: default;
-    box-shadow: inset -2px 2px 8px rgba(0,0,0,0.1);
+    box-shadow: inset -4px 4px 12px rgba(0,0,0,0.2), inset 2px -2px 8px rgba(0,0,0,0.1);
     border-left-color: #6c757d !important;
+    border-color: #ced4da !important;
+    transform: translateX(2px) translateY(1px);
+    opacity: 0.8;
 }
 
 /* ホバーエフェクト */
