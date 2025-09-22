@@ -86,3 +86,83 @@ export function formatNumber(num) {
     if (num === null || num === undefined || isNaN(num)) return '0';
     return num.toLocaleString();
 }
+
+/**
+ * トースト重複防止クラス
+ */
+class ToastThrottler {
+    constructor() {
+        this.recentToasts = new Map(); // メッセージ -> 最後の表示時刻
+        this.throttleTime = 2000; // 2秒間は同じメッセージを表示しない
+    }
+
+    /**
+     * トーストを表示（重複チェック付き）
+     * @param {string} message - 表示メッセージ
+     * @param {string} type - トーストタイプ
+     * @param {number} duration - 表示時間
+     * @returns {boolean} 実際に表示されたかどうか
+     */
+    showToast(message, type = 'info', duration) {
+        const now = Date.now();
+        const key = `${message}-${type}`;
+
+        // 同じメッセージが最近表示されていないかチェック
+        const lastShown = this.recentToasts.get(key);
+        if (lastShown && (now - lastShown) < this.throttleTime) {
+            return false; // 表示を抑制
+        }
+
+        // 実際にトーストを表示
+        if (window.showToast) {
+            window.showToast(message, type, duration);
+        }
+
+        // 表示記録を更新
+        this.recentToasts.set(key, now);
+
+        // 古い記録をクリーンアップ（メモリリーク防止）
+        this.cleanupOldRecords(now);
+
+        return true; // 表示された
+    }
+
+    /**
+     * 古い記録をクリーンアップ
+     * @param {number} now - 現在時刻
+     */
+    cleanupOldRecords(now) {
+        for (const [key, time] of this.recentToasts.entries()) {
+            if (now - time > this.throttleTime * 2) {
+                this.recentToasts.delete(key);
+            }
+        }
+    }
+
+    /**
+     * 検索用の特別なトースト（さらに短い間隔で制御）
+     * @param {string} message - 表示メッセージ
+     * @param {string} type - トーストタイプ
+     * @returns {boolean} 実際に表示されたかどうか
+     */
+    showSearchToast(message, type = 'info') {
+        const now = Date.now();
+        const key = `search-${message}-${type}`;
+
+        // 検索用は500ms間隔で制御（より厳しく）
+        const lastShown = this.recentToasts.get(key);
+        if (lastShown && (now - lastShown) < 500) {
+            return false;
+        }
+
+        if (window.showToast) {
+            window.showToast(message, type, 1000); // 短い表示時間
+        }
+
+        this.recentToasts.set(key, now);
+        return true;
+    }
+}
+
+// グローバルインスタンス作成
+export const toastThrottler = new ToastThrottler();

@@ -1,6 +1,6 @@
 // 分析機能メインスクリプト
 import { SupabaseAPI } from './supabase-client.js';
-import { normalizeText } from './utils.js';
+import { normalizeText, toastThrottler } from './utils.js';
 import './toast.js'; // showToastはwindow.showToastとしてグローバルに利用可能
 
 // === カスタムツールチップ関数（グローバルスコープ - 最優先読み込み） ===
@@ -551,7 +551,10 @@ class AnalyticsPage {
     }
 
     async performAnalysis() {
-        showToast('集計中...', 'info');
+        // 検索時は「集計中」表示を抑制
+        if (!this.currentFilters.businessName || this.currentFilters.businessName.trim() === '') {
+            toastThrottler.showToast('集計中...', 'info');
+        }
         
         try {
             // 現在のソート状態を保存
@@ -571,12 +574,12 @@ class AnalyticsPage {
 
             // バリデーション
             if (!this.currentFilters.startPeriod || !this.currentFilters.endPeriod) {
-                showToast('期間を選択してください', 'error');
+                toastThrottler.showToast('期間を選択してください', 'error');
                 return;
             }
 
             if (this.currentFilters.startPeriod > this.currentFilters.endPeriod) {
-                showToast('開始年月は終了年月より前に設定してください', 'error');
+                toastThrottler.showToast('開始年月は終了年月より前に設定してください', 'error');
                 return;
             }
 
@@ -617,11 +620,16 @@ class AnalyticsPage {
             // コンパクト版週次グラフを更新
             await this.updateCompactWeeklyChart();
 
-            showToast('集計が完了しました', 'success');
+            // 検索による集計の場合は控えめな通知
+            if (this.currentFilters.businessName && this.currentFilters.businessName.trim() !== '') {
+                toastThrottler.showSearchToast('検索結果を更新しました', 'success');
+            } else {
+                toastThrottler.showToast('集計が完了しました', 'success');
+            }
             
         } catch (error) {
             console.error('Analysis failed:', error);
-            showToast('集計に失敗しました', 'error');
+            toastThrottler.showToast('集計に失敗しました', 'error');
         }
     }
 
