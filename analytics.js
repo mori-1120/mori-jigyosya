@@ -1531,7 +1531,7 @@ class AnalyticsPage {
         csvContent += '進捗マトリクス表\n';
         
         // ヘッダー行
-        const headers = ['事業者名', '期間内平均進捗率', '完了タスク数', '総タスク数', '担当者', '決算月'];
+        const headers = ['ID', '事業者名', '担当者', '決算月', '経理方式', '進捗率'];
         
         // 月別ヘッダーを追加
         const startDate = new Date(this.currentFilters.startPeriod + '-01');
@@ -1547,12 +1547,12 @@ class AnalyticsPage {
         // データ行
         matrix.forEach(row => {
             const dataRow = [
+                row.clientId,
                 `"${row.clientName}"`,
-                `${row.progressRate}%`,
-                row.completedTasks,
-                row.totalTasks,
                 `"${row.staffName}"`,
-                `${row.fiscalMonth}月`
+                `${row.fiscalMonth}月`,
+                `"${row.accountingMethod || '記帳代行'}"`,
+                `${row.progressRate}%`
             ];
 
             // 月別データを追加
@@ -1628,14 +1628,17 @@ class AnalyticsPage {
         
         // マトリクスヘッダー行作成
         const periods = Object.keys(matrix[0].monthlyProgress || {}).sort();
-        const headers = ['事業者名', '担当者', '全体進捗率', ...periods];
+        const headers = ['ID', '事業者名', '担当者', '決算月', '経理方式', '進捗率', ...periods];
         data.push(headers);
         
         // マトリクスデータ行作成
         matrix.forEach(client => {
             const row = [
+                client.clientId,
                 client.clientName,
                 client.staffName || '',
+                `${client.fiscalMonth}月`,
+                client.accountingMethod || '記帳代行',
                 this.formatProgressForExcel(client.completedTasks, client.totalTasks)
             ];
             
@@ -2192,10 +2195,12 @@ class AnalyticsPage {
         const headerHTML = `
         <thead>
             <tr>
+                <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">ID</th>
                 <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">事業者名</th>
-                <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">期間内平均進捗率</th>
                 <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">担当者</th>
                 <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">決算月</th>
+                <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">経理方式</th>
+                <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">進捗率</th>
                 ${months.map(month =>
                     `<th style="border: 1px solid #dee2e6; padding: 8px; text-align: center; background: #f8f9fa;">${month.year}/${month.month}</th>`
                 ).join('')}
@@ -2207,18 +2212,20 @@ class AnalyticsPage {
             const fiscalMonth = row.fiscalMonth;
 
             return `<tr>
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.clientId}</td>
                 <td style="border: 1px solid #dee2e6; padding: 8px;">
                     <a href="details.html?id=${row.clientId}" style="color: #007bff; text-decoration: none;">
                         ${row.clientName}
                     </a>
                 </td>
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.staffName}</td>
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.fiscalMonth}月</td>
+                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.accountingMethod || '記帳代行'}</td>
                 <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">
                     <span style="font-weight: bold; color: ${this.getProgressColor(row.progressRate)};">
                         ${row.progressRate}%
                     </span>
                 </td>
-                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.staffName}</td>
-                <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${row.fiscalMonth}月</td>
                 ${months.map(month => {
                     const monthData = row.monthlyProgress[month.key] || { completed: 0, total: 0, rate: 0 };
                     const currentMonth = month.month;
