@@ -374,9 +374,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 toast.update(saveToast, '新規顧客作成完了', 'success');
                 
-                // Redirect to main page
+                // Redirect to index page for new client
                 setTimeout(() => {
-                    window.location.href = 'analytics.html';
+                    window.location.href = 'index.html';
                 }, 1500);
                 
             } else {
@@ -551,6 +551,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     function addEventListeners() {
         // Save button
         saveButton.addEventListener('click', saveDataHandler);
+
+        // Back button
+        const backButton = document.getElementById('back-button');
+        if (backButton) {
+            backButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Navigate based on mode: new -> index.html, edit -> analytics.html
+                window.location.href = isNewMode ? 'index.html' : 'analytics.html';
+            });
+        }
         
         // Modal events
         if (modalCancel) {
