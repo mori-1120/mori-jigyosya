@@ -3244,7 +3244,7 @@ body.hide-inactive-clients .inactive-client {
 .header-content {
     display: flex;
     align-items: center;
-    gap: 25px;
+    gap: 17px;
 }
 
 .header-icon {
@@ -3274,12 +3274,13 @@ body.hide-inactive-clients .inactive-client {
 .modern-back-btn {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 9px;
     background: linear-gradient(135deg, #f9f9f9d9 0%, #fbfbfb 100%);
     color: rgba(0, 0, 0, 0.753);
     text-decoration: none;
-    padding: 12px 20px;
-    border-radius: 25px;
+    padding: 18px 55px;
+    border-radius: 65px;
+    font-size: 20px;
     font-weight: 600;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(253, 254, 255, 0.3);
