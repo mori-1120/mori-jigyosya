@@ -374,8 +374,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 toast.update(saveToast, '新規顧客作成完了', 'success');
                 
-                // Redirect to index page for new client
+                // Redirect to index page for new client (with settings access flag)
                 setTimeout(() => {
+                    sessionStorage.setItem('settings-access', 'true');
                     window.location.href = 'index.html';
                 }, 1500);
                 
@@ -558,7 +559,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             backButton.addEventListener('click', (e) => {
                 e.preventDefault();
                 // Navigate based on mode: new -> index.html, edit -> analytics.html
-                window.location.href = isNewMode ? 'index.html' : 'analytics.html';
+                if (isNewMode) {
+                    // Set flag to prevent redirect when going to index.html
+                    sessionStorage.setItem('settings-access', 'true');
+                    window.location.href = 'index.html';
+                } else {
+                    window.location.href = 'analytics.html';
+                }
             });
         }
         

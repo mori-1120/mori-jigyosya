@@ -756,16 +756,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // 管理者レポートボタンを追加（管理者権限の場合のみ）
         addAdminReportButton();
 
-        // 設定画面タブのイベントリスナー（現在のページでクリックされた場合にリロードを防ぐ）
-        const settingsLink = document.querySelector('.nav-tab.settings');
-        if (settingsLink) {
-            settingsLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                // 既に設定画面にいる場合は何もしない（リロードを防ぐ）
-                SupabaseAPI.redirectToSettings();
-            });
-        }
-
         // データベース初期化モーダルのイベントリスナー
         const appNameInput = document.getElementById('app-name-input');
         const confirmResetButton = document.getElementById('confirm-reset-button');
