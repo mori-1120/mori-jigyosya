@@ -1,5 +1,6 @@
 // 分析機能メインスクリプト
 import { SupabaseAPI } from './supabase-client.js';
+import { normalizeText } from './utils.js';
 import './toast.js'; // showToastはwindow.showToastとしてグローバルに利用可能
 
 // === カスタムツールチップ関数（グローバルスコープ - 最優先読み込み） ===
@@ -44,6 +45,7 @@ class AnalyticsPage {
         this.sortDirection = 'asc'; // ソート方向
         this.refreshTimeout = null; // 透明リフレッシュ用タイマー
     }
+
 
     async initialize() {
         
@@ -654,8 +656,8 @@ class AnalyticsPage {
             
             // 事業者名フィルター
             if (this.currentFilters.businessName && this.currentFilters.businessName.trim() !== '') {
-                const searchTerm = this.currentFilters.businessName.trim().toLowerCase();
-                const clientName = client.name.toLowerCase();
+                const searchTerm = normalizeText(this.currentFilters.businessName.trim());
+                const clientName = normalizeText(client.name);
                 if (!clientName.includes(searchTerm)) {
                     return false;
                 }
