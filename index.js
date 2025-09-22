@@ -144,13 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Table Column Width Management ---
-    function resetColumnWidths() {
-        if (window.tableResizer) {
-            window.tableResizer.resetColumnWidths();
-        } else {
-            toast.warning('テーブルリサイザーが初期化されていません');
-        }
-    }
+    // Removed resetColumnWidths function as it's no longer needed
 
     // --- Authentication Functions ---
     function showAuthStatus(message, type = 'info') {
@@ -758,7 +752,6 @@ document.addEventListener('DOMContentLoaded', () => {
             closeBasicSettingsModal();
             openDefaultTasksModal();
         });
-        document.getElementById('reset-column-widths-button').addEventListener('click', resetColumnWidths);
 
         // 管理者レポートボタンを追加（管理者権限の場合のみ）
         addAdminReportButton();
@@ -2805,243 +2798,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // レスポンシブテーブル幅調整機能
-    function initResponsiveTable() {
-        let resizeTimeout;
-        
-        // ローカルストレージから設定を読み込み
-        function getStoredTableMode() {
-            return localStorage.getItem('tableDisplayMode') || 'fit';
-        }
-        
-        // ローカルストレージに設定を保存
-        function setStoredTableMode(mode) {
-            localStorage.setItem('tableDisplayMode', mode);
-        }
-        
-        function adjustTableLayout() {
-            const tableContainer = document.querySelector('.table-container');
-            const clientsTable = document.getElementById('clients-table');
-            
-            if (!tableContainer || !clientsTable) return;
-            
-            // 保存された設定を確認
-            const savedMode = getStoredTableMode();
-            if (savedMode === 'scroll') {
-                // スクロールモードが保存されている場合はスキップ
-                return;
-            }
-            
-            // コンテナ幅を取得
-            const containerWidth = tableContainer.offsetWidth;
-            const zoomLevel = window.devicePixelRatio || 1;
-            
-            // フィットモードの場合のみ横スクロール無効化
-            tableContainer.style.overflowX = 'hidden';
-            
-            // ウィンドウ幅に基づく動的調整（ユーザー設定を考慮）
-            const userFontSize = getCurrentFontSize() / 100;
-            if (containerWidth < 800) {
-                // 狭い画面では最小限の列幅
-                clientsTable.style.fontSize = `${11 * userFontSize}px`;
-                adjustColumnWidths(containerWidth, 'compact');
-            } else if (containerWidth < 1200) {
-                // 中程度の画面では適度な列幅
-                clientsTable.style.fontSize = `${12 * userFontSize}px`;
-                adjustColumnWidths(containerWidth, 'medium');
-            } else {
-                // 広い画面では標準の列幅
-                clientsTable.style.fontSize = `${14 * userFontSize}px`;
-                adjustColumnWidths(containerWidth, 'standard');
-            }
-        }
-        
-        function adjustColumnWidths(containerWidth, mode) {
-            const table = document.getElementById('clients-table');
-            if (!table) return;
-            
-            const ths = table.querySelectorAll('th');
-            const totalCols = ths.length;
-            
-            // モード別の列幅配分（%）
-            const widthDistribution = {
-                compact: [8, 35, 12, 15, 10, 8, 7, 5],    // 狭い画面
-                medium: [6, 30, 12, 18, 12, 10, 8, 4],     // 中程度
-                standard: [5, 28, 12, 20, 15, 10, 8, 2]    // 広い画面
-            };
-            
-            const widths = widthDistribution[mode] || widthDistribution.standard;
-            
-            ths.forEach((th, index) => {
-                if (widths[index]) {
-                    th.style.width = `${widths[index]}%`;
-                    th.style.minWidth = mode === 'compact' ? '30px' : '50px';
-                    th.style.maxWidth = 'none';
-                }
-            });
-        }
-        
-        function toggleScrollMode() {
-            const tableContainer = document.querySelector('.table-container');
-            const clientsTable = document.getElementById('clients-table');
-            
-            if (!tableContainer || !clientsTable) return;
-            
-            const currentMode = getStoredTableMode();
-            let newMode, newModeText;
-            
-            if (currentMode === 'fit') {
-                // フィットモード→スクロールモードに切り替え
-                tableContainer.style.overflowX = 'auto';
-                const userFontSize = getCurrentFontSize() / 100;
-                clientsTable.style.fontSize = `${14 * userFontSize}px`;
-                // 元の幅に戻す
-                const ths = clientsTable.querySelectorAll('th');
-                ths.forEach(th => {
-                    th.style.width = '';
-                    th.style.minWidth = '';
-                    th.style.maxWidth = '';
-                });
-                newMode = 'scroll';
-                newModeText = 'スクロールモード';
-            } else {
-                // スクロールモード→フィットモードに切り替え
-                tableContainer.style.overflowX = 'hidden';
-                adjustTableLayout();
-                newMode = 'fit';
-                newModeText = 'フィットモード';
-            }
-            
-            // 設定をローカルストレージに保存
-            setStoredTableMode(newMode);
-            
-            // ボタンテキストを更新
-            updateToggleButtonText(newMode);
-            
-            return newModeText;
-        }
-        
-        // 保存された設定に基づいて初期モードを適用
-        function applyStoredTableMode() {
-            const savedMode = getStoredTableMode();
-            const tableContainer = document.querySelector('.table-container');
-            const clientsTable = document.getElementById('clients-table');
-            
-            if (!tableContainer || !clientsTable) return;
-            
-            if (savedMode === 'scroll') {
-                // スクロールモードを適用
-                tableContainer.style.overflowX = 'auto';
-                const userFontSize = getCurrentFontSize() / 100;
-                clientsTable.style.fontSize = `${14 * userFontSize}px`;
-                const ths = clientsTable.querySelectorAll('th');
-                ths.forEach(th => {
-                    th.style.width = '';
-                    th.style.minWidth = '';
-                    th.style.maxWidth = '';
-                });
-            } else {
-                // フィットモードを適用（デフォルト）
-                adjustTableLayout();
-            }
-        }
-        
-        // ウィンドウリサイズイベント（passive最適化）
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(adjustTableLayout, 150);
-        }, { passive: true });
+    // 基本的なレスポンシブテーブル機能
+    function initBasicResponsiveTable() {
+        const tableContainer = document.querySelector('.table-container');
+        const clientsTable = document.getElementById('clients-table');
 
-        // ズーム変更検出（passive最適化）
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(adjustTableLayout, 150);
-        }, { passive: true });
-        
-        // 初期調整と保存された設定の適用
-        setTimeout(() => {
-            applyStoredTableMode();
-            adjustTableLayout();
-        }, 500);
-        
-        // 切り替えボタンをアコーディオンメニューに追加
-        addTableModeToggle(toggleScrollMode);
+        if (!tableContainer || !clientsTable) return;
+
+        // 基本的なレスポンシブ設定
+        tableContainer.style.overflowX = 'auto';
+
+        // フォントサイズをユーザー設定に合わせる
+        const userFontSize = getCurrentFontSize() / 100;
+        clientsTable.style.fontSize = `${14 * userFontSize}px`;
     }
     
-    // ボタンテキストを更新する関数
-    function updateToggleButtonText(mode) {
-        const toggleButton = document.querySelector('#table-mode-toggle-btn');
-        if (!toggleButton) return;
-        
-        if (mode === 'fit') {
-            toggleButton.innerHTML = '📏 フィットモード <small>(→スクロール)</small>';
-        } else {
-            toggleButton.innerHTML = '📏 スクロールモード <small>(→フィット)</small>';
-        }
-    }
-    
-    function addTableModeToggle(toggleFunction) {
-        const accordionContent = document.querySelector('#management-accordion .accordion-content');
-        if (!accordionContent) return;
-        
-        const toggleButton = document.createElement('button');
-        toggleButton.id = 'table-mode-toggle-btn';
-        toggleButton.className = 'btn';
-        toggleButton.style.cssText = `
-            width: 100% !important; 
-            margin: 5px 0; 
-            text-align: center;
-            padding: 10px 15px !important;
-            min-height: 40px !important;
-            background: linear-gradient(135deg, #0face0c0, #0d42a5c7) !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 6px !important;
-            font-size: 14px !important;
-            font-weight: 500 !important;
-            cursor: pointer !important;
-            box-sizing: border-box !important;
-            display: block !important;
-            visibility: visible !important;
-        `;
-        
-        // 初期ボタンテキスト設定
-        const savedMode = localStorage.getItem('tableDisplayMode') || 'fit';
-        // ボタンが作成されてから確実にテキストを設定
-        setTimeout(() => {
-            updateToggleButtonText(savedMode);
-        }, 100);
-        
-        toggleButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            const newModeText = toggleFunction();
-            
-            // トースト通知で状態を表示
-            if (window.showToast) {
-                window.showToast(`${newModeText}に切り替えました`, 'info', 2000);
-            }
-        });
-        
-        // ユーザー情報セクションの前に挿入
-        const userInfoSection = accordionContent.querySelector('.user-info-section');
-        if (userInfoSection) {
-            userInfoSection.parentNode.insertBefore(toggleButton, userInfoSection);
-        } else {
-            // Fallback if user-info-section is not found (shouldn't happen based on current HTML)
-            // Original fallback logic
-            const columnResetButton = accordionContent.querySelector('#reset-column-widths-button');
-            if (columnResetButton) {
-                columnResetButton.parentNode.insertBefore(toggleButton, columnResetButton.nextSibling);
-            } else {
-                const backupButton = accordionContent.querySelector('button[onclick*="backup"]');
-                if (backupButton) {
-                    backupButton.parentNode.insertBefore(toggleButton, backupButton.nextSibling);
-                } else {
-                    accordionContent.appendChild(toggleButton);
-                }
-            }
-        }
-    }
+    // テーブルモード切り替え機能は削除されました
 
     // 管理者レポート表示ボタンを追加
     function addAdminReportButton() {
@@ -3511,10 +3283,10 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.appendChild(modal);
         }
         
-        // 列幅リセットボタンの前に挿入（「バックアップレポート表示」「列幅リセット」「スクロールモード」の順序）
-        const resetColumnButton = accordionContent.querySelector('#reset-column-widths-button');
-        if (resetColumnButton) {
-            resetColumnButton.parentNode.insertBefore(reportButton, resetColumnButton);
+        // ユーザー情報セクションの前に挿入
+        const userInfoSection = accordionContent.querySelector('.user-info-section');
+        if (userInfoSection) {
+            userInfoSection.parentNode.insertBefore(reportButton, userInfoSection);
         } else {
             // フォールバック: ユーザー情報セクションの前に挿入
             const userInfoSection = accordionContent.querySelector('.user-info-section');
@@ -3593,9 +3365,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // ページ読み込み時にフォントサイズを適用
     loadFontSize();
 
-    // レスポンシブテーブル機能を初期化
+    // 基本的なレスポンシブテーブル機能を初期化
     setTimeout(() => {
-        initResponsiveTable();
+        initBasicResponsiveTable();
     }, 1500);
 
     // カバーレイヤー制御機能

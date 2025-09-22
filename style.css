@@ -1666,7 +1666,7 @@ button:active {
     align-items: center;
     gap: 8px;
     padding: 10px 14px;
-    background: linear-gradient(196deg, #ff6e00, #c56a00);
+    background: linear-gradient( 178deg, #0063ff8f, #001292);
     color: white;
     border: double;
     border-radius: 47px;
