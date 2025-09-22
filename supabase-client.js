@@ -559,6 +559,41 @@ export class SupabaseAPI {
         return user;
     }
 
+    static async getCurrentUserWithRouting() {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) throw error;
+
+        if (user) {
+            // 現在のページを確認
+            const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+
+            // 設定画面への意図的アクセスかチェック
+            const urlParams = new URLSearchParams(window.location.search);
+            const isSettingsPage = currentPage === 'index.html';
+            const isSettingsAccess = urlParams.has('settings') ||
+                                   sessionStorage.getItem('settings-access') === 'true';
+
+            // index.htmlかつ設定アクセスでない場合はリダイレクト
+            if (isSettingsPage && !isSettingsAccess) {
+                window.location.replace('analytics.html');
+                return null; // リダイレクト中なのでnullを返す
+            }
+
+            // 設定画面の場合はフラグクリア
+            if (isSettingsAccess) {
+                sessionStorage.removeItem('settings-access');
+            }
+        }
+
+        return user;
+    }
+
+    // 設定画面用の専用リダイレクト関数
+    static redirectToSettings() {
+        sessionStorage.setItem('settings-access', 'true');
+        window.location.href = 'index.html?settings=true';
+    }
+
     static async getUserRole() {
         const { data, error } = await supabase.rpc('get_user_role');
         if (error) {

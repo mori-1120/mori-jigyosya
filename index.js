@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function checkAuthState() {
         try {
-            const user = await SupabaseAPI.getCurrentUser();
+            const user = await SupabaseAPI.getCurrentUserWithRouting();
 
             if (user) {
                 updateUserDisplay(user);

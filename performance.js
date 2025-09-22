@@ -595,4 +595,13 @@ class PerformancePage {
 document.addEventListener('DOMContentLoaded', async () => {
     window.performance = new PerformancePage();
     await window.performance.initialize();
+
+    // 設定画面リンクのイベントリスナー
+    const settingsLink = document.querySelector('.nav-tab.settings');
+    if (settingsLink) {
+        settingsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            SupabaseAPI.redirectToSettings();
+        });
+    }
 });

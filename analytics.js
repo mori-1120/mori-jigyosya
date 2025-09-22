@@ -3711,5 +3711,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // アプリリンクを初期化時に読み込み
     loadAppLinks();
+
+    // 設定画面リンクのイベントリスナー
+    const settingsLink = document.querySelector('.nav-tab.settings');
+    if (settingsLink) {
+        settingsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            SupabaseAPI.redirectToSettings();
+        });
+    }
 });
 
