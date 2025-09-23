@@ -199,7 +199,7 @@ export class SupabaseAPI {
     static async getMonthlyTasks(clientId = null, month = null) {
         try {
             let query = supabase.from('monthly_tasks').select('*');
-            
+
             // パラメータが指定された場合のみフィルタリング
             if (clientId !== null && month !== null) {
                 query = query.eq('client_id', clientId).eq('month', month);
@@ -210,15 +210,39 @@ export class SupabaseAPI {
                 }
                 return data;
             } else {
-                // 全件取得（analytics用）- RLS問題回避のため並べ替え追加
-                const { data, error } = await query
-                    .order('month', { ascending: false })
-                    .order('id', { ascending: true });
-                if (error) {
-                    console.error('Error fetching all monthly tasks:', error);
-                    return [];
+                // 全件取得（analytics用）- ページネーションで1000件制限回避
+                let allData = [];
+                let from = 0;
+                const batchSize = 1000;
+
+                console.log('📊 Starting paginated fetch for monthly_tasks...');
+
+                while (true) {
+                    const { data, error } = await supabase
+                        .from('monthly_tasks')
+                        .select('*')
+                        .order('client_id', { ascending: true })
+                        .order('month', { ascending: false })
+                        .order('completed', { ascending: false })
+                        .order('id', { ascending: true })
+                        .range(from, from + batchSize - 1);
+
+                    if (error) {
+                        console.error('Error fetching monthly tasks batch:', error);
+                        return [];
+                    }
+
+                    if (!data || data.length === 0) break;
+
+                    allData = allData.concat(data);
+                    console.log(`📈 Fetched batch: ${data.length} records (Total: ${allData.length})`);
+
+                    if (data.length < batchSize) break;
+                    from += batchSize;
                 }
-                return data || [];
+
+                console.log(`✅ Total monthly_tasks fetched: ${allData.length}`);
+                return allData || [];
             }
         } catch (err) {
             console.error(`Error fetching monthly tasks:`, err);
@@ -241,18 +265,44 @@ export class SupabaseAPI {
 
     // 全クライアントの月次タスクを一括取得（パフォーマンス最適化）
     static async getAllMonthlyTasksForAllClients() {
-        const { data, error } = await supabase
-            .from('monthly_tasks')
-            .select('*')
-            .order('month', { ascending: false }) // 新しい月から
-            .order('completed', { ascending: false }) // 完了済みを先に（index.js用）
-            .order('id', { ascending: true }); // RLS問題回避のためidでソート
+        try {
+            // ページネーションで1000件制限回避
+            let allData = [];
+            let from = 0;
+            const batchSize = 1000;
 
-        if (error) {
+            console.log('📊 Starting paginated fetch for all monthly_tasks (all clients)...');
+
+            while (true) {
+                const { data, error } = await supabase
+                    .from('monthly_tasks')
+                    .select('*')
+                    .order('client_id', { ascending: true })
+                    .order('month', { ascending: false }) // 新しい月から
+                    .order('completed', { ascending: false }) // 完了済みを先に（index.js用）
+                    .order('id', { ascending: true }) // RLS問題回避のためidでソート
+                    .range(from, from + batchSize - 1);
+
+                if (error) {
+                    console.error('Error fetching monthly tasks batch for all clients:', error);
+                    throw error;
+                }
+
+                if (!data || data.length === 0) break;
+
+                allData = allData.concat(data);
+                console.log(`📈 Fetched batch: ${data.length} records (Total: ${allData.length})`);
+
+                if (data.length < batchSize) break;
+                from += batchSize;
+            }
+
+            console.log(`✅ Total monthly_tasks (all clients) fetched: ${allData.length}`);
+            return allData;
+        } catch (error) {
             console.error('Error fetching all monthly tasks for all clients:', error);
             throw error;
         }
-        return data;
     }
     
     static async createMonthlyTask(taskData) {
@@ -1488,24 +1538,62 @@ export class SupabaseAPI {
             let totalRecords = 0;
             
             for (const tableName of tables) {
-                
+                console.log(`📊 Starting backup for table: ${tableName}`);
+
                 try {
-                    const { data, error } = await supabase
-                        .from(tableName)
-                        .select('*');
-                    
-                    if (error) {
-                        console.error(`❌ ${tableName} テーブル取得エラー:`, error);
-                        throw error;
+                    let allTableData = [];
+
+                    if (tableName === 'monthly_tasks') {
+                        // monthly_tasksテーブルの場合はページネーションで取得
+                        let from = 0;
+                        const batchSize = 1000;
+
+                        console.log(`📊 Starting paginated backup for ${tableName}...`);
+
+                        while (true) {
+                            const { data, error } = await supabase
+                                .from(tableName)
+                                .select('*')
+                                .order('client_id', { ascending: true })
+                                .order('month', { ascending: false })
+                                .order('completed', { ascending: false })
+                                .order('id', { ascending: true })
+                                .range(from, from + batchSize - 1);
+
+                            if (error) {
+                                console.error(`❌ ${tableName} バッチ取得エラー:`, error);
+                                throw error;
+                            }
+
+                            if (!data || data.length === 0) break;
+
+                            allTableData = allTableData.concat(data);
+                            console.log(`📈 Backup batch: ${data.length} records (Total: ${allTableData.length})`);
+
+                            if (data.length < batchSize) break;
+                            from += batchSize;
+                        }
+                    } else {
+                        // 他のテーブルは通常通り取得
+                        const { data, error } = await supabase
+                            .from(tableName)
+                            .select('*')
+                            .order('id', { ascending: true });
+
+                        if (error) {
+                            console.error(`❌ ${tableName} テーブル取得エラー:`, error);
+                            throw error;
+                        }
+
+                        allTableData = data || [];
                     }
-                    
-                    backupData.tables[tableName] = data || [];
-                    const recordCount = data?.length || 0;
+
+                    backupData.tables[tableName] = allTableData;
+                    const recordCount = allTableData?.length || 0;
                     totalRecords += recordCount;
-                    
-                    
-                    // 詳細なデータ確認（最初の数件をサンプル表示）
-                    
+
+                    console.log(`✅ ${tableName}: ${recordCount} records backed up`);
+
                 } catch (tableError) {
                     console.error(`❌ ${tableName} テーブル処理中にエラー:`, tableError);
                     // エラーが発生したテーブルは空配列で初期化

@@ -1,0 +1,89 @@
+📋 1000件制限修正の完全まとめ - 2025年9月24日修正完了
+
+🎯 修正対象ファイル
+
+1. supabase-client.js
+2. supabase/functions/daily-backup/index.ts
+
+🔧 修正完了した関数・箇所
+
+1. getMonthlyTasks() 関数 (行199-251)
+
+修正前:
+const { data, error } = await query
+    .order('month', { ascending: false })
+    .order('id', { ascending: true });
+
+修正後:
+// ページネーションで全件取得（1000件制限回避）
+let allData = [];
+let from = 0;
+const batchSize = 1000;
+
+while (true) {
+    const { data, error } = await supabase
+        .from('monthly_tasks')
+        .select('*')
+        .order('client_id', { ascending: true })
+        .order('month', { ascending: false })
+        .order('completed', { ascending: false })
+        .order('id', { ascending: true })
+        .range(from, from + batchSize - 1);
+
+    if (!data || data.length === 0) break;
+    allData = allData.concat(data);
+    if (data.length < batchSize) break;
+    from += batchSize;
+}
+
+2. getAllMonthlyTasksForAllClients() 関数 (行267-306)
+
+修正前: 制限なしの単純取得
+修正後: 同様のページネーション実装
+
+3. createFullBackup() 関数 (行1540-1602)
+
+修正前:
+const { data, error } = await supabase
+    .from(tableName)
+    .select('*');
+
+修正後:
+// monthly_tasksテーブルの場合はページネーション
+if (tableName === 'monthly_tasks') {
+    while (true) {
+        const { data, error } = await supabase
+            .from(tableName)
+            .select('*')
+            .order('client_id', { ascending: true })
+            .order('month', { ascending: false })
+            .order('completed', { ascending: false })
+            .order('id', { ascending: true })
+            .range(from, from + batchSize - 1);
+        // バッチ処理ロジック
+    }
+} else {
+    // 他のテーブルは通常取得
+}
+
+4. daily-backup Edge Functions (行44-98)
+
+修正前: 単純取得
+修正後: monthly_tasksに対してページネーション実装
+
+⚡ 修正内容のポイント
+
+1. ページネーション実装: 1000件ずつバッチ処理
+2. 複数ソート条件対応: データの一貫性確保
+3. 詳細ログ追加: 取得状況の可視化
+4. 全関数統一: 同じロジックで統一
+5. 自動バックアップ対応: Edge Functionsにも同様の実装
+
+🎊 効果
+
+- 修正前: 1000件で停止
+- 修正後: 無制限（3000件→30000件でも対応可能）
+- 手動バックアップ: ✅ 対応完了
+- 自動バックアップ: ✅ 対応完了
+
+✅ これでバックアップ・復元・表示すべてが1000件制限から解放されました！

@@ -43,20 +43,58 @@ serve(async (req) => {
     // Fetch data from each table
     for (const tableName of tables) {
       console.log(`📊 Backing up table: ${tableName}`)
-      
-      const { data, error } = await supabase
-        .from(tableName)
-        .select('*')
-      
-      if (error) {
-        console.error(`❌ Error fetching ${tableName}:`, error)
-        throw error
+
+      let allTableData = []
+
+      if (tableName === 'monthly_tasks') {
+        // monthly_tasksテーブルの場合はページネーションで取得
+        let from = 0
+        const batchSize = 1000
+
+        console.log(`📊 Starting paginated backup for ${tableName}...`)
+
+        while (true) {
+          const { data, error } = await supabase
+            .from(tableName)
+            .select('*')
+            .order('client_id', { ascending: true })
+            .order('month', { ascending: false })
+            .order('completed', { ascending: false })
+            .order('id', { ascending: true })
+            .range(from, from + batchSize - 1)
+
+          if (error) {
+            console.error(`❌ Error fetching ${tableName} batch:`, error)
+            throw error
+          }
+
+          if (!data || data.length === 0) break
+
+          allTableData = allTableData.concat(data)
+          console.log(`📈 Backup batch: ${data.length} records (Total: ${allTableData.length})`)
+
+          if (data.length < batchSize) break
+          from += batchSize
+        }
+      } else {
+        // 他のテーブルは通常通り取得
+        const { data, error } = await supabase
+          .from(tableName)
+          .select('*')
+          .order('id', { ascending: true })
+
+        if (error) {
+          console.error(`❌ Error fetching ${tableName}:`, error)
+          throw error
+        }
+
+        allTableData = data || []
       }
-      
-      backupData.tables[tableName] = data || []
-      const recordCount = data?.length || 0
+
+      backupData.tables[tableName] = allTableData
+      const recordCount = allTableData?.length || 0
       totalRecords += recordCount
-      console.log(`✅ ${tableName}: ${recordCount} records`)
+      console.log(`✅ ${tableName}: ${recordCount} records backed up`)
     }
 
     console.log(`📈 Total records: ${totalRecords}`)
